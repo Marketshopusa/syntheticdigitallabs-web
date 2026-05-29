@@ -2523,3 +2523,191 @@ html[data-theme-choice="green"] {
     border-bottom: 1px solid rgba(255,255,255,0.05);
   }
 }
+
+/* ==========================================
+   DUAL SHOWCASE WEBSITE MARQUEES
+   ========================================== */
+.showcase-marquee-section {
+  margin-top: 50px;
+}
+
+.marquee-showcase-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding: 20px 0;
+}
+
+/* Fading gradients at the sides */
+.marquee-showcase-container::before,
+.marquee-showcase-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 120px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.marquee-showcase-container::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg-dark-base) 0%, transparent 100%);
+}
+
+.marquee-showcase-container::after {
+  right: 0;
+  background: linear-gradient(-90deg, var(--bg-dark-base) 0%, transparent 100%);
+}
+
+.showcase-marquee-row {
+  width: 100%;
+  overflow: hidden;
+}
+
+.marquee-row-track {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+}
+
+/* Pause animation on row hover */
+.showcase-marquee-row:hover .marquee-row-track {
+  animation-play-state: paused;
+}
+
+/* Directions animations */
+.marquee-to-left .marquee-row-track {
+  animation: scrollShowcaseLeft 30s linear infinite;
+}
+
+.marquee-to-right .marquee-row-track {
+  animation: scrollShowcaseRight 30s linear infinite;
+}
+
+@keyframes scrollShowcaseLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollShowcaseRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* Showcase Card styling */
+.showcase-card {
+  width: 280px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  transition: var(--transition-normal);
+  cursor: pointer;
+}
+
+.showcase-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  background-color: var(--bg-card-hover);
+  border-color: rgba(0, 210, 255, 0.4);
+  box-shadow: var(--shadow-glow-blue);
+}
+
+/* Alternate color for second row cards on hover */
+.marquee-to-right .showcase-card:hover {
+  border-color: rgba(189, 0, 255, 0.4);
+  box-shadow: var(--shadow-glow-purple);
+}
+
+.sc-header {
+  background-color: rgba(3, 0, 20, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.sc-dot.red { background-color: #ff5f56; }
+.sc-dot.yellow { background-color: #ffbd2e; }
+.sc-dot.green { background-color: #27c93f; }
+
+.sc-url {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-left: 8px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sc-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.sc-body i {
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.sc-body h4 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sc-body p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.sc-footer {
+  padding: 12px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  background-color: rgba(3, 0, 20, 0.3);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--neon-blue);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: var(--transition-fast);
+}
+
+.marquee-to-right .sc-footer {
+  color: var(--neon-purple);
+}
+
+.showcase-card:hover .sc-footer {
+  color: #fff;
+  background-color: rgba(0, 210, 255, 0.15);
+}
+
+.marquee-to-right .showcase-card:hover .sc-footer {
+  background-color: rgba(189, 0, 255, 0.15);
+}
