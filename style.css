@@ -2711,3 +2711,185 @@ html[data-theme-choice="green"] {
 .marquee-to-right .showcase-card:hover .sc-footer {
   background-color: rgba(189, 0, 255, 0.15);
 }
+
+/* ==========================================
+   VIRTUAL VOICE AGENT "NOVA" STYLING
+   ========================================== */
+.nova-agent-container {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: var(--transition-normal);
+}
+
+/* Avatar Circle Outer Ring */
+.nova-avatar-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: rgba(10, 8, 30, 0.85);
+  border: 2px solid var(--neon-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  z-index: 3;
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-glow-purple);
+}
+
+.nova-orb-core {
+  font-size: 1.4rem;
+  color: var(--neon-blue);
+  text-shadow: var(--shadow-glow-blue);
+  z-index: 4;
+  transition: var(--transition-fast);
+}
+
+/* Sound Wave Ripple Rings */
+.nova-pulse-ring {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Speech Bubble Box */
+.nova-speech-bubble {
+  background-color: rgba(8, 5, 33, 0.92);
+  border: 1px solid var(--border-light);
+  padding: 12px 18px;
+  border-radius: 12px 12px 12px 0;
+  max-width: 260px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-main);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  position: relative;
+  transform-origin: bottom left;
+  animation: novaBubbleIntro 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: var(--transition-normal);
+}
+
+@keyframes novaBubbleIntro {
+  0% { transform: scale(0.8) translateY(10px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.nova-bubble-text {
+  line-height: 1.4;
+  display: block;
+}
+
+/* ------------------------------------------
+   NOVA STATES STYLING
+   ------------------------------------------ */
+
+/* Sleep State (Waiting for click or wake-word) */
+.nova-agent-container.state-sleep .nova-avatar-circle {
+  border-color: var(--neon-purple);
+  box-shadow: var(--shadow-glow-purple);
+  animation: novaGlowBreath 3s infinite alternate ease-in-out;
+}
+.nova-agent-container.state-sleep .nova-orb-core {
+  color: var(--text-muted);
+  text-shadow: none;
+}
+@keyframes novaGlowBreath {
+  0% { box-shadow: 0 0 10px rgba(189, 0, 255, 0.2); }
+  100% { box-shadow: 0 0 25px rgba(189, 0, 255, 0.6); }
+}
+
+/* Listening State (User is speaking) */
+.nova-agent-container.state-listening .nova-avatar-circle {
+  border-color: var(--neon-green);
+  box-shadow: 0 0 25px rgba(0, 255, 102, 0.8);
+}
+.nova-agent-container.state-listening .nova-orb-core {
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.8);
+  animation: listeningMicPulse 1.2s infinite ease-in-out;
+}
+.nova-agent-container.state-listening .ring-1 {
+  border-color: rgba(0, 255, 102, 0.4);
+  animation: novaRipple 1.4s infinite linear;
+}
+.nova-agent-container.state-listening .ring-2 {
+  border-color: rgba(0, 255, 102, 0.2);
+  animation: novaRipple 1.4s infinite linear 0.7s;
+}
+@keyframes listeningMicPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* Speaking State (Nova is responding) */
+.nova-agent-container.state-speaking .nova-avatar-circle {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 25px rgba(0, 210, 255, 0.8);
+}
+.nova-agent-container.state-speaking .nova-orb-core {
+  color: var(--neon-blue);
+  text-shadow: 0 0 10px rgba(0, 210, 255, 0.8);
+}
+.nova-agent-container.state-speaking .ring-1 {
+  border-color: rgba(0, 210, 255, 0.5);
+  animation: novaRippleVoice 1.2s infinite ease-out;
+}
+.nova-agent-container.state-speaking .ring-2 {
+  border-color: rgba(189, 0, 255, 0.3);
+  animation: novaRippleVoice 1.2s infinite ease-out 0.6s;
+}
+
+/* Wave ripples animations */
+@keyframes novaRipple {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes novaRippleVoice {
+  0% { transform: scale(1); opacity: 0.8; border-width: 3px; }
+  100% { transform: scale(1.8); opacity: 0; border-width: 1px; }
+}
+
+/* Hover Zoom effect */
+.nova-agent-container:hover .nova-avatar-circle {
+  transform: scale(1.08);
+}
+
+/* ------------------------------------------
+   NOVA RESPONSIVITY
+   ------------------------------------------ */
+@media (max-width: 768px) {
+  .nova-agent-container {
+    bottom: 20px;
+    left: 20px;
+    gap: 8px;
+    z-index: 1010;
+  }
+  .nova-avatar-circle {
+    width: 50px;
+    height: 50px;
+  }
+  .nova-orb-core {
+    font-size: 1.1rem;
+  }
+  .nova-speech-bubble {
+    max-width: 180px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+}
+
