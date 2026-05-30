@@ -2713,195 +2713,234 @@ html[data-theme-choice="green"] {
 }
 
 /* ==========================================
-   VIRTUAL VOICE AGENT "NOVA" STYLING
+   VIRTUAL VOICE AGENT "NOVA" STYLING (JARVIS/SIRI STYLE)
    ========================================== */
-.nova-agent-container {
-  position: fixed;
-  bottom: 30px;
-  left: 30px;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  transition: var(--transition-normal);
-}
 
-/* Avatar Circle Outer Ring */
-.nova-avatar-circle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: rgba(10, 8, 30, 0.85);
-  border: 2px solid var(--neon-purple);
+/* 1. Elegant Guidance Banner */
+.nova-guide-banner {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  cursor: pointer;
-  z-index: 3;
-  transition: var(--transition-normal);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.nova-orb-core {
+  gap: 12px;
+  background: linear-gradient(90deg, rgba(8, 5, 33, 0.95), rgba(15, 10, 45, 0.95));
+  border-bottom: 2px solid rgba(189, 0, 255, 0.4);
+  padding: 12px 24px;
   width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  position: relative;
+  z-index: 98; /* Under navbar but above content */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(189, 0, 255, 0.2);
+  transition: all 0.4s ease;
+  backdrop-filter: blur(8px);
+}
+
+.guide-pulse-dot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--neon-blue);
   border-radius: 50%;
-  z-index: 4;
+  box-shadow: 0 0 10px var(--neon-blue);
+  animation: pulseBlue 1.5s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulseBlue {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 210, 255, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(0, 210, 255, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 210, 255, 0); }
+}
+
+.guide-text {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.guide-text strong {
+  color: var(--neon-blue);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.guide-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0 8px;
+  position: absolute;
+  right: 20px;
   transition: var(--transition-fast);
 }
 
-.nova-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-  transition: var(--transition-normal);
+.guide-close-btn:hover {
+  color: var(--neon-red);
 }
 
-/* Sound Wave Ripple Rings */
-.nova-pulse-ring {
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 50%;
-  border: 2px solid transparent;
+/* 2. Siri Siri Container */
+.nova-siri-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none; /* Let clicks pass through except bubble/avatar */
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nova-siri-container.hidden {
   opacity: 0;
   pointer-events: none;
-  z-index: 1;
+  transform: translateX(-50%) translateY(100%); /* Slides out of view */
 }
 
-/* Speech Bubble Box */
-.nova-speech-bubble {
-  background-color: rgba(8, 5, 33, 0.92);
+/* Character image wrapper */
+.nova-avatar-wrapper {
+  width: 200px;
+  height: 280px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: auto; /* Active for click gestures */
+  cursor: pointer;
+}
+
+.nova-robot-char {
+  width: 100%;
+  height: auto;
+  max-height: 250px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 15px rgba(0, 210, 255, 0.4));
+  animation: siriFloat 4s infinite ease-in-out;
+  transform-origin: bottom center;
+  transition: var(--transition-normal);
+  
+  /* Blends dark pixels with transparency creating holographic effect */
+  mix-blend-mode: screen;
+}
+
+@keyframes siriFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+/* Real-time soundwave visualizer bars (Siri waves) */
+.nova-voice-waves {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  height: 30px;
+  width: 80px;
+  margin-top: -10px;
+  opacity: 0.5;
+  transition: var(--transition-fast);
+}
+
+.wave-bar {
+  width: 4px;
+  height: 5px;
+  background-color: var(--neon-purple);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Animations for audio waves depending on state */
+.nova-siri-container.state-listening .wave-bar {
+  background-color: var(--neon-green);
+  animation: waveHear 1.2s infinite ease-in-out;
+}
+
+.nova-siri-container.state-listening .wave-bar:nth-child(1) { animation-delay: 0.1s; height: 15px; }
+.nova-siri-container.state-listening .wave-bar:nth-child(2) { animation-delay: 0.3s; height: 25px; }
+.nova-siri-container.state-listening .wave-bar:nth-child(3) { animation-delay: 0.5s; height: 18px; }
+.nova-siri-container.state-listening .wave-bar:nth-child(4) { animation-delay: 0.2s; height: 22px; }
+.nova-siri-container.state-listening .wave-bar:nth-child(5) { animation-delay: 0.4s; height: 12px; }
+
+.nova-siri-container.state-speaking .wave-bar {
+  background-color: var(--neon-blue);
+  animation: waveSpeak 0.8s infinite ease-in-out;
+}
+
+.nova-siri-container.state-speaking .wave-bar:nth-child(1) { animation-delay: 0.1s; }
+.nova-siri-container.state-speaking .wave-bar:nth-child(2) { animation-delay: 0.25s; }
+.nova-siri-container.state-speaking .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+.nova-siri-container.state-speaking .wave-bar:nth-child(4) { animation-delay: 0.15s; }
+.nova-siri-container.state-speaking .wave-bar:nth-child(5) { animation-delay: 0.3s; }
+
+@keyframes waveHear {
+  0%, 100% { height: 6px; }
+  50% { height: 28px; }
+}
+
+@keyframes waveSpeak {
+  0%, 100% { height: 4px; }
+  50% { height: 32px; }
+}
+
+/* 3. New Speech Bubble Styling */
+.nova-siri-container .nova-speech-bubble {
+  background-color: rgba(8, 5, 33, 0.95);
   border: 1px solid var(--border-light);
-  padding: 12px 18px;
-  border-radius: 12px 12px 12px 0;
-  max-width: 260px;
-  font-size: 0.85rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  max-width: 320px;
+  min-width: 180px;
+  font-size: 0.88rem;
   font-weight: 500;
   color: var(--text-main);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.02);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 210, 255, 0.2);
   backdrop-filter: blur(12px);
-  position: relative;
-  transform-origin: bottom left;
-  animation: novaBubbleIntro 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: var(--transition-normal);
+  pointer-events: auto;
+  text-align: center;
+  transition: var(--transition-fast);
 }
 
-@keyframes novaBubbleIntro {
-  0% { transform: scale(0.8) translateY(10px); opacity: 0; }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
-}
-
-.nova-bubble-text {
+.nova-siri-container .nova-bubble-text {
   line-height: 1.4;
-  display: block;
 }
 
-/* ------------------------------------------
-   NOVA STATES STYLING
-   ------------------------------------------ */
-
-/* Sleep State (Waiting for click or wake-word) */
-.nova-agent-container.state-sleep .nova-avatar-circle {
-  border-color: var(--neon-purple);
-  box-shadow: var(--shadow-glow-purple);
-  animation: novaGlowBreath 3s infinite alternate ease-in-out;
-}
-.nova-agent-container.state-sleep .nova-orb-core {
-  color: var(--text-muted);
-  text-shadow: none;
-}
-@keyframes novaGlowBreath {
-  0% { box-shadow: 0 0 10px rgba(189, 0, 255, 0.2); }
-  100% { box-shadow: 0 0 25px rgba(189, 0, 255, 0.6); }
+/* 4. Siri state color transitions */
+.nova-siri-container.state-listening .nova-robot-char {
+  filter: drop-shadow(0 0 20px rgba(0, 255, 102, 0.6));
 }
 
-/* Listening State (User is speaking) */
-.nova-agent-container.state-listening .nova-avatar-circle {
-  border-color: var(--neon-green);
-  box-shadow: 0 0 25px rgba(0, 255, 102, 0.8);
-}
-.nova-agent-container.state-listening .nova-orb-core {
-  color: var(--neon-green);
-  text-shadow: 0 0 10px rgba(0, 255, 102, 0.8);
-  animation: listeningMicPulse 1.2s infinite ease-in-out;
-}
-.nova-agent-container.state-listening .ring-1 {
-  border-color: rgba(0, 255, 102, 0.4);
-  animation: novaRipple 1.4s infinite linear;
-}
-.nova-agent-container.state-listening .ring-2 {
-  border-color: rgba(0, 255, 102, 0.2);
-  animation: novaRipple 1.4s infinite linear 0.7s;
-}
-@keyframes listeningMicPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+.nova-siri-container.state-speaking .nova-robot-char {
+  filter: drop-shadow(0 0 20px rgba(0, 210, 255, 0.6));
 }
 
-/* Speaking State (Nova is responding) */
-.nova-agent-container.state-speaking .nova-avatar-circle {
-  border-color: var(--neon-blue);
-  box-shadow: 0 0 25px rgba(0, 210, 255, 0.8);
-}
-.nova-agent-container.state-speaking .nova-orb-core {
-  color: var(--neon-blue);
-  text-shadow: 0 0 10px rgba(0, 210, 255, 0.8);
-}
-.nova-agent-container.state-speaking .ring-1 {
-  border-color: rgba(0, 210, 255, 0.5);
-  animation: novaRippleVoice 1.2s infinite ease-out;
-}
-.nova-agent-container.state-speaking .ring-2 {
-  border-color: rgba(189, 0, 255, 0.3);
-  animation: novaRippleVoice 1.2s infinite ease-out 0.6s;
-}
-
-/* Wave ripples animations */
-@keyframes novaRipple {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.6); opacity: 0; }
-}
-
-@keyframes novaRippleVoice {
-  0% { transform: scale(1); opacity: 0.8; border-width: 3px; }
-  100% { transform: scale(1.8); opacity: 0; border-width: 1px; }
-}
-
-/* Hover Zoom effect */
-.nova-agent-container:hover .nova-avatar-circle {
-  transform: scale(1.08);
-}
-
-/* ------------------------------------------
-   NOVA RESPONSIVITY
-   ------------------------------------------ */
+/* 5. Responsive sizing for mobile layout */
 @media (max-width: 768px) {
-  .nova-agent-container {
-    bottom: 20px;
-    left: 20px;
-    gap: 8px;
-    z-index: 1010;
+  .nova-guide-banner {
+    padding: 8px 16px;
   }
-  .nova-avatar-circle {
-    width: 50px;
-    height: 50px;
+  .guide-text {
+    font-size: 0.78rem;
+    padding-right: 15px;
   }
-  .nova-orb-core {
-    font-size: 1.1rem;
+  .nova-avatar-wrapper {
+    width: 140px;
+    height: 200px;
   }
-  .nova-speech-bubble {
-    max-width: 180px;
-    padding: 8px 12px;
-    font-size: 0.75rem;
+  .nova-robot-char {
+    max-height: 180px;
+  }
+  .nova-siri-container .nova-speech-bubble {
+    max-width: 220px;
+    padding: 8px 14px;
+    font-size: 0.78rem;
+  }
+  .nova-voice-waves {
+    height: 20px;
+    width: 60px;
   }
 }
 

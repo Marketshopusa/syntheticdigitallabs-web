@@ -628,13 +628,16 @@ if (themeToggleBtn && themePanel) {
 }
 
 // ==========================================
-// VIRTUAL VOICE AGENT "NOVA"
+// VIRTUAL VOICE AGENT "NOVA" (JARVIS/SIRI STYLE)
 // ==========================================
 class NovaAssistant {
   constructor() {
     this.agentContainer = document.getElementById('novaAgent');
     this.bubbleText = document.getElementById('novaBubbleText');
-    this.speechActive = false;
+    this.guideBanner = document.getElementById('novaGuideBanner');
+    this.closeBannerBtn = document.getElementById('closeGuideBanner');
+    this.avatarImg = this.agentContainer ? this.agentContainer.querySelector('.nova-robot-char') : null;
+    
     this.recognition = null;
     this.voices = [];
     this.sleepTimer = null;
@@ -643,9 +646,53 @@ class NovaAssistant {
 
     if (!this.agentContainer) return;
 
+    // Apply transparent background to avatar dynamically via canvas
+    if (this.avatarImg) {
+      this.processAvatarTransparency();
+    }
+
     this.initSpeechSynthesis();
     this.initSpeechRecognition();
     this.bindEvents();
+  }
+
+  processAvatarTransparency() {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = this.avatarImg.src;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+      
+      const thresholdMin = 8;
+      const thresholdMax = 35;
+      
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+        
+        // Calculate max brightness
+        const brightness = Math.max(r, Math.max(g, b));
+        
+        if (brightness <= thresholdMin) {
+          data[i+3] = 0; // Fully transparent
+        } else if (brightness < thresholdMax) {
+          // Soft blending transition
+          const ratio = (brightness - thresholdMin) / (thresholdMax - thresholdMin);
+          data[i+3] = Math.floor(ratio * 255);
+        }
+      }
+      
+      ctx.putImageData(imgData, 0, 0);
+      this.avatarImg.src = canvas.toDataURL();
+    };
   }
 
   initSpeechSynthesis() {
@@ -664,7 +711,7 @@ class NovaAssistant {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       this.recognition = new SpeechRecognition();
-      this.recognition.continuous = true;
+      this.recognition.continuous = false; // Phrase-by-phrase recognition is far more stable
       this.recognition.interimResults = false;
       this.recognition.lang = 'es-ES';
 
@@ -677,35 +724,20 @@ class NovaAssistant {
       this.recognition.onerror = (event) => {
         console.error('[Nova Error]:', event.error);
         if (event.error === 'not-allowed') {
-          this.updateBubble('Micrófono desactivado. Tócame para activarlo.');
+          this.updateBubble('Micrófono bloqueado. Tócame para activarlo.');
           this.setState('sleep');
         }
       };
 
-      // Clear sleep timer when user starts speaking
-      this.recognition.onspeechstart = () => {
-        if (this.state === 'listening') {
-          if (this.sleepTimer) clearTimeout(this.sleepTimer);
-        }
-      };
-
-      // Reset sleep timer when user stops speaking
-      this.recognition.onspeechend = () => {
-        if (this.state === 'listening') {
-          this.resetSleepTimer();
-        }
-      };
-
       this.recognition.onend = () => {
+        // Auto-restart if we are in listening or sleep state
         if (this.state === 'sleep' || this.state === 'listening') {
           this.startListening();
         }
       };
-
-      this.startListening();
     } else {
       console.log('[Nova]: Speech Recognition not supported in this browser.');
-      this.updateBubble('Control por voz no soportado. Tócame para ver comandos.');
+      this.updateBubble('Control por voz no soportado.');
     }
   }
 
@@ -714,7 +746,7 @@ class NovaAssistant {
     try {
       this.recognition.start();
     } catch (e) {
-      // Catch already started exceptions
+      // Ignored if already started
     }
   }
 
@@ -723,31 +755,58 @@ class NovaAssistant {
     try {
       this.recognition.stop();
     } catch (e) {
-      // Catch already stopped exceptions
+      // Ignored if already stopped
     }
   }
 
   bindEvents() {
-    this.agentContainer.querySelector('.nova-avatar-circle').addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.activateListeningManually();
-    });
+    // Close Banner Event
+    if (this.closeBannerBtn && this.guideBanner) {
+      this.closeBannerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.guideBanner.style.display = 'none';
+      });
+    }
 
-    const welcomeTrigger = () => {
+    // Clicking the guide banner wakes up Nova manually
+    if (this.guideBanner) {
+      this.guideBanner.addEventListener('click', (e) => {
+        if (e.target !== this.closeBannerBtn && e.target.parentElement !== this.closeBannerBtn) {
+          this.wakeUp();
+        }
+      });
+    }
+
+    // Clicking the avatar resets wake timer and talks
+    const avatarWrapper = this.agentContainer.querySelector('.nova-avatar-wrapper');
+    if (avatarWrapper) {
+      avatarWrapper.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.wakeUp();
+      });
+    }
+
+    // Start passive recognition in background upon any first scroll/click/touch
+    const startPassiveRecognition = () => {
       if (!this.firstInteractionDone) {
         this.firstInteractionDone = true;
-        setTimeout(() => {
-          this.speak("Hola. Bienvenido a Synthetic Digital Labs. Soy Nova, tu asistente virtual. Di hola Nova o tócame si necesitas ayuda.");
-        }, 1000);
-        window.removeEventListener('click', welcomeTrigger);
+        this.startListening();
+        console.log('[Nova]: Background listening started.');
+        
+        // Remove listeners
+        window.removeEventListener('click', startPassiveRecognition);
+        window.removeEventListener('scroll', startPassiveRecognition);
+        window.removeEventListener('touchstart', startPassiveRecognition);
       }
     };
-    window.addEventListener('click', welcomeTrigger);
+    window.addEventListener('click', startPassiveRecognition);
+    window.addEventListener('scroll', startPassiveRecognition);
+    window.addEventListener('touchstart', startPassiveRecognition);
   }
 
   setState(newState) {
     this.state = newState;
-    this.agentContainer.className = `nova-agent-container state-${newState}`;
+    this.agentContainer.className = `nova-siri-container state-${newState}`;
   }
 
   updateBubble(text) {
@@ -756,9 +815,46 @@ class NovaAssistant {
     }
   }
 
-  speak(text) {
+  wakeUp() {
+    if (this.state === 'speaking') {
+      window.speechSynthesis.cancel();
+    }
+    
+    // Slide up robot from bottom center
+    this.agentContainer.classList.remove('hidden');
+    this.setState('listening');
+    this.updateBubble('¿En qué puedo ayudarte?');
+    
+    this.speak('Hola. Bienvenido a Synthetic Digital Labs. ¿En qué te puedo ayudar hoy?', true);
+  }
+
+  goToSleep() {
+    this.setState('sleep');
+    this.updateBubble('Hasta luego.');
+    
+    // Soft voice goodbye if possible
+    if ('speechSynthesis' in window) {
+      this.speak('Hasta luego.', false);
+    } else {
+      setTimeout(() => {
+        if (this.state === 'sleep') {
+          this.agentContainer.classList.add('hidden');
+          this.startListening();
+        }
+      }, 1200);
+    }
+  }
+
+  speak(text, keepActive = true) {
     if (!('speechSynthesis' in window)) {
       this.updateBubble(text);
+      if (keepActive) {
+        this.setState('listening');
+        this.resetSleepTimer();
+      } else {
+        this.setState('sleep');
+        this.agentContainer.classList.add('hidden');
+      }
       return;
     }
 
@@ -768,134 +864,140 @@ class NovaAssistant {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'es-US';
     
+    if (this.voices.length === 0) {
+      this.voices = window.speechSynthesis.getVoices();
+    }
     const esVoice = this.voices.find(v => v.lang.includes('es') || v.lang.includes('ES'));
     if (esVoice) utterance.voice = esVoice;
 
     utterance.onstart = () => {
       this.setState('speaking');
       this.updateBubble(text);
+      if (this.sleepTimer) clearTimeout(this.sleepTimer);
     };
 
     utterance.onend = () => {
-      this.setState('sleep');
-      this.updateBubble('Di "Hola Nova" o tócame');
-      this.startListening();
+      if (keepActive) {
+        this.setState('listening');
+        this.updateBubble('🎙️ Escuchando...');
+        // 300ms guard to prevent hearing own voice residual echo
+        setTimeout(() => {
+          if (this.state === 'listening') {
+            this.startListening();
+            this.resetSleepTimer();
+          }
+        }, 300);
+      } else {
+        this.setState('sleep');
+        // Let it slide down
+        setTimeout(() => {
+          if (this.state === 'sleep') {
+            this.agentContainer.classList.add('hidden');
+            this.startListening();
+          }
+        }, 800);
+      }
     };
 
     utterance.onerror = () => {
-      this.setState('sleep');
-      this.updateBubble('Di "Hola Nova" o tócame');
-      this.startListening();
+      if (keepActive) {
+        this.setState('listening');
+        this.startListening();
+        this.resetSleepTimer();
+      } else {
+        this.setState('sleep');
+        this.agentContainer.classList.add('hidden');
+        this.startListening();
+      }
     };
 
     window.speechSynthesis.speak(utterance);
-  }
-
-  activateListeningManually() {
-    if (this.state === 'speaking') {
-      window.speechSynthesis.cancel();
-    }
-    
-    this.setState('listening');
-    this.updateBubble('Te escucho... Dime qué necesitas');
-    this.speakResponseWithRecognitionRestart('¿Sí? Dime en qué puedo ayudarte.');
-  }
-
-  speakResponseWithRecognitionRestart(responseSpeech) {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      this.stopListening();
-      
-      const utterance = new SpeechSynthesisUtterance(responseSpeech);
-      utterance.lang = 'es-US';
-      const esVoice = this.voices.find(v => v.lang.includes('es') || v.lang.includes('ES'));
-      if (esVoice) utterance.voice = esVoice;
-
-      utterance.onstart = () => {
-        this.setState('speaking');
-        this.updateBubble(responseSpeech);
-      };
-
-      utterance.onend = () => {
-        this.setState('listening');
-        this.updateBubble('Escuchando...');
-        this.startListening();
-        this.resetSleepTimer();
-      };
-
-      window.speechSynthesis.speak(utterance);
-    } else {
-      this.setState('listening');
-      this.updateBubble('Escuchando...');
-      this.resetSleepTimer();
-    }
   }
 
   resetSleepTimer() {
     if (this.sleepTimer) clearTimeout(this.sleepTimer);
     this.sleepTimer = setTimeout(() => {
       if (this.state === 'listening') {
-        this.speak("Volviendo a reposo.");
+        this.goToSleep();
       }
-    }, 6000);
+    }, 5000); // 5 seconds of silence countdown
   }
 
   handleSpeechInput(transcript) {
     if (this.state === 'sleep') {
-      // Expanded list of wake words
-      const wakeWords = ['nova', 'noba', 'hola', 'asistente', 'oye', 'hey', 'despierta', 'activar'];
+      // Autonomous Voice Wake-up Intent
+      const wakeWords = ['nova', 'noba', 'hola nova', 'hey nova', 'oye nova', 'hola noba', 'despierta', 'hola', 'buenos días', 'buenas tardes', 'buenas'];
       const heardWakeWord = wakeWords.some(word => transcript.includes(word));
       
       if (heardWakeWord) {
-        this.resetSleepTimer();
-        this.speakResponseWithRecognitionRestart('¿Sí? Te escucho.');
+        this.wakeUp();
       }
     } else if (this.state === 'listening') {
       this.resetSleepTimer();
       
       let matched = false;
 
-      if (transcript.includes('portafolio') || transcript.includes('trabajo') || transcript.includes('páginas') || transcript.includes('proyectos')) {
-        this.speak("Entendido. Llevándote a nuestro portafolio de trabajos realizados.");
+      // Navigation Command Intents
+      if (transcript.includes('portafolio') || transcript.includes('trabajo') || transcript.includes('páginas') || transcript.includes('proyectos') || transcript.includes('catálogo')) {
+        this.speak("Entendido. Llevándote a nuestro portafolio de páginas web y marcas activas.", true);
         this.scrollToSection('portafolio');
         matched = true;
-      } else if (transcript.includes('presupuesto') || transcript.includes('calculadora') || transcript.includes('precio') || transcript.includes('costo') || transcript.includes('cuánto cuesta') || transcript.includes('cuesta')) {
-        if (transcript.includes('precio') || transcript.includes('costo') || transcript.includes('cuánto cuesta') || transcript.includes('cuesta')) {
-          this.speak("Nuestras páginas express en 24 horas comienzan desde 150 dólares. Te llevaré a la calculadora para estimar tu presupuesto.");
-        } else {
-          this.speak("Abriendo la calculadora de presupuesto dinámico.");
-        }
+      } else if (transcript.includes('presupuesto') || transcript.includes('calculadora') || transcript.includes('cotizar') || transcript.includes('calcular')) {
+        this.speak("Abriendo la calculadora de presupuesto dinámico.", true);
         this.scrollToSection('presupuesto');
         matched = true;
-      } else if (transcript.includes('contacto') || transcript.includes('correo') || transcript.includes('teléfono') || transcript.includes('escribir') || transcript.includes('dirección') || transcript.includes('llamar')) {
-        this.speak("Abriendo la sección de contacto. Puedes escribirnos un correo o chatear por WhatsApp.");
+      } else if (transcript.includes('contacto') || transcript.includes('correo') || transcript.includes('teléfono') || transcript.includes('escribir') || transcript.includes('dirección') || transcript.includes('llamar') || transcript.includes('whatsapp')) {
+        this.speak("Abriendo la sección de contacto. Puedes enviarnos un mensaje o chatear por WhatsApp.", true);
         this.scrollToSection('contacto');
         matched = true;
       } else if (transcript.includes('servicios') || transcript.includes('hacen') || transcript.includes('ofrecen')) {
-        this.speak("Aquí tienes el listado de nuestros servicios de desarrollo web y aplicaciones móviles.");
+        this.speak("Aquí tienes el listado de nuestros servicios de desarrollo web y aplicaciones móviles.", true);
         this.scrollToSection('servicios');
         matched = true;
       } else if (transcript.includes('pregunta') || transcript.includes('duda') || transcript.includes('faq') || transcript.includes('frecuente')) {
-        this.speak("Mostrándote las preguntas frecuentes resueltas por nuestro equipo.");
+        this.speak("Te desplazo a la sección de preguntas frecuentes resueltas por nuestro equipo.", true);
         this.scrollToSection('faq');
         matched = true;
       }
       
+      // Jarvis Q&A Direct Knowledge Intents
       if (!matched) {
-        if (transcript.includes('tiempo') || transcript.includes('tardan') || transcript.includes('días') || transcript.includes('demoran')) {
-          this.speak("Nuestras páginas express se entregan en solo 24 horas. Para aplicaciones móviles complejas, tardamos aproximadamente 14 días.");
+        if (transcript.includes('precio') || transcript.includes('costo') || transcript.includes('cuesta') || transcript.includes('tarifas') || transcript.includes('valor')) {
+          this.speak("Nuestras páginas web express en 24 horas cuestan desde 150 dólares, y las avanzadas con inteligencia artificial desde 350 dólares.", true);
           matched = true;
-        } else if (transcript.includes('quiénes son') || transcript.includes('empresa') || transcript.includes('quien eres')) {
-          this.speak("Somos Synthetic Digital Labs, una agencia enfocada en la creación de páginas web rápidas y aplicaciones nativas potenciadas por Inteligencia Artificial.");
+        } else if (transcript.includes('tiempo') || transcript.includes('tardan') || transcript.includes('días') || transcript.includes('demoran') || transcript.includes('entrega')) {
+          this.speak("Las páginas express se entregan en solo 24 horas. Los proyectos complejos como aplicaciones móviles toman aproximadamente 14 días.", true);
           matched = true;
-        } else if (transcript.includes('hola') || transcript.includes('saludo')) {
-          this.speak("¡Hola! Dime qué comando deseas realizar o qué información necesitas.");
+        } else if (transcript.includes('avatar') || transcript.includes('avatara') || transcript.includes('muñeco') || transcript.includes('personaje')) {
+          this.speak("Ofrecemos el desarrollo de avatares interactivos 3D con IA para tu sitio web, como yo. Contáctanos para cotizar el tuyo.", true);
+          this.scrollToSection('contacto');
+          matched = true;
+        } else if (transcript.includes('quiénes son') || transcript.includes('empresa') || transcript.includes('quien eres') || transcript.includes('creadores')) {
+          this.speak("Somos Synthetic Digital Labs, el mejor lugar para crear tus páginas web y aplicaciones móviles nativas utilizando Inteligencia Artificial.", true);
+          matched = true;
+        } else if (transcript.includes('dónde están') || transcript.includes('ubicados') || transcript.includes('oficina') || transcript.includes('país')) {
+          this.speak("Nuestras oficinas están en Miami, Florida, pero ofrecemos servicios de desarrollo web y móvil de forma remota a todo el mundo.", true);
+          matched = true;
+        } else if (transcript.includes('pago') || transcript.includes('pagar') || transcript.includes('métodos') || transcript.includes('formas')) {
+          this.speak("Aceptamos transferencias bancarias, PayPal, tarjetas de crédito y criptomonedas. Solicitamos el 50% de anticipo y el 50% al finalizar.", true);
+          matched = true;
+        } else if (transcript.includes('responsivo') || transcript.includes('móvil') || transcript.includes('celular') || transcript.includes('diseño')) {
+          this.speak("Todos nuestros diseños son 100% responsivos y adaptados a teléfonos móviles, tabletas y computadoras.", true);
+          matched = true;
+        } else if (transcript.includes('wordpress') || transcript.includes('tecnologías')) {
+          this.speak("Desarrollamos con código limpio en HTML, CSS, JavaScript y React. Esto garantiza una velocidad de carga ultra rápida.", true);
+          matched = true;
+        } else if (transcript.includes('hola') || transcript.includes('saludo') || transcript.includes('buenos días') || transcript.includes('buenas tardes')) {
+          this.speak("¡Hola! Soy Nova, tu asistente virtual tipo Jarvis. ¿En qué te puedo servir hoy?", true);
+          matched = true;
+        } else if (transcript.includes('gracias') || transcript.includes('adiós') || transcript.includes('chao') || transcript.includes('hasta luego')) {
+          this.speak("De nada. Si necesitas algo más, solo dime 'Hey Nova'. ¡Que tengas un gran día!", false);
           matched = true;
         }
       }
 
       if (!matched) {
-        this.updateBubble(`Comando no reconocido: "${transcript}"`);
+        this.speak("Lo siento, no he entendido ese comando. Puedes pedirme información sobre precios, tiempos de entrega, portafolio o contacto.", true);
       }
     }
   }
@@ -910,5 +1012,6 @@ class NovaAssistant {
 
 // Initialize Assistant
 new NovaAssistant();
+
 
 
