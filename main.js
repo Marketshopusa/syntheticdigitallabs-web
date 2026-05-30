@@ -677,27 +677,53 @@ class NovaAssistant {
       this.recognition.onerror = (event) => {
         console.error('[Nova Error]:', event.error);
         if (event.error === 'not-allowed') {
-          this.updateBubble('Micrófono desactivado. Haz clic en mi icono para hablar.');
+          this.updateBubble('Micrófono desactivado. Tócame para activarlo.');
           this.setState('sleep');
         }
       };
 
-      this.recognition.onend = () => {
-        if (this.state === 'sleep') {
-          try {
-            this.recognition.start();
-          } catch (e) {}
+      // Clear sleep timer when user starts speaking
+      this.recognition.onspeechstart = () => {
+        if (this.state === 'listening') {
+          if (this.sleepTimer) clearTimeout(this.sleepTimer);
         }
       };
 
-      try {
-        this.recognition.start();
-      } catch (e) {
-        console.log('[Nova Passive Listen Failed]:', e);
-      }
+      // Reset sleep timer when user stops speaking
+      this.recognition.onspeechend = () => {
+        if (this.state === 'listening') {
+          this.resetSleepTimer();
+        }
+      };
+
+      this.recognition.onend = () => {
+        if (this.state === 'sleep' || this.state === 'listening') {
+          this.startListening();
+        }
+      };
+
+      this.startListening();
     } else {
       console.log('[Nova]: Speech Recognition not supported in this browser.');
       this.updateBubble('Control por voz no soportado. Tócame para ver comandos.');
+    }
+  }
+
+  startListening() {
+    if (!this.recognition) return;
+    try {
+      this.recognition.start();
+    } catch (e) {
+      // Catch already started exceptions
+    }
+  }
+
+  stopListening() {
+    if (!this.recognition) return;
+    try {
+      this.recognition.stop();
+    } catch (e) {
+      // Catch already stopped exceptions
     }
   }
 
@@ -737,6 +763,7 @@ class NovaAssistant {
     }
 
     window.speechSynthesis.cancel();
+    this.stopListening();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'es-US';
@@ -751,24 +778,15 @@ class NovaAssistant {
 
     utterance.onend = () => {
       this.setState('sleep');
-      this.updateBubble('Di "Hola Nova"');
-      if (this.recognition) {
-        try {
-          this.recognition.start();
-        } catch (e) {}
-      }
+      this.updateBubble('Di "Hola Nova" o tócame');
+      this.startListening();
     };
 
     utterance.onerror = () => {
       this.setState('sleep');
-      this.updateBubble('Di "Hola Nova"');
+      this.updateBubble('Di "Hola Nova" o tócame');
+      this.startListening();
     };
-
-    if (this.recognition) {
-      try {
-        this.recognition.stop();
-      } catch (e) {}
-    }
 
     window.speechSynthesis.speak(utterance);
   }
@@ -786,6 +804,8 @@ class NovaAssistant {
   speakResponseWithRecognitionRestart(responseSpeech) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+      this.stopListening();
+      
       const utterance = new SpeechSynthesisUtterance(responseSpeech);
       utterance.lang = 'es-US';
       const esVoice = this.voices.find(v => v.lang.includes('es') || v.lang.includes('ES'));
@@ -799,21 +819,10 @@ class NovaAssistant {
       utterance.onend = () => {
         this.setState('listening');
         this.updateBubble('Escuchando...');
-        
-        if (this.recognition) {
-          try {
-            this.recognition.start();
-          } catch (e) {}
-        }
-        
+        this.startListening();
         this.resetSleepTimer();
       };
 
-      if (this.recognition) {
-        try {
-          this.recognition.stop();
-        } catch (e) {}
-      }
       window.speechSynthesis.speak(utterance);
     } else {
       this.setState('listening');
@@ -828,12 +837,16 @@ class NovaAssistant {
       if (this.state === 'listening') {
         this.speak("Volviendo a reposo.");
       }
-    }, 4000);
+    }, 6000);
   }
 
   handleSpeechInput(transcript) {
     if (this.state === 'sleep') {
-      if (transcript.includes('nova') || transcript.includes('hola nova') || transcript.includes('oye nova')) {
+      // Expanded list of wake words
+      const wakeWords = ['nova', 'noba', 'hola', 'asistente', 'oye', 'hey', 'despierta', 'activar'];
+      const heardWakeWord = wakeWords.some(word => transcript.includes(word));
+      
+      if (heardWakeWord) {
         this.resetSleepTimer();
         this.speakResponseWithRecognitionRestart('¿Sí? Te escucho.');
       }
@@ -876,7 +889,7 @@ class NovaAssistant {
           this.speak("Somos Synthetic Digital Labs, una agencia enfocada en la creación de páginas web rápidas y aplicaciones nativas potenciadas por Inteligencia Artificial.");
           matched = true;
         } else if (transcript.includes('hola') || transcript.includes('saludo')) {
-          this.speak("¡Hola de nuevo! Dime qué comando deseas realizar o qué información necesitas.");
+          this.speak("¡Hola! Dime qué comando deseas realizar o qué información necesitas.");
           matched = true;
         }
       }
