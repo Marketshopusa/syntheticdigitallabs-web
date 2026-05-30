@@ -643,6 +643,7 @@ class NovaAssistant {
     this.sleepTimer = null;
     this.state = 'sleep'; // 'sleep', 'listening', 'speaking'
     this.firstInteractionDone = false;
+    this.micPermissionDenied = false;
 
     if (!this.agentContainer) return;
 
@@ -724,14 +725,15 @@ class NovaAssistant {
       this.recognition.onerror = (event) => {
         console.error('[Nova Error]:', event.error);
         if (event.error === 'not-allowed') {
-          this.updateBubble('Micrófono bloqueado. Tócame para activarlo.');
+          this.micPermissionDenied = true;
+          this.updateBubble('Micrófono bloqueado. Tócame para intentar activarlo.');
           this.setState('sleep');
         }
       };
 
       this.recognition.onend = () => {
-        // Auto-restart if we are in listening or sleep state
-        if (this.state === 'sleep' || this.state === 'listening') {
+        // Auto-restart if we are in listening or sleep state, and permission is not denied
+        if (!this.micPermissionDenied && (this.state === 'sleep' || this.state === 'listening')) {
           this.startListening();
         }
       };
@@ -816,6 +818,7 @@ class NovaAssistant {
   }
 
   wakeUp() {
+    this.micPermissionDenied = false;
     if (this.state === 'speaking') {
       window.speechSynthesis.cancel();
     }
