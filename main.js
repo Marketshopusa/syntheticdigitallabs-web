@@ -31,12 +31,122 @@ const DEFAULT_VOICES = [
   { id: 'v-sarah', name: 'Sarah Voice (Female)', lang: 'Inglés (US)', gender: 'Femenino', tone: 'Narrativa', isPremium: true, pitch: 1.1, rate: 1.0 }
 ];
 
-const DEFAULT_TEMPLATES = [
-  { id: 'temp-corp', name: 'Resultados Corporativos', tag: 'Negocios', aspect: '16:9', avatar: 'av-roberto-biz', voice: 'v-roberto', script: 'Estimado equipo de dirección, hoy les presento el balance comercial y los resultados destacados del trimestre. Hemos superado los objetivos fijados en un doce por ciento.' },
-  { id: 'temp-sales', name: 'Anuncio Promocional Redes', tag: 'Marketing', aspect: '9:16', avatar: 'av-sofia-casual', voice: 'v-sofia', script: '¿Cansado de gastar miles de dólares en estudios de grabación? Con AI Studio puedes crear presentadores interactivos para tus productos en menos de un minuto. ¡Haz clic para probarlo gratis!' },
-  { id: 'temp-edu', name: 'Tutorial de Clonación', tag: 'Educativo', aspect: '9:16', avatar: 'av-elena-pod', voice: 'v-elena', script: 'Hola a todos, hoy aprenderemos cómo puedes clonar tu propia voz de forma ética utilizando nuestro panel avanzado de locución. Tan solo requiere diez segundos de audio limpio.' },
-  { id: 'temp-news', name: 'Noticias Tecnología IA', tag: 'Noticias', aspect: '16:9', avatar: 'av-nova-fut', voice: 'v-lucas', script: 'Última hora: Synthetic Digital Labs lanza oficialmente su espacio de trabajo rediseñado, unificando avatares y línea de tiempo interactiva.' }
+const templateBases = [
+  // === NEGOCIOS (12) ===
+  { name: 'Reporte Corporativo Anual', tag: 'Negocios', script: 'Bienvenidos al resumen financiero anual. Repasemos los hitos más importantes.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/temp_corp.png', color: '#7c3aed', aspect: '16:9' },
+  { name: 'Pitch Elevador Startup', tag: 'Negocios', script: 'Nuestra plataforma optimiza las operaciones logísticas usando inteligencia artificial.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/infinity.jpg', color: '#6366f1', aspect: '16:9' },
+  { name: 'Inmobiliaria Exclusiva Florida', tag: 'Negocios', script: 'Conoce los condominios más exclusivos frente al mar listos para entrega.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/flroof.jpg', color: '#fbbf24', aspect: '16:9' },
+  { name: 'Reunión Mensual de Equipo', tag: 'Negocios', script: 'Hola equipo. Aquí están los objetivos de rendimiento para el próximo mes de trabajo.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/roofpro.jpg', color: '#f97316', aspect: '16:9' },
+  { name: 'Finanzas e Inversiones Inteligentes', tag: 'Negocios', script: 'Aprende a gestionar tus finanzas personales y crear portafolios diversificados.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/kcg.jpg', color: '#10b981', aspect: '16:9' },
+  { name: 'Inducción de Recursos Humanos', tag: 'Negocios', script: 'Te damos la bienvenida al equipo. Este video resume nuestra cultura y valores.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_corp.png', color: '#7c3aed', aspect: '16:9' },
+  { name: 'Alianzas Estratégicas B2B', tag: 'Negocios', script: 'Unamos fuerzas para expandir el alcance de nuestros negocios en mercados internacionales.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/infinity.jpg', color: '#6366f1', aspect: '16:9' },
+  { name: 'Presentación Ejecutiva Vertical', tag: 'Negocios', script: 'Resumen rápido de las métricas clave comerciales en formato para celular.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/temp_corp.png', color: '#7c3aed', aspect: '9:16' },
+  { name: 'Inmobiliaria Móvil', tag: 'Negocios', script: 'Los departamentos de lujo más cotizados ahora disponibles para visitas virtuales.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/flroof.jpg', color: '#fbbf24', aspect: '9:16' },
+  { name: 'Consultoría Financiera Express', tag: 'Negocios', script: 'Consigue tu libertad financiera con nuestros asesores en inversiones.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/kcg.jpg', color: '#f59e0b', aspect: '9:16' },
+  { name: 'Planificación de Ventas Regional', tag: 'Negocios', script: 'Analizamos las ventas y objetivos para cada región comercial de este año.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/temp_corp.png', color: '#06b6d4', aspect: '16:9' },
+  { name: 'Reporte Trimestral Comercial', tag: 'Negocios', script: 'Superamos las metas establecidas de ventas un doce por ciento en este período.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/temp_corp.png', color: '#7c3aed', aspect: '16:9' },
+
+  // === MARKETING (12) ===
+  { name: 'Anuncio Promocional de Verano', tag: 'Marketing', script: '¡Gran liquidación! Cincuenta por ciento de descuento en todo el catálogo de verano.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/temp_sales.png', color: '#f59e0b', aspect: '9:16' },
+  { name: 'Lanzamiento Alimentos Naturales', tag: 'Marketing', script: 'Nuestra nueva línea de congelados naturales, sin conservantes y listos en minutos.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/frost.jpg', color: '#06b6d4', aspect: '16:9' },
+  { name: 'Campaña Descuento Horizontal', tag: 'Marketing', script: 'Ofertas insuperables por tiempo limitado en nuestra tienda oficial online.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/temp_sales.png', color: '#fbbf24', aspect: '16:9' },
+  { name: 'Servicios de Agencia de Crecimiento', tag: 'Marketing', script: 'Te ayudamos a vender más diseñando embudos de conversión optimizados.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/infinity.jpg', color: '#6366f1', aspect: '16:9' },
+  { name: 'Promoción de Conferencia Tech', tag: 'Marketing', script: 'Asegura tu entrada para el evento de innovación digital más grande del año.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/frost.jpg', color: '#06b6d4', aspect: '16:9' },
+  { name: 'Anuncio de Marca e Imagen', tag: 'Marketing', script: 'Redefine tu estilo corporativo con nuestras soluciones de branding a la medida.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/roofpro.jpg', color: '#f97316', aspect: '16:9' },
+  { name: 'Descuento Black Friday', tag: 'Marketing', script: 'Las mejores ofertas del año ya están aquí. ¡Ahorra en todas tus compras!', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/temp_sales.png', color: '#ef4444', aspect: '9:16' },
+  { name: 'Promo Navidad y Regalos', tag: 'Marketing', script: 'Encuentra el regalo perfecto para tus seres queridos en nuestra selección navideña.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/temp_sales.png', color: '#10b981', aspect: '16:9' },
+  { name: 'Lanzamiento Software SaaS', tag: 'Marketing', script: 'Prueba la herramienta de automatización que está revolucionando el mercado.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/infinity.jpg', color: '#3b82f6', aspect: '16:9' },
+  { name: 'Oferta Especial Fin de Año', tag: 'Marketing', script: 'Despide el año con descuentos masivos de hasta el setenta por ciento.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/temp_sales.png', color: '#d946ef', aspect: '9:16' },
+  { name: 'Anuncio App Móvil', tag: 'Marketing', script: 'Descarga nuestra aplicación móvil hoy y obtén un cupón de bienvenida gratuito.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/temp_sales.png', color: '#8b5cf6', aspect: '9:16' },
+  { name: 'Promoción Agencia de Viajes', tag: 'Marketing', script: 'Viaja a los destinos más exóticos y vive experiencias inolvidables con nosotros.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/latin.jpg', color: '#06b6d4', aspect: '16:9' },
+
+  // === EDUCATIVO (12) ===
+  { name: 'Tutorial de Inteligencia Artificial', tag: 'Educativo', script: 'Hoy aprenderemos a entrenar modelos neuronales paso a paso.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#10b981', aspect: '9:16' },
+  { name: 'Curso de IA Corporativa', tag: 'Educativo', script: 'Entiende cómo implementar inteligencia artificial en tus procesos de negocio.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#10b981', aspect: '16:9' },
+  { name: 'Lección de Oratoria Moderna', tag: 'Educativo', script: 'Aprende a expresarte con claridad e impacto ante cualquier audiencia.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#a855f7', aspect: '16:9' },
+  { name: 'Consejos de Liderazgo Efectivo', tag: 'Educativo', script: 'Un buen líder inspira a su equipo a alcanzar su máximo potencial.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#7c3aed', aspect: '16:9' },
+  { name: 'Curso de Finanzas Básicas', tag: 'Educativo', script: 'Los principios de contabilidad y ahorro que todos deberíamos conocer.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/kcg.jpg', color: '#fbbf24', aspect: '16:9' },
+  { name: 'Introducción al Coding y Web', tag: 'Educativo', script: 'Aprende HTML y CSS desde cero para construir tus primeros sitios web.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/infinity.jpg', color: '#3b82f6', aspect: '16:9' },
+  { name: 'Tutorial de Diseño de UI', tag: 'Educativo', script: 'Cómo organizar colores, tipografías y layouts para interfaces de usuario.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#ec4899', aspect: '9:16' },
+  { name: 'Clase de Gestión del Tiempo', tag: 'Educativo', script: 'Técnicas de productividad para organizar tu jornada laboral de manera eficiente.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#14b8a6', aspect: '16:9' },
+  { name: 'Curso de Ventas Estratégicas', tag: 'Educativo', script: 'Técnicas de negociación avanzada para cerrar contratos de alto valor comercial.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#f97316', aspect: '16:9' },
+  { name: 'Lección de Redes Sociales', tag: 'Educativo', script: 'Cómo optimizar tus perfiles orgánicos y ganar seguidores de valor.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#ec4899', aspect: '9:16' },
+  { name: 'Curso de Gestión de Proyectos', tag: 'Educativo', script: 'Aprende metodologías ágiles como Scrum para coordinar tus equipos de desarrollo.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#6366f1', aspect: '16:9' },
+  { name: 'Introducción al SEO y Sem', tag: 'Educativo', script: 'Posiciona tu sitio web en los primeros resultados de búsqueda orgánicos.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/temp_edu.png', color: '#10b981', aspect: '16:9' },
+
+  // === NOTICIAS (10) ===
+  { name: 'Lanzamiento de Studio SDL', tag: 'Noticias', script: 'Synthetic Digital Labs lanza oficialmente su espacio de trabajo interactivo.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/temp_news.png', color: '#e11d48', aspect: '16:9' },
+  { name: 'Resumen Informativo Diario', tag: 'Noticias', script: 'Aquí están las tres noticias más relevantes de la jornada en sesenta segundos.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/temp_news.png', color: '#ef4444', aspect: '9:16' },
+  { name: 'Reporte del Cierre de Mercados', tag: 'Noticias', script: 'Las bolsas tecnológicas cierran hoy con ganancias récord en Wall Street.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/kcg.jpg', color: '#10b981', aspect: '16:9' },
+  { name: 'Última Hora Tecnología', tag: 'Noticias', script: 'Anuncian nuevos procesadores con aceleración de redes neuronales integrada.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/temp_news.png', color: '#3b82f6', aspect: '16:9' },
+  { name: 'Resumen Semanal de IA', tag: 'Noticias', script: 'Los avances más asombrosos en robótica e inteligencia artificial de la semana.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/temp_news.png', color: '#8b5cf6', aspect: '16:9' },
+  { name: 'Noticiero de Negocios Rápido', tag: 'Noticias', script: 'Grandes corporaciones incrementan su inversión en infraestructura en la nube.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/temp_news.png', color: '#fbbf24', aspect: '9:16' },
+  { name: 'Breve de Finanzas e Índices', tag: 'Noticias', script: 'El índice bursátil se mantiene estable frente a los últimos anuncios económicos.', avatar: 'av-roberto-biz', voice: 'v-roberto', thumb: 'thumbs/kcg.jpg', color: '#14b8a6', aspect: '16:9' },
+  { name: 'Noticias de Ciberseguridad', tag: 'Noticias', script: 'Nuevas regulaciones exigen mayor protección de datos en entornos empresariales.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/temp_news.png', color: '#f43f5e', aspect: '16:9' },
+  { name: 'Informativo de Emprendimiento', tag: 'Noticias', script: 'Crece la inversión de capital de riesgo en startups latinoamericanas.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/temp_news.png', color: '#d946ef', aspect: '9:16' },
+  { name: 'Tendencias Digitales Globales', tag: 'Noticias', script: 'El teletrabajo y la automatización redefinen el mercado laboral global.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/temp_news.png', color: '#6366f1', aspect: '16:9' },
+
+  // === SOCIAL (4) ===
+  { name: 'Gaming Torneo eSports', tag: 'Social', script: 'Regístrate hoy en el torneo y compite contra los mejores jugadores profesionales.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/vkingo.jpg', color: '#8b5cf6', aspect: '16:9' },
+  { name: 'Tips de Belleza y Skincare', tag: 'Social', script: 'Rutina natural de cinco pasos para mantener tu piel limpia e hidratada.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/latin.jpg', color: '#d946ef', aspect: '9:16' },
+  { name: 'Videojuegos y Streaming', tag: 'Social', script: 'Repasamos las jugadas más destacadas del torneo de shooter táctico de esta semana.', avatar: 'av-nova-fut', voice: 'v-lucas', thumb: 'thumbs/vkingo.jpg', color: '#8b5cf6', aspect: '9:16' },
+  { name: 'Salud Mente Sana', tag: 'Social', script: 'El bienestar empieza con una mente calmada y alimentación balanceada. Descarga la guía.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/latin.jpg', color: '#10b981', aspect: '9:16' },
+
+  // === E-COMMERCE (4) ===
+  { name: 'Colección Primavera Vestimenta', tag: 'E-commerce', script: 'Descubre los nuevos vestidos ligeros disponibles con envío gratuito.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/madeva.jpg', color: '#ec4899', aspect: '9:16' },
+  { name: 'Moda Tendencias Online', tag: 'E-commerce', script: 'Toda la colección de temporada con descuentos especiales comprando desde la web.', avatar: 'av-elena-pod', voice: 'v-elena', thumb: 'thumbs/madeva.jpg', color: '#ec4899', aspect: '16:9' },
+  { name: 'Review de Gadgets y Tecnología', tag: 'E-commerce', script: 'Analizamos los audífonos inalámbricos más recomendados de este año.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/infinity.jpg', color: '#3b82f6', aspect: '16:9' },
+  { name: 'Catálogo Calzado Deportivo', tag: 'E-commerce', script: 'Zapatillas de alto rendimiento con amortiguación premium ya en stock.', avatar: 'av-sofia-casual', voice: 'v-sofia', thumb: 'thumbs/temp_sales.png', color: '#f59e0b', aspect: '9:16' }
 ];
+
+const DEFAULT_TEMPLATES = templateBases.map((base, idx) => {
+  const isVertical = base.aspect === '9:16';
+  return {
+    id: `temp-${base.tag.toLowerCase().replace(/[^a-z0-9]/g, '')}-${idx + 1}`,
+    name: base.name,
+    tag: base.tag,
+    aspect: base.aspect,
+    avatar: base.avatar,
+    voice: base.voice,
+    script: base.script,
+    thumb: base.thumb,
+    layers: [
+      {
+        type: 'avatar',
+        avatarId: base.avatar,
+        top: isVertical ? 60 : 50,
+        left: isVertical ? 50 : (base.name.includes('Startup') || base.name.includes('Infinita') ? 25 : 80),
+        width: isVertical ? 300 : 280,
+        height: isVertical ? 300 : 280,
+        zIndex: 10
+      },
+      {
+        type: 'text',
+        text: base.name.toUpperCase(),
+        fontSize: isVertical ? 24 : 32,
+        fontStyle: "'Outfit', sans-serif",
+        color: base.color,
+        top: isVertical ? 15 : 20,
+        left: isVertical ? 50 : (base.name.includes('Startup') || base.name.includes('Infinita') ? 60 : 20),
+        width: isVertical ? 300 : 420,
+        height: isVertical ? 40 : 50,
+        zIndex: 20
+      },
+      {
+        type: 'text',
+        text: base.script.slice(0, 50) + '...',
+        fontSize: isVertical ? 16 : 18,
+        fontStyle: "'Inter', sans-serif",
+        color: '#ffffff',
+        top: isVertical ? 24 : 35,
+        left: isVertical ? 50 : (base.name.includes('Startup') || base.name.includes('Infinita') ? 60 : 20),
+        width: isVertical ? 280 : 400,
+        height: isVertical ? 40 : 60,
+        zIndex: 21
+      }
+    ]
+  };
+});
 
 const DEFAULT_PROJECTS = [
   { id: 'p-1', name: 'Vídeo Comercial AI Studio', type: 'video', date: '2026-06-01', duration: '15s', details: 'Horizontal (16:9) • Voz Sofía', avatarImg: 'assets/avatar_sofia.png' },
@@ -386,12 +496,12 @@ function renderHomeWidgets() {
 
   if (dashTemplates) {
     dashTemplates.innerHTML = '';
-    DEFAULT_TEMPLATES.slice(0, 3).forEach(temp => {
+    DEFAULT_TEMPLATES.slice(0, 4).forEach(temp => {
       const card = document.createElement('div');
       card.className = 'template-card';
       card.innerHTML = `
         <div class="proj-thumb-box">
-          <img src="thumbs/${temp.id.replace('-', '_')}.png" alt="${temp.name}">
+          <img src="${temp.thumb}" alt="${temp.name}">
           <span class="proj-duration">${temp.aspect}</span>
         </div>
         <div class="proj-info">
@@ -430,17 +540,23 @@ function renderHomeWidgets() {
 }
 
 // --- TEMPLATES LIBRARY ---
+let selectedTemplateFilter = 'all';
+
 function renderTemplatesLibrary() {
   const grid = document.getElementById('allTemplatesGrid');
   if (!grid) return;
   
   grid.innerHTML = '';
-  DEFAULT_TEMPLATES.forEach(temp => {
+  const filtered = selectedTemplateFilter === 'all'
+    ? DEFAULT_TEMPLATES
+    : DEFAULT_TEMPLATES.filter(temp => temp.tag === selectedTemplateFilter);
+
+  filtered.forEach(temp => {
     const card = document.createElement('div');
     card.className = 'template-card';
     card.innerHTML = `
       <div class="proj-thumb-box">
-        <img src="thumbs/${temp.id.replace('-', '_')}.png" alt="${temp.name}">
+        <img src="${temp.thumb}" alt="${temp.name}">
         <span class="proj-duration">${temp.aspect}</span>
       </div>
       <div class="proj-info">
@@ -452,6 +568,16 @@ function renderTemplatesLibrary() {
     grid.appendChild(card);
   });
 }
+
+// Bind template category filter buttons
+document.querySelectorAll('.btn-filter-temp').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-filter-temp').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTemplateFilter = btn.dataset.filter;
+    renderTemplatesLibrary();
+  });
+});
 
 // Load template click handler
 document.addEventListener('click', (e) => {
@@ -469,40 +595,34 @@ document.addEventListener('click', (e) => {
           script: temp.script,
           bg: 'dark',
           duration: 6,
-          layers: [
-            {
-              id: 'layer-avatar-' + Date.now(),
-              type: 'avatar',
-              avatarId: temp.avatar,
-              top: 50,
-              left: 50,
-              width: 260,
-              height: 260,
-              zIndex: 10
-            },
-            {
-              id: 'layer-text-' + (Date.now() + 1),
-              type: 'text',
-              text: temp.name,
-              fontSize: 26,
-              fontStyle: "'Inter', sans-serif",
-              color: '#ffffff',
-              top: 25,
-              left: 50,
-              width: 320,
-              height: 60,
-              zIndex: 20
-            }
-          ]
+          layers: temp.layers.map((l, i) => {
+            return {
+              id: `layer-${l.type}-${Date.now()}-${i}`,
+              type: l.type,
+              avatarId: l.avatarId,
+              text: l.text,
+              fontSize: l.fontSize,
+              fontStyle: l.fontStyle,
+              color: l.color,
+              top: l.top,
+              left: l.left,
+              width: l.width,
+              height: l.height,
+              zIndex: l.zIndex
+            };
+          })
         }
       ];
       currentSceneIndex = 0;
       activeSelectedLayerId = null;
+      loadSceneStateIntoCanvas(currentSceneIndex);
+      updateInspectorInputs();
       switchView('editor');
       showToast('Plantilla Cargada', `Se cargó "${temp.name}" en el lienzo.`, 'success');
     }
   }
 });
+
 
 // --- AVATARS LIBRARY & WEB RECORDING ---
 let selectedAvatarFilter = 'all';
@@ -555,6 +675,130 @@ const webcamVideo = document.getElementById('webcamVideo');
 const webcamPlaceholder = document.getElementById('webcamPlaceholder');
 const instantAvatarEthicsCheck = document.getElementById('instantAvatarEthicsCheck');
 
+let simulatedCanvasInterval = null;
+
+function getSimulatedStream() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 640;
+  canvas.height = 480;
+  const ctx = canvas.getContext('2d');
+  
+  let frame = 0;
+  simulatedCanvasInterval = setInterval(() => {
+    frame++;
+    // Clear background
+    ctx.fillStyle = '#1e1b4b'; // Dark indigo/purple
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grid lines
+    ctx.strokeStyle = '#312e81';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < canvas.width; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+    
+    // Draw face/avatar outline representation in the center
+    ctx.fillStyle = '#4f46e5'; // Indigo
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2 + 50, 100, 0, Math.PI, true);
+    ctx.fill();
+    
+    ctx.beginPath();
+    // Head circle
+    ctx.arc(canvas.width / 2, canvas.height / 2 - 50, 60, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw eyes blinking
+    ctx.fillStyle = '#ffffff';
+    const eyeY = canvas.height / 2 - 60;
+    const leftEyeX = canvas.width / 2 - 20;
+    const rightEyeX = canvas.width / 2 + 20;
+    
+    if (Math.floor(frame / 60) % 3 !== 0) {
+      ctx.beginPath();
+      ctx.arc(leftEyeX, eyeY, 8, 0, Math.PI * 2);
+      ctx.arc(rightEyeX, eyeY, 8, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // Blinking
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(leftEyeX - 10, eyeY);
+      ctx.lineTo(leftEyeX + 10, eyeY);
+      ctx.moveTo(rightEyeX - 10, eyeY);
+      ctx.lineTo(rightEyeX + 10, eyeY);
+      ctx.stroke();
+    }
+    
+    // Draw mouth moving (talking simulation)
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    const mouthOpen = 5 + Math.abs(Math.sin(frame * 0.15)) * 15;
+    ctx.ellipse(canvas.width / 2, canvas.height / 2 - 15, 15, mouthOpen, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw scanning border overlay
+    ctx.strokeStyle = '#a855f7'; // Purple accent
+    ctx.lineWidth = 4;
+    ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+    
+    // Glowing REC label
+    if (Math.floor(frame / 15) % 2 === 0) {
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(50, 50, 10, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px "Outfit", sans-serif';
+    ctx.fillText('CÁMARA SIMULADA', 70, 56);
+    
+    // Status text
+    ctx.fillStyle = '#a855f7';
+    ctx.font = '14px "Inter", sans-serif';
+    ctx.fillText('PRUEBA DE CLON DIGITAL ACTIVA', 50, canvas.height - 50);
+    
+    // Draw sine waves at the bottom representing sound
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let x = 50; x < canvas.width - 50; x++) {
+      const y = canvas.height - 90 + Math.sin((x + frame * 3) * 0.05) * 10 * Math.sin(frame * 0.02);
+      if (x === 50) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }, 1000 / 30);
+  
+  return canvas.captureStream(30);
+}
+
+function setupSimulatedWebcam(err = null) {
+  let msg = 'Origen inseguro o sin hardware de cámara. Usando cámara simulada para pruebas.';
+  if (err && err.name === 'NotAllowedError') {
+    msg = 'Permiso de cámara denegado. Usando cámara simulada para pruebas.';
+  }
+  showToast('Cámara Simulada', msg, 'info');
+
+  const stream = getSimulatedStream();
+  webcamStream = stream;
+  webcamVideo.srcObject = stream;
+  webcamVideo.style.display = 'block';
+  webcamPlaceholder.style.display = 'none';
+  btnToggleWebcam.innerHTML = '<i class="fa-solid fa-video-slash"></i> Desactivar Cámara';
+  btnStartInstantAvatar.disabled = !instantAvatarEthicsCheck.checked;
+}
+
 if (instantAvatarEthicsCheck) {
   instantAvatarEthicsCheck.addEventListener('change', () => {
     if (webcamStream) {
@@ -566,6 +810,10 @@ if (instantAvatarEthicsCheck) {
 if (btnToggleWebcam) {
   btnToggleWebcam.addEventListener('click', () => {
     if (!webcamStream) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setupSimulatedWebcam();
+        return;
+      }
       navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         .then(stream => {
           webcamStream = stream;
@@ -578,7 +826,7 @@ if (btnToggleWebcam) {
         })
         .catch(err => {
           console.warn('Webcam permission denied or error:', err);
-          showToast('Acceso Denegado', 'No se pudo acceder a tu cámara o micrófono.', 'error');
+          setupSimulatedWebcam(err);
         });
     } else {
       stopWebcamStream();
@@ -587,8 +835,14 @@ if (btnToggleWebcam) {
 }
 
 function stopWebcamStream() {
+  if (simulatedCanvasInterval) {
+    clearInterval(simulatedCanvasInterval);
+    simulatedCanvasInterval = null;
+  }
   if (webcamStream) {
-    webcamStream.getTracks().forEach(track => track.stop());
+    if (typeof webcamStream.getTracks === 'function') {
+      webcamStream.getTracks().forEach(track => track.stop());
+    }
     webcamStream = null;
   }
   webcamVideo.style.display = 'none';
@@ -1181,7 +1435,7 @@ function renderEditorDrawerTemplates() {
     div.className = 'drawer-av-card';
     div.style.aspectRatio = '16/9';
     div.innerHTML = `
-      <img src="thumbs/${temp.id.replace('-', '_')}.png" style="width:100%; height:100%; object-fit:cover; border-radius:4px;">
+      <img src="${temp.thumb}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;">
       <div class="drawer-av-name">${temp.name}</div>
     `;
     div.addEventListener('click', () => {
@@ -1190,32 +1444,24 @@ function renderEditorDrawerTemplates() {
       scenes[currentSceneIndex].script = temp.script;
       
       // Update scene layers to match the template!
-      scenes[currentSceneIndex].layers = [
-        {
-          id: 'layer-avatar-' + Date.now(),
-          type: 'avatar',
-          avatarId: temp.avatar,
-          top: 50,
-          left: 50,
-          width: 260,
-          height: 260,
-          zIndex: 10
-        },
-        {
-          id: 'layer-text-' + (Date.now() + 1),
-          type: 'text',
-          text: temp.name,
-          fontSize: 28,
-          fontStyle: "'Inter', sans-serif",
-          color: '#ffffff',
-          top: 25,
-          left: 50,
-          width: 320,
-          height: 60,
-          zIndex: 20
-        }
-      ];
+      scenes[currentSceneIndex].layers = temp.layers.map((l, i) => {
+        return {
+          id: `layer-${l.type}-${Date.now()}-${i}`,
+          type: l.type,
+          avatarId: l.avatarId,
+          text: l.text,
+          fontSize: l.fontSize,
+          fontStyle: l.fontStyle,
+          color: l.color,
+          top: l.top,
+          left: l.left,
+          width: l.width,
+          height: l.height,
+          zIndex: l.zIndex
+        };
+      });
       loadSceneStateIntoCanvas(currentSceneIndex);
+      updateInspectorInputs();
       showToast('Plantilla Aplicada', `Se inyectó en la escena actual.`, 'success');
     });
     container.appendChild(div);
