@@ -23,7 +23,7 @@ const DEFAULT_TEMPLATES = [
   { id: 'temp-corp', name: 'Resultados Corporativos', tag: 'Negocios', aspect: '16:9', avatar: 'av-roberto', voice: 'v-roberto', script: 'Estimado equipo de dirección, hoy les presento el balance comercial y los resultados destacados del trimestre. Hemos superado los objetivos fijados en un doce por ciento.' },
   { id: 'temp-sales', name: 'Anuncio Promocional Redes', tag: 'Marketing', aspect: '9:16', avatar: 'av-sofia', voice: 'v-sofia', script: '¿Cansado de gastar miles de dólares en estudios de grabación? Con AI Studio puedes crear presentadores interactivos para tus productos en menos de un minuto. ¡Haz clic para probarlo gratis!' },
   { id: 'temp-edu', name: 'Tutorial de Clonación', tag: 'Educativo', aspect: '9:16', avatar: 'av-elena', voice: 'v-elena', script: 'Hola a todos, hoy aprenderemos cómo puedes clonar tu propia voz de forma ética utilizando nuestro panel avanzado de locución. Tan solo requiere diez segundos de audio limpio.' },
-  { id: 'temp-news', name: 'Noticias Tecnología IA', tag: 'Noticias', aspect: '16:9', avatar: 'av-nova', voice: 'v-lucas', script: 'Última hora: Synthetic Digital Labs lanza oficialmente su espacio de trabajo rediseñado al estilo HeyGen, unificando avatares y línea de tiempo interactiva.' }
+  { id: 'temp-news', name: 'Noticias Tecnología IA', tag: 'Noticias', aspect: '16:9', avatar: 'av-nova', voice: 'v-lucas', script: 'Última hora: Synthetic Digital Labs lanza oficialmente su espacio de trabajo rediseñado, unificando avatares y línea de tiempo interactiva.' }
 ];
 
 const DEFAULT_PROJECTS = [
@@ -70,45 +70,56 @@ function safeSetItem(key, val) {
 
 // --- INITIALIZE DATABASE ---
 function initLocalStorage() {
-  const avatars = safeGetItem('sdl_avatars');
-  if (!avatars) {
+  const currentDbVersion = 'v2.2';
+  const storedDbVersion = safeGetItem('sdl_db_version');
+
+  if (storedDbVersion !== currentDbVersion) {
     safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
+    safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
+    safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
+    safeSetItem('sdl_credits', '120');
+    safeSetItem('sdl_db_version', currentDbVersion);
   } else {
-    try {
-      const parsed = JSON.parse(avatars);
-      if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id')) {
+    const avatars = safeGetItem('sdl_avatars');
+    if (!avatars) {
+      safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
+    } else {
+      try {
+        const parsed = JSON.parse(avatars);
+        if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id')) {
+          safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
+        }
+      } catch (e) {
         safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
       }
-    } catch (e) {
-      safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
     }
-  }
 
-  const voices = safeGetItem('sdl_voices');
-  if (!voices) {
-    safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
-  } else {
-    try {
-      const parsed = JSON.parse(voices);
-      if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id') || !parsed[0].hasOwnProperty('lang')) {
+    const voices = safeGetItem('sdl_voices');
+    if (!voices) {
+      safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
+    } else {
+      try {
+        const parsed = JSON.parse(voices);
+        if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id') || !parsed[0].hasOwnProperty('lang')) {
+          safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
+        }
+      } catch (e) {
         safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
       }
-    } catch (e) {
-      safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
     }
-  }
 
-  const projects = safeGetItem('sdl_projects');
-  if (!projects) {
-    safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
-  } else {
-    try {
-      const parsed = JSON.parse(projects);
-      if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id')) {
+    const projects = safeGetItem('sdl_projects');
+    if (!projects) {
+      safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
+    } else {
+      try {
+        const parsed = JSON.parse(projects);
+        if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id')) {
+          safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
+        }
+      } catch (e) {
         safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
       }
-    } catch (e) {
-      safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
     }
   }
 
@@ -398,7 +409,7 @@ function enterStudio(targetView = 'dashboard') {
   renderVoicesLibrary();
   renderLibrary();
   
-  showToast('¡Bienvenido al AI Studio!', 'Espacio de trabajo listo estilo HeyGen', 'info');
+  showToast('¡Bienvenido al AI Studio!', 'Espacio de trabajo listo', 'info');
 }
 
 function exitStudio() {
@@ -425,6 +436,9 @@ function switchView(viewName) {
     else if (viewName === 'voices') viewTitle.textContent = 'Biblioteca de Voces';
     else if (viewName === 'editor') viewTitle.textContent = 'Editor de Video Canvas';
     else if (viewName === 'library') viewTitle.textContent = 'Biblioteca y Proyectos';
+    else if (viewName === 'pricing') viewTitle.textContent = 'Planes y Precios';
+    else if (viewName === 'policies') viewTitle.textContent = 'Políticas Legales';
+    else if (viewName === 'resources') viewTitle.textContent = 'Ayuda y Recursos';
     else viewTitle.textContent = formattedTitle;
   }
 }
@@ -1541,6 +1555,62 @@ document.querySelectorAll('#view-avatars .hg-tab-btn').forEach(btn => {
   });
 });
 
+// Bind sub-tabs inside Policies
+document.querySelectorAll('#view-policies .hg-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#view-policies .hg-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const tab = btn.dataset.tab;
+    const panels = [
+      'pol-privacy-panel',
+      'pol-refund-panel',
+      'pol-ethics-panel'
+    ];
+
+    panels.forEach(p => {
+      const el = document.getElementById(p);
+      if (el) {
+        if (p.endsWith(tab)) el.classList.add('active');
+        else el.classList.remove('active');
+      }
+    });
+  });
+});
+
+// Bind payment settings
+const paymentForm = document.getElementById('paymentForm');
+if (paymentForm) {
+  paymentForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    showToast('Tarjeta Guardada', 'Tus datos de facturación se han actualizado correctamente.', 'success');
+    showModal('Método de Pago Actualizado', 'Tu método de pago principal ha sido actualizado. Las futuras renovaciones automáticas se realizarán a esta tarjeta.', true);
+  });
+}
+
+const btnManageSubscription = document.getElementById('btnManageSubscription');
+if (btnManageSubscription) {
+  btnManageSubscription.addEventListener('click', () => {
+    showToast('Suscripción Activa', 'Estás suscrito al plan Creador Pro por $29/mes.', 'info');
+  });
+}
+
+const btnUpgradeEnterprise = document.getElementById('btnUpgradeEnterprise');
+if (btnUpgradeEnterprise) {
+  btnUpgradeEnterprise.addEventListener('click', () => {
+    showModal('Suscripción Empresarial', 'Para mejorar al plan Empresarial de $99/mes, ponte en contacto con soporte técnico a infoweb@syntheticdigitallab.com o al +1 786-872-6865.', true);
+  });
+}
+
+const studioSupportForm = document.getElementById('studioSupportForm');
+if (studioSupportForm) {
+  studioSupportForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    showToast('Mensaje Enviado', 'Hemos recibido tu consulta técnica. Nos pondremos en contacto contigo en tu correo de perfil.', 'success');
+    document.getElementById('supportMsgText').value = '';
+  });
+}
+
 // Mock Download button action
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.btn-dl-mock');
@@ -2011,7 +2081,7 @@ class NovaAssistant {
         }
         // Interactuar con la página
         else if (transcript.includes('interactuar') || transcript.includes('cómo funciona') || transcript.includes('cómo se usa') || transcript.includes('qué hacer') || transcript.includes('usar la página') || transcript.includes('botones') || transcript.includes('estudio')) {
-          this.speak("Puedes interactuar con nuestra aplicación navegando por las secciones del menú. Al entrar al AI Studio, verás un panel completo similar al de HeyGen, donde puedes cambiar de vista, elegir avatares, redactar guiones con IA, previsualizar audios y renderizar videos en Full HD.", true);
+          this.speak("Puedes interactuar con nuestra aplicación navegando por las secciones del menú. Al entrar al AI Studio, verás un panel completo donde puedes cambiar de vista, elegir avatares, redactar guiones con IA, previsualizar audios y renderizar videos en Full HD.", true);
           matched = true;
         }
         // Crear avatar
@@ -2068,13 +2138,13 @@ function initTheme() {
   const themeToggleBtn = document.getElementById('themeToggleBtn');
   if (!themeToggleBtn) return;
 
-  const currentTheme = safeGetItem('sdl_theme', 'dark');
-  if (currentTheme === 'light') {
-    document.body.classList.add('light-theme');
-    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-  } else {
+  const currentTheme = safeGetItem('sdl_theme', 'light');
+  if (currentTheme === 'dark') {
     document.body.classList.remove('light-theme');
     themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+  } else {
+    document.body.classList.add('light-theme');
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
   }
 
   themeToggleBtn.addEventListener('click', () => {

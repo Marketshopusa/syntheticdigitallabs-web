@@ -28,9 +28,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.2">
 </head>
-<body>
+<body class="light-theme">
 
   <!-- Tech Grid Background & Glow Effects -->
   <div class="tech-grid"></div>
@@ -505,16 +505,16 @@
   </div>
 
   <!-- ==========================================================================
-       PART 2: AI STUDIO WORKSPACE (HEYGEN WORKSPACE CLONE)
+       PART 2: AI STUDIO WORKSPACE (AI WORKSPACE CLONE)
        ========================================================================== -->
   <div id="ai-studio-app" style="display: none;">
-    <!-- Sidebar Navigation (HeyGen Style) -->
+    <!-- Sidebar Navigation (Studio Style) -->
     <aside class="studio-sidebar" id="studioSidebar">
       <div class="sidebar-logo">
         <img src="assets/logo.png" alt="SDL Brain Logo">
         <div class="logo-text">
           <span class="brand-name">SDL STUDIO</span>
-          <span class="brand-sub">HEYGEN MODE</span>
+          <span class="brand-sub">AI MODE</span>
         </div>
       </div>
 
@@ -536,6 +536,15 @@
         </div>
         <div class="menu-item" data-view="library">
           <i class="fa-solid fa-folder-open"></i><span>Biblioteca</span>
+        </div>
+        <div class="menu-item" data-view="pricing">
+          <i class="fa-solid fa-tags"></i><span>Planes y Precios</span>
+        </div>
+        <div class="menu-item" data-view="policies">
+          <i class="fa-solid fa-shield-halved"></i><span>Políticas</span>
+        </div>
+        <div class="menu-item" data-view="resources">
+          <i class="fa-solid fa-circle-question"></i><span>Ayuda y Soporte</span>
         </div>
         <div class="menu-item" data-view="settings">
           <i class="fa-solid fa-gear"></i><span>Ajustes</span>
@@ -1092,6 +1101,263 @@
           </div>
         </section>
 
+        <!-- 2.8 PLANES Y PRECIOS (PRICING & BILLING) VIEW PANEL -->
+        <section class="studio-view" id="view-pricing">
+          <div class="view-header-description">
+            <p>Gestiona tu plan de suscripción, consulta tu historial de facturación y adquiere créditos adicionales para generar videos y clonar voces.</p>
+          </div>
+          
+          <div class="pricing-workspace-layout">
+            <!-- Plans Grid -->
+            <div class="plans-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 35px;">
+              <!-- Plan 1 -->
+              <div class="plan-card glass-card" style="padding: 20px; border-radius: 12px; border: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 12px;">
+                <h3>Demo Gratuito</h3>
+                <div class="plan-price" style="font-size: 1.8rem; font-weight: bold;">$0 <span style="font-size: 0.9rem; color: var(--text-muted);">/ siempre libre</span></div>
+                <ul class="plan-features" style="list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 8px;">
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> 10 Créditos mensuales</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> 3 Avatares estándar</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Voces estándar</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Generación de Audio</li>
+                </ul>
+                <button class="btn-secondary w-full" style="margin-top: auto;" disabled>Plan Actual</button>
+              </div>
+              
+              <!-- Plan 2 -->
+              <div class="plan-card glass-card popular" style="padding: 20px; border-radius: 12px; border: 2px solid var(--neon-purple); position: relative; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-glow-purple);">
+                <div class="plan-badge" style="position: absolute; top: -12px; right: 15px; background: var(--gradient-magenta); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">Plan Activo</div>
+                <h3>Creador Pro</h3>
+                <div class="plan-price" style="font-size: 1.8rem; font-weight: bold;">$29 <span style="font-size: 0.9rem; color: var(--text-muted);">/ mes</span></div>
+                <ul class="plan-features" style="list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 8px;">
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> 150 Créditos mensuales</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> Avatares premium e ilimitados</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> Voces ultra-realistas</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> Clonación de 3 voces</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> Videos en 1080p sin marca</li>
+                </ul>
+                <button class="btn-primary w-full" style="margin-top: auto;" id="btnManageSubscription">Gestionar Plan</button>
+              </div>
+              
+              <!-- Plan 3 -->
+              <div class="plan-card glass-card" style="padding: 20px; border-radius: 12px; border: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 12px;">
+                <h3>Empresarial</h3>
+                <div class="plan-price" style="font-size: 1.8rem; font-weight: bold;">$99 <span style="font-size: 0.9rem; color: var(--text-muted);">/ mes</span></div>
+                <ul class="plan-features" style="list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 8px;">
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Créditos ilimitados</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Avatares personalizados en 4K</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Clonación de voz ilimitada</li>
+                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Integración API completa</li>
+                </ul>
+                <button class="btn-secondary w-full" style="margin-top: auto;" id="btnUpgradeEnterprise">Mejorar a Enterprise</button>
+              </div>
+            </div>
+
+            <!-- Billing Dashboard and Checkout Form -->
+            <div class="split-info-card glass-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 25px; border-radius: 12px; border: 1px solid var(--border-light);">
+              <div class="split-left" style="display: flex; flex-direction: column; gap: 12px;">
+                <h3><i class="fa-solid fa-credit-card gradient-text"></i> Método de Pago</h3>
+                <p>Configura o actualiza tu tarjeta de crédito para la renovación automática mensual.</p>
+                
+                <form id="paymentForm" class="payment-form-sim" style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
+                  <div class="form-group">
+                    <label for="cardName" style="display: block; margin-bottom: 5px; font-weight: 500;"><i class="fa-solid fa-user"></i> Nombre en la Tarjeta</label>
+                    <input type="text" id="cardName" class="form-input" placeholder="Ej. Juan Pérez" value="Usuario SDL" style="width: 100%;" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="cardNumber" style="display: block; margin-bottom: 5px; font-weight: 500;"><i class="fa-solid fa-credit-card"></i> Número de Tarjeta</label>
+                    <input type="text" id="cardNumber" class="form-input" placeholder="•••• •••• •••• 4242" value="•••• •••• •••• 5678" style="width: 100%;" required>
+                  </div>
+                  
+                  <div class="form-row" style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                      <label for="cardExpiry" style="display: block; margin-bottom: 5px; font-weight: 500;"><i class="fa-solid fa-calendar"></i> Vencimiento</label>
+                      <input type="text" id="cardExpiry" class="form-input" placeholder="MM/AA" value="12/29" style="width: 100%;" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                      <label for="cardCvv" style="display: block; margin-bottom: 5px; font-weight: 500;"><i class="fa-solid fa-lock"></i> CVV</label>
+                      <input type="password" id="cardCvv" class="form-input" placeholder="•••" value="•••" style="width: 100%;" required>
+                    </div>
+                  </div>
+                  
+                  <button type="submit" class="btn-primary w-full" id="btnSavePayment" style="margin-top: 10px;"><i class="fa-solid fa-floppy-disk"></i> Guardar Tarjeta de Crédito</button>
+                </form>
+              </div>
+              
+              <div class="split-right" style="display: flex; flex-direction: column; gap: 12px;">
+                <h3>Historial de Facturas</h3>
+                <div class="table-responsive" style="margin-top: 15px;">
+                  <table class="billing-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                    <thead>
+                      <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-muted);">
+                        <th style="padding: 10px 0;">Factura</th>
+                        <th style="padding: 10px 0;">Fecha</th>
+                        <th style="padding: 10px 0;">Concepto</th>
+                        <th style="padding: 10px 0;">Total</th>
+                        <th style="padding: 10px 0;">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="border-bottom: 1px solid var(--border-light);">
+                        <td style="padding: 12px 0;">INV-004</td>
+                        <td style="padding: 12px 0;">05/06/2026</td>
+                        <td style="padding: 12px 0;">Suscripción Creador Pro</td>
+                        <td style="padding: 12px 0;">$29.00 USD</td>
+                        <td style="padding: 12px 0; color: var(--neon-cyan); font-weight: bold;">Pagado</td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--border-light);">
+                        <td style="padding: 12px 0;">INV-003</td>
+                        <td style="padding: 12px 0;">05/05/2026</td>
+                        <td style="padding: 12px 0;">Suscripción Creador Pro</td>
+                        <td style="padding: 12px 0;">$29.00 USD</td>
+                        <td style="padding: 12px 0; color: var(--neon-cyan); font-weight: bold;">Pagado</td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--border-light);">
+                        <td style="padding: 12px 0;">INV-002</td>
+                        <td style="padding: 12px 0;">05/04/2026</td>
+                        <td style="padding: 12px 0;">Suscripción Creador Pro</td>
+                        <td style="padding: 12px 0;">$29.00 USD</td>
+                        <td style="padding: 12px 0; color: var(--neon-cyan); font-weight: bold;">Pagado</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2.9 POLÍTICAS LEGALES (POLICIES) VIEW PANEL -->
+        <section class="studio-view" id="view-policies">
+          <div class="view-header-description">
+            <p>Consulta nuestro marco regulatorio, las políticas de seguridad, las normas éticas de clonación de voz y las garantías de reembolso.</p>
+          </div>
+          
+          <div class="policies-container" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Tab controllers for policies -->
+            <div class="tabs-header-hg">
+              <button class="hg-tab-btn active" data-tab="pol-privacy">Privacidad de Datos</button>
+              <button class="hg-tab-btn" data-tab="pol-refund">Políticas de Reembolso</button>
+              <button class="hg-tab-btn" data-tab="pol-ethics">Seguridad y Ética</button>
+            </div>
+            
+            <!-- Privacy Panel -->
+            <div class="hg-tab-content active" id="pol-privacy-panel">
+              <div class="glass-card" style="padding: 25px; line-height: 1.6; border-radius: 12px; border: 1px solid var(--border-light);">
+                <h3><i class="fa-solid fa-user-shield gradient-text"></i> Política de Privacidad de Synthetic Digital Labs</h3>
+                <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">Última actualización: 8 de Junio de 2026</p>
+                <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 15px 0;">
+                
+                <h4 style="margin-top: 15px; font-weight: bold;">1. Recopilación de Datos</h4>
+                <p style="color: var(--text-main); font-size: 0.95rem;">Recopilamos imágenes de rostros cargadas por el usuario para la creación de Photo Avatars, muestras de audio y grabaciones de voz para el módulo de clonación. Toda esta información se almacena localmente y de manera encriptada en nuestros servidores para el uso exclusivo del perfil creador.</p>
+                
+                <h4 style="margin-top: 15px; font-weight: bold;">2. Seguridad y Cifrado</h4>
+                <p style="color: var(--text-main); font-size: 0.95rem;">Utilizamos protocolos SSL/TLS estándar para la transmisión segura de archivos de audio y video. Los datos biométricos y de locución están protegidos mediante cifrado AES-256 de extremo a extremo, evitando accesos no autorizados.</p>
+                
+                <h4 style="margin-top: 15px; font-weight: bold;">3. Derechos del Usuario</h4>
+                <p style="color: var(--text-main); font-size: 0.95rem;">En estricto cumplimiento con las normativas internacionales de protección de datos (GDPR y CCPA), tienes derecho a ver, descargar y eliminar de forma definitiva cualquier avatar o voz clonada de tu biblioteca en cualquier momento.</p>
+              </div>
+            </div>
+            
+            <!-- Refund Panel -->
+            <div class="hg-tab-content" id="pol-refund-panel">
+              <div class="glass-card" style="padding: 25px; line-height: 1.6; border-radius: 12px; border: 1px solid var(--border-light);">
+                <h3><i class="fa-solid fa-hand-holding-dollar gradient-text"></i> Política de Reembolso y Garantía</h3>
+                <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">Última actualización: 8 de Junio de 2026</p>
+                <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 15px 0;">
+                
+                <h4 style="margin-top: 15px; font-weight: bold;">Garantía de Devolución de 14 Días</h4>
+                <p style="color: var(--text-main); font-size: 0.95rem;">En Synthetic Digital Labs queremos que estés completamente satisfecho con la calidad de nuestros avatares y voces sintéticas. Si por alguna razón la plataforma no cumple tus expectativas, puedes solicitar un reembolso total del importe del plan dentro de los primeros 14 días posteriores a la suscripción.</p>
+                
+                <h4 style="margin-top: 15px; font-weight: bold;">Condiciones del Reembolso:</h4>
+                <ul style="padding-left: 20px; color: var(--text-main); font-size: 0.95rem; margin: 10px 0; display: flex; flex-direction: column; gap: 5px;">
+                  <li>Haber consumido menos de 30 créditos del saldo total asignado en el plan.</li>
+                  <li>No haber realizado clonaciones neuronales de voz en el perfil durante el periodo de prueba.</li>
+                  <li>Enviar la solicitud formal a nuestro equipo a través del formulario de soporte técnico o al correo <strong>infoweb@syntheticdigitallab.com</strong>.</li>
+                </ul>
+                
+                <p style="margin-top: 15px; color: var(--text-main); font-size: 0.95rem;">Una vez aprobada la solicitud, el importe se reintegrará automáticamente en tu tarjeta de crédito o método de pago original en un plazo de 3 a 5 días hábiles.</p>
+              </div>
+            </div>
+            
+            <!-- Ethics Panel -->
+            <div class="hg-tab-content" id="pol-ethics-panel">
+              <div class="glass-card" style="padding: 25px; line-height: 1.6; border-radius: 12px; border: 1px solid var(--border-light);">
+                <h3><i class="fa-solid fa-scale-balanced gradient-text"></i> Declaración Ética y Directrices de Seguridad</h3>
+                <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">Última actualización: 8 de Junio de 2026</p>
+                <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 15px 0;">
+                
+                <h4 style="margin-top: 15px; font-weight: bold;">1. Uso Ético de la Inteligencia Artificial</h4>
+                <p style="color: var(--text-main); font-size: 0.95rem;">Nuestra plataforma está diseñada exclusivamente para la producción creativa de contenido educativo, marketing corporativo y entretenimiento. Queda terminantemente prohibida la generación de videos o clonación de voces que involucren suplantación de identidad sin autorización expresa de terceros, contenido difamatorio, noticias falsas o acoso.</p>
+                
+                <h4 style="margin-top: 15px; font-weight: bold;">2. Consentimiento de Voz Obligatorio</h4>
+                <p style="color: var(--text-main); font-size: 0.95rem;">Antes de clonar una voz, el usuario debe marcar la Declaración Jurada confirmando que posee los derechos legales de la voz sintetizada. El sistema registrará la dirección IP y la hora de aceptación del consentimiento como control de seguridad digital.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2.10 AYUDA Y RECURSOS (HELP & RESOURCES) VIEW PANEL -->
+        <section class="studio-view" id="view-resources">
+          <div class="view-header-description">
+            <p>Accede a guías interactivas, tutoriales paso a paso y contacta a soporte técnico para resolver cualquier problema.</p>
+          </div>
+          
+          <div class="resources-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
+            <!-- Tutorials Card -->
+            <div class="glass-card" style="padding: 25px; border-radius: 12px; border: 1px solid var(--border-light);">
+              <h3><i class="fa-solid fa-circle-play gradient-text"></i> Video Tutoriales Rápidos</h3>
+              <p style="margin-bottom: 15px; color: var(--text-muted);">Aprende a dominar las funciones de SDL Studio en pocos minutos.</p>
+              
+              <div class="tutorial-list" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="tutorial-item-card" style="display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-light);">
+                  <div class="tut-thumb" style="width: 80px; height: 50px; background: #080517; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--neon-purple); border: 1px solid var(--border-light); cursor: pointer;"><i class="fa-solid fa-play"></i></div>
+                  <div class="tut-info">
+                    <h5 style="margin: 0; font-size: 0.9rem;">Cómo generar tu primer video con IA</h5>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Duración: 2m 15s</span>
+                  </div>
+                </div>
+                <div class="tutorial-item-card" style="display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-light);">
+                  <div class="tut-thumb" style="width: 80px; height: 50px; background: #080517; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--neon-cyan); border: 1px solid var(--border-light); cursor: pointer;"><i class="fa-solid fa-play"></i></div>
+                  <div class="tut-info">
+                    <h5 style="margin: 0; font-size: 0.9rem;">Guía avanzada para clonar voces con IA</h5>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Duración: 4m 05s</span>
+                  </div>
+                </div>
+                <div class="tutorial-item-card" style="display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-light);">
+                  <div class="tut-thumb" style="width: 80px; height: 50px; background: #080517; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--neon-purple); border: 1px solid var(--border-light); cursor: pointer;"><i class="fa-solid fa-play"></i></div>
+                  <div class="tut-info">
+                    <h5 style="margin: 0; font-size: 0.9rem;">Creación de avatares desde una foto real</h5>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Duración: 3m 20s</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Support Card -->
+            <div class="glass-card" style="padding: 25px; border-radius: 12px; border: 1px solid var(--border-light);">
+              <h3><i class="fa-solid fa-headset gradient-text"></i> Soporte Técnico Directo</h3>
+              <p style="margin-bottom: 15px; color: var(--text-muted);">¿Tienes alguna pregunta o necesitas ayuda especializada? Envíanos un mensaje directo.</p>
+              
+              <form id="studioSupportForm" style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="form-group-sm">
+                  <label for="supportMsgTopic" style="display: block; margin-bottom: 5px; font-weight: 500;">Asunto</label>
+                  <select id="supportMsgTopic" class="form-select-sm" style="width: 100%;">
+                    <option value="credits">Problema con mis Créditos</option>
+                    <option value="rendering">Fallo al procesar un video</option>
+                    <option value="voice">Problema de Clonación de Voz</option>
+                    <option value="billing">Dudas con mi Factura</option>
+                  </select>
+                </div>
+                <div class="form-group-sm">
+                  <label for="supportMsgText" style="display: block; margin-bottom: 5px; font-weight: 500;">Detalles del problema</label>
+                  <textarea id="supportMsgText" class="form-textarea" placeholder="Describe lo que sucede..." style="width: 100%; height: 80px; resize: none;" required></textarea>
+                </div>
+                <button type="submit" class="btn-primary-sm w-full" style="margin-top: 5px;"><i class="fa-solid fa-paper-plane"></i> Enviar Mensaje de Soporte</button>
+              </form>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   </div>
@@ -1149,6 +1415,6 @@
   </div>
 
   <!-- Scripts -->
-  <script src="main.js"></script>
+  <script src="main.js?v=2.2"></script>
 </body>
 </html>
