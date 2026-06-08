@@ -3,10 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      const errInfo = encodeURIComponent(message + ' at ' + (source || 'unknown').split('/').pop() + ':' + lineno + ':' + colno);
+      fetch('/browser-error-log?msg=' + errInfo);
+      return false;
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      const errInfo = encodeURIComponent('Promise rejection: ' + event.reason);
+      fetch('/browser-error-log?msg=' + errInfo);
+    });
+  </script>
   <title>Synthetic Digital Labs AI Studio | Avatares, Voces y Video con IA</title>
   <meta name="description" content="Estudio de Inteligencia Artificial para crear avatares, clonar voces, generar videos, sintetizar audio y redactar guiones profesionales desde una sola plataforma.">
   <meta name="keywords" content="inteligencia artificial, avatares ia, clonacion de voz, texto a voz, generacion de video, creador de guiones, synthetic digital labs">
-  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <link rel="icon" type="image/png" href="assets/logo.png">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +28,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -35,7 +46,7 @@
     <header class="navbar" id="home">
       <div class="nav-container">
         <a href="#home" class="logo-area">
-          <img src="/assets/logo.png" alt="Synthetic Digital Labs Logo" class="nav-logo">
+          <img src="assets/logo.png" alt="Synthetic Digital Labs Logo" class="nav-logo">
           <div class="logo-text">
             <span class="brand-name">SYNTHETIC DIGITAL LABS</span>
             <span class="brand-sub">AI STUDIO</span>
@@ -118,7 +129,7 @@
                 </div>
                 <div class="mockup-content">
                   <div class="mockup-hero-demo">
-                    <img src="/assets/nova_avatar.png" alt="AI Avatar Demo" class="pulse-logo" style="border-radius: 50%; border: 2px solid var(--neon-cyan);">
+                    <img src="assets/nova_avatar.png" alt="AI Avatar Demo" class="pulse-logo" style="border-radius: 50%; border: 2px solid var(--neon-cyan);">
                     <div class="bar bar-lg"></div>
                     <div class="bar bar-md"></div>
                     <div class="bar bar-sm"></div>
@@ -149,16 +160,16 @@
               </div>
               <h3>Crear Avatar</h3>
               <p>Genera presentadores digitales personalizados subiendo una imagen o seleccionando estilos realistas, corporativos y educativos.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="avatar">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
+              <button class="tool-card-btn btn-go-tool" data-tool="avatars">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
             </div>
             <!-- Herramienta 2 -->
             <div class="tool-card glass-card">
               <div class="tool-icon">
                 <i class="fa-solid fa-video"></i>
               </div>
-              <h3>Video con Avatar</h3>
-              <p>Crea videos a partir de texto en formatos vertical, cuadrado u horizontal. Añade avatares y voces realistas en segundos.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="video">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
+              <h3>Editor de Video Canvas</h3>
+              <p>Crea videos a partir de texto en formatos vertical u horizontal. Diseña composiciones interactivas con avatares reales en segundos.</p>
+              <button class="tool-card-btn btn-go-tool" data-tool="editor">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
             </div>
             <!-- Herramienta 3 -->
             <div class="tool-card glass-card">
@@ -167,7 +178,7 @@
               </div>
               <h3>Clonar Voz</h3>
               <p>Clona tu propia voz o la de tus presentadores con muestras de audio de forma segura para generar locuciones continuas.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="voice-clone">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
+              <button class="tool-card-btn btn-go-tool" data-tool="voices">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
             </div>
             <!-- Herramienta 4 -->
             <div class="tool-card glass-card">
@@ -176,7 +187,7 @@
               </div>
               <h3>Texto a Voz</h3>
               <p>Sintetiza audio realista a partir de cualquier texto escrito con opciones de velocidad, tono e idioma instantáneo.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="tts">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
+              <button class="tool-card-btn btn-go-tool" data-tool="voices">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
             </div>
             <!-- Herramienta 5 -->
             <div class="tool-card glass-card">
@@ -185,7 +196,7 @@
               </div>
               <h3>Generador de Guiones</h3>
               <p>Escribe guiones para videos, anuncios y podcasts optimizados para conversiones con tonos profesionales o emocionales.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="script">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
+              <button class="tool-card-btn btn-go-tool" data-tool="editor">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
             </div>
             <!-- Herramienta 6 -->
             <div class="tool-card glass-card">
@@ -194,7 +205,7 @@
               </div>
               <h3>Traductor de Voz</h3>
               <p>Traduce grabaciones de voz manteniendo el timbre y estilo original del hablante a múltiples idiomas.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="translate">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
+              <button class="tool-card-btn btn-go-tool" data-tool="editor">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
             </div>
           </div>
         </div>
@@ -460,7 +471,7 @@
         <div class="footer-grid">
           <div class="footer-brand">
             <a href="#home" class="logo-area">
-              <img src="/assets/logo.png" alt="Synthetic Digital Labs Logo" class="nav-logo">
+              <img src="assets/logo.png" alt="Synthetic Digital Labs Logo" class="nav-logo">
               <div class="logo-text">
                 <span class="brand-name">SYNTHETIC DIGITAL LABS</span>
                 <span class="brand-sub">AI STUDIO</span>
@@ -491,77 +502,52 @@
         </div>
       </div>
     </footer>
-    <!-- Virtual Voice Agent "Nova" (Siri/Jarvis Style) -->
-    <div class="nova-siri-container hidden" id="novaAgent">
-      <div class="nova-avatar-wrapper">
-        <img src="/assets/nova_avatar.png" alt="Nova Robot Avatar" class="nova-robot-char">
-        <div class="nova-voice-waves">
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-        </div>
-      </div>
-      <div class="nova-speech-bubble" id="novaBubble">
-        <span class="nova-bubble-text" id="novaBubbleText">¿En qué puedo ayudarte?</span>
-      </div>
-    </div>
   </div>
 
   <!-- ==========================================================================
-       PART 2: AI STUDIO WORKSPACE (DASHBOARD & SAAS APP)
+       PART 2: AI STUDIO WORKSPACE (HEYGEN WORKSPACE CLONE)
        ========================================================================== -->
-  <div id="ai-studio-app">
-    <!-- Sidebar Navigation -->
+  <div id="ai-studio-app" style="display: none;">
+    <!-- Sidebar Navigation (HeyGen Style) -->
     <aside class="studio-sidebar" id="studioSidebar">
       <div class="sidebar-logo">
-        <img src="/assets/logo.png" alt="SDL Brain Logo">
+        <img src="assets/logo.png" alt="SDL Brain Logo">
         <div class="logo-text">
-          <span class="brand-name">SDL AI STUDIO</span>
-          <span class="brand-sub">CONTENIDO CON IA</span>
+          <span class="brand-name">SDL STUDIO</span>
+          <span class="brand-sub">HEYGEN MODE</span>
         </div>
       </div>
 
       <nav class="sidebar-menu">
         <div class="menu-item active" data-view="dashboard">
-          <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
+          <i class="fa-solid fa-house"></i><span>Inicio</span>
         </div>
-        <div class="menu-item" data-view="create-avatar">
-          <i class="fa-solid fa-user-astronaut"></i><span>Crear Avatar</span>
+        <div class="menu-item" data-view="templates">
+          <i class="fa-solid fa-layer-group"></i><span>Plantillas</span>
         </div>
-        <div class="menu-item" data-view="video-avatar">
-          <i class="fa-solid fa-video"></i><span>Video con Avatar</span>
+        <div class="menu-item" data-view="avatars">
+          <i class="fa-solid fa-user-tie"></i><span>Avatares</span>
         </div>
-        <div class="menu-item" data-view="voice-clone">
-          <i class="fa-solid fa-microphone-lines"></i><span>Clonar Voz</span>
+        <div class="menu-item" data-view="voices">
+          <i class="fa-solid fa-microphone"></i><span>Voces</span>
         </div>
-        <div class="menu-item" data-view="tts">
-          <i class="fa-solid fa-volume-high"></i><span>Texto a Voz</span>
-        </div>
-        <div class="menu-item" data-view="script-gen">
-          <i class="fa-solid fa-file-signature"></i><span>Generador Guión</span>
-        </div>
-        <div class="menu-item" data-view="translator">
-          <i class="fa-solid fa-language"></i><span>Traductor Voz</span>
-        </div>
-        <div class="menu-item" data-view="projects-editor">
-          <i class="fa-solid fa-folder-open"></i><span>Editor Proyectos</span>
+        <div class="menu-item" data-view="editor">
+          <i class="fa-solid fa-video"></i><span>Editor Video</span>
         </div>
         <div class="menu-item" data-view="library">
-          <i class="fa-solid fa-images"></i><span>Biblioteca</span>
+          <i class="fa-solid fa-folder-open"></i><span>Biblioteca</span>
         </div>
         <div class="menu-item" data-view="settings">
-          <i class="fa-solid fa-gears"></i><span>Configuración</span>
+          <i class="fa-solid fa-gear"></i><span>Ajustes</span>
         </div>
       </nav>
 
       <!-- User Info Card -->
       <div class="sidebar-user">
-        <img src="/assets/nova_avatar.png" alt="User Profile" class="user-avatar" id="sidebarAvatar">
+        <img src="assets/nova_avatar.png" alt="User Profile" class="user-avatar" id="sidebarAvatar">
         <div class="user-info">
           <span class="user-name" id="sidebarUsername">Usuario SDL</span>
-          <span class="user-tier" id="sidebarPlanBadge">Plan Creador Pro</span>
+          <span class="user-tier" id="sidebarPlanBadge">Creador Pro</span>
         </div>
         <i class="fa-solid fa-right-from-bracket btn-logout btn-exit-studio" title="Volver a la Web"></i>
       </div>
@@ -573,20 +559,20 @@
       <header class="studio-header">
         <div class="view-title-area">
           <i class="fa-solid fa-bars mobile-sidebar-toggle" id="mobileSidebarToggle"></i>
-          <h2 class="view-title" id="studioViewTitle">Dashboard</h2>
+          <h2 class="view-title" id="studioViewTitle">Inicio</h2>
         </div>
         <div class="header-actions">
           <div class="credits-counter">
-            <span class="credits-label">Créditos de Creación</span>
+            <span class="credits-label">Créditos Disponibles</span>
             <div class="credits-progress-wrapper">
               <div class="credits-bar">
-                <div class="credits-bar-fill" id="headerCreditsFill"></div>
+                <div class="credits-bar-fill" id="headerCreditsFill" style="width: 80%;"></div>
               </div>
               <span class="credits-text" id="headerCreditsText">120 / 150</span>
             </div>
           </div>
           <button class="btn-secondary btn-back-web btn-exit-studio">
-            <i class="fa-solid fa-house"></i> Volver a la Web
+            <i class="fa-solid fa-house"></i> Salir a la Web
           </button>
         </div>
       </header>
@@ -594,744 +580,509 @@
       <!-- Active Content Container -->
       <main class="studio-content-view">
 
-        <!-- 2.1 DASHBOARD VIEW PANEL -->
+        <!-- 2.1 INICIO (HOME) VIEW PANEL -->
         <section class="studio-view active" id="view-dashboard">
-          <div class="dashboard-grid">
-            <div class="stat-card glass-card">
-              <i class="fa-solid fa-user-astronaut"></i>
-              <span class="stat-val" id="dashValAvatars">4</span>
-              <span class="stat-label">Avatares creados</span>
-            </div>
-            <div class="stat-card glass-card">
-              <i class="fa-solid fa-microphone-lines"></i>
-              <span class="stat-val" id="dashValVoices">3</span>
-              <span class="stat-label">Voces clonadas</span>
-            </div>
-            <div class="stat-card glass-card">
-              <i class="fa-solid fa-video"></i>
-              <span class="stat-val" id="dashValVideos">12</span>
-              <span class="stat-label">Videos generados</span>
-            </div>
-            <div class="stat-card glass-card">
-              <i class="fa-solid fa-folder-open"></i>
-              <span class="stat-val" id="dashValProjects">5</span>
-              <span class="stat-label">Proyectos activos</span>
-            </div>
-            <div class="stat-card glass-card">
-              <i class="fa-solid fa-coins"></i>
-              <span class="stat-val" id="dashValCredits">120</span>
-              <span class="stat-label">Créditos libres</span>
-            </div>
-          </div>
-
-          <div class="quick-actions-section">
-            <h3 class="studio-section-title"><i class="fa-solid fa-bolt"></i> Accesos Rápidos</h3>
-            <div class="quick-buttons-grid">
-              <div class="quick-btn glass-card btn-shortcut" data-target="create-avatar">
-                <div class="quick-btn-icon"><i class="fa-solid fa-plus"></i></div>
-                <div class="quick-btn-info">
-                  <span class="quick-btn-title">Nuevo Avatar</span>
-                  <span class="quick-btn-desc">Crea un presentador</span>
-                </div>
-              </div>
-              <div class="quick-btn glass-card btn-shortcut" data-target="video-avatar">
-                <div class="quick-btn-icon"><i class="fa-solid fa-video"></i></div>
-                <div class="quick-btn-info">
-                  <span class="quick-btn-title">Nuevo Video</span>
-                  <span class="quick-btn-desc">Genera video con guión</span>
-                </div>
-              </div>
-              <div class="quick-btn glass-card btn-shortcut" data-target="voice-clone">
-                <div class="quick-btn-icon"><i class="fa-solid fa-microphone"></i></div>
-                <div class="quick-btn-info">
-                  <span class="quick-btn-title">Nueva Voz</span>
-                  <span class="quick-btn-desc">Clona un timbre de voz</span>
-                </div>
-              </div>
-              <div class="quick-btn glass-card btn-shortcut" data-target="script-gen">
-                <div class="quick-btn-icon"><i class="fa-solid fa-file-pen"></i></div>
-                <div class="quick-btn-info">
-                  <span class="quick-btn-title">Nuevo Guión</span>
-                  <span class="quick-btn-desc">Escribe textos con IA</span>
-                </div>
+          <!-- Welcome Premium Banner -->
+          <div class="welcome-banner-hg">
+            <div class="welcome-bg-glow"></div>
+            <div class="welcome-content">
+              <h1>Crea videos de IA profesionales en minutos</h1>
+              <p>Elige una plantilla, escribe tu guion o clona tu voz para empezar.</p>
+              <div class="quick-actions-row">
+                <button class="btn-primary btn-shortcut" data-target="editor" data-aspect="16-9">
+                  <i class="fa-solid fa-desktop"></i> Video Horizontal (16:9)
+                </button>
+                <button class="btn-secondary btn-shortcut" data-target="editor" data-aspect="9-16">
+                  <i class="fa-solid fa-mobile-screen"></i> Video Vertical (9:16)
+                </button>
+                <button class="btn-outline btn-shortcut" data-target="voices">
+                  <i class="fa-solid fa-microphone"></i> Clonar tu Voz
+                </button>
               </div>
             </div>
           </div>
 
-          <div class="recent-activity-section" style="margin-top: 40px;">
-            <h3 class="studio-section-title"><i class="fa-solid fa-history"></i> Actividad Reciente</h3>
-            <div class="activity-card glass-card">
-              <div class="activity-table-wrapper">
-                <table class="activity-table">
-                  <thead>
-                    <tr>
-                      <th>Nombre del Proyecto</th>
-                      <th>Tipo</th>
-                      <th>Fecha de creación</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dashboardActivityTableBody">
-                    <!-- Loaded dynamically via JS -->
-                  </tbody>
-                </table>
-              </div>
+          <!-- Quick Stats Grid -->
+          <div class="hg-stats-row">
+            <div class="stat-bubble">
+              <span class="sb-val" id="dashValAvatars">4</span>
+              <span class="sb-lbl">Avatares creados</span>
+            </div>
+            <div class="stat-bubble">
+              <span class="sb-val" id="dashValVoices">3</span>
+              <span class="sb-lbl">Voces guardadas</span>
+            </div>
+            <div class="stat-bubble">
+              <span class="sb-val" id="dashValVideos">12</span>
+              <span class="sb-lbl">Videos listos</span>
+            </div>
+            <div class="stat-bubble">
+              <span class="sb-val" id="dashValProjects">5</span>
+              <span class="sb-lbl">Borradores</span>
+            </div>
+          </div>
+
+          <!-- Featured Templates Section -->
+          <div class="hg-home-section">
+            <div class="section-title-row">
+              <h3><i class="fa-solid fa-star gradient-text"></i> Plantillas recomendadas</h3>
+              <button class="btn-link btn-shortcut" data-target="templates">Ver todas <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <div class="hg-templates-grid" id="dashTemplatesGrid">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- Featured Avatars Section -->
+          <div class="hg-home-section" style="margin-top: 35px;">
+            <div class="section-title-row">
+              <h3><i class="fa-solid fa-circle-user gradient-text"></i> Avatares populares</h3>
+              <button class="btn-link btn-shortcut" data-target="avatars">Ver todos <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <div class="hg-avatars-grid" id="dashAvatarsGrid">
+              <!-- Dynamically populated via JS -->
             </div>
           </div>
         </section>
 
-        <!-- 2.2 CREAR AVATAR VIEW PANEL -->
-        <section class="studio-view" id="view-create-avatar">
-          <div class="tool-split-layout">
-            <div class="tool-form-card glass-card">
-              <form id="avatarCreationForm">
-                <div class="form-group">
-                  <label><i class="fa-solid fa-upload"></i> Subir Imagen del Avatar</label>
-                  <div class="upload-zone" id="avatarUploadZone">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Arrastra tu archivo aquí o haz clic para buscar</span>
-                    <span class="upload-file-name" id="avatarFileName"></span>
-                    <input type="file" id="avatarImageInput" accept="image/*">
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label for="avatarNameInput"><i class="fa-solid fa-signature"></i> Nombre del Avatar</label>
-                  <input type="text" id="avatarNameInput" class="form-input" placeholder="Ej. Sofía Presentadora, Roberto Tutor" required>
-                </div>
-
-                <div class="form-group">
-                  <label for="avatarStyleSelect"><i class="fa-solid fa-palette"></i> Seleccionar Estilo</label>
-                  <select id="avatarStyleSelect" class="form-select">
-                    <option value="Realista">Realista (Fotográfico HD)</option>
-                    <option value="Corporativo">Corporativo (Traje formal)</option>
-                    <option value="Presentador">Presentador (Noticiero / TV)</option>
-                    <option value="Podcast">Podcast (Casual con micrófono)</option>
-                    <option value="Educativo">Educativo (Estilo docente)</option>
-                    <option value="Comercial">Comercial (Expresivo para anuncios)</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="avatarLanguageSelect"><i class="fa-solid fa-earth-americas"></i> Idioma Nativo</label>
-                  <select id="avatarLanguageSelect" class="form-select">
-                    <option value="Español (ES)">Español (ES)</option>
-                    <option value="Español (MX)">Español (MX)</option>
-                    <option value="Inglés (US)">Inglés (US)</option>
-                    <option value="Portugués (BR)">Portugués (BR)</option>
-                    <option value="Francés (FR)">Francés (FR)</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="avatarDescInput"><i class="fa-solid fa-align-left"></i> Descripción / Propósito</label>
-                  <textarea id="avatarDescInput" class="form-textarea" placeholder="Ej. Avatar femenino de mediana edad para narrar tutoriales técnicos de software corporativo."></textarea>
-                </div>
-
-                <button type="submit" class="btn-primary w-full" style="margin-top: 10px;">
-                  <i class="fa-solid fa-gear"></i> Generar Avatar
-                </button>
-              </form>
-            </div>
-
-            <div class="tool-preview-card glass-card" id="avatarPreviewContainer">
-              <div class="processing-overlay" id="avatarProcessOverlay">
-                <div class="studio-spinner"></div>
-                <div class="processing-text">Generando Avatar...</div>
-                <div class="processing-log" id="avatarProcessLog">Cargando modelo neuronal...</div>
-              </div>
-              <h3 class="preview-title"><i class="fa-solid fa-image"></i> Vista Previa</h3>
-              <div class="avatar-placeholder-box" id="avatarVisualBox">
-                <div class="scan-line"></div>
-                <img src="/assets/nova_avatar.png" alt="Avatar Preview" id="avatarPreviewImg">
-              </div>
-              <div class="avatar-preview-info">
-                <div class="avatar-preview-name" id="avatarPreviewNameText">Nueva Identidad</div>
-                <div class="avatar-preview-style" id="avatarPreviewStyleText">Realista (ES)</div>
-              </div>
-            </div>
+        <!-- 2.2 PLANTILLAS (TEMPLATES) VIEW PANEL -->
+        <section class="studio-view" id="view-templates">
+          <div class="view-header-description">
+            <p>Selecciona una plantilla diseñada profesionalmente para cargar una composición con avatar y guion adaptados al instante.</p>
+          </div>
+          <div class="hg-templates-grid" id="templatesGrid">
+            <!-- Dynamically populated -->
           </div>
         </section>
 
-        <!-- 2.3 VIDEO CON AVATAR VIEW PANEL -->
-        <section class="studio-view" id="view-video-avatar">
-          <div class="tool-split-layout">
-            <div class="tool-form-card glass-card">
-              <form id="videoCreationForm">
-                <div class="form-group">
-                  <label for="videoAvatarSelect"><i class="fa-solid fa-user-astronaut"></i> Seleccionar Avatar</label>
-                  <select id="videoAvatarSelect" class="form-select" required>
-                    <!-- Populated dynamically via JS from localStorage -->
-                  </select>
-                </div>
+        <!-- 2.3 AVATARES VIEW PANEL -->
+        <section class="studio-view" id="view-avatars">
+          <div class="tabs-header-hg">
+            <button class="hg-tab-btn active" data-tab="studio">Studio Avatar</button>
+            <button class="hg-tab-btn" data-tab="instant">Instant Avatar (Webcam)</button>
+            <button class="hg-tab-btn" data-tab="photo">Photo Avatar</button>
+          </div>
 
-                <div class="form-group">
-                  <label for="videoScriptTextarea"><i class="fa-solid fa-paragraph"></i> Guión del Video</label>
-                  <textarea id="videoScriptTextarea" class="form-textarea" placeholder="Escribe el texto que el avatar pronunciará..." required style="min-height: 120px;"></textarea>
-                </div>
+          <!-- Studio Avatar Panel -->
+          <div class="hg-tab-content active" id="avatar-panel-studio">
+            <div class="hg-avatars-grid" id="studioAvatarsGrid">
+              <!-- Populated via JS -->
+            </div>
+          </div>
 
-                <div class="form-group">
-                  <label for="videoLangSelect"><i class="fa-solid fa-language"></i> Idioma del Video</label>
-                  <select id="videoLangSelect" class="form-select">
-                    <option value="es-ES">Español (España)</option>
-                    <option value="es-MX">Español (México)</option>
-                    <option value="en-US">Inglés (EE.UU.)</option>
-                    <option value="pt-BR">Portugués (Brasil)</option>
-                  </select>
+          <!-- Instant Avatar Panel -->
+          <div class="hg-tab-content" id="avatar-panel-instant">
+            <!-- Initial Info screen -->
+            <div class="split-info-card glass-card" id="instantAvatarStartCard">
+              <div class="split-left">
+                <h3>Genera tu Avatar Instantáneo</h3>
+                <p>Graba un video de 2 minutos hablando frente a tu cámara y nuestra IA creará un clon digital de alta fidelidad con tu lenguaje corporal y sincronización labial perfectos.</p>
+                <div class="instant-step-list">
+                  <div class="ins-step"><span>1</span> Mira fijamente a la cámara en un entorno iluminado.</div>
+                  <div class="ins-step"><span>2</span> Habla de forma natural usando gestos pausados.</div>
+                  <div class="ins-step"><span>3</span> Sube el video y nuestro clónador se encargará del resto.</div>
                 </div>
-
-                <div class="form-group">
-                  <label for="videoVoiceSelect"><i class="fa-solid fa-microphone-lines"></i> Voz del Narrador</label>
-                  <select id="videoVoiceSelect" class="form-select">
-                    <!-- Populated dynamically via JS with default voices + cloned voices -->
-                  </select>
+                <button class="btn-primary" id="btnStartInstantAvatar"><i class="fa-solid fa-video"></i> Comenzar Grabación</button>
+              </div>
+              <div class="split-right flex-center">
+                <div class="holographic-preview-circle">
+                  <div class="circle-pulse"></div>
+                  <i class="fa-solid fa-circle-user"></i>
                 </div>
-
-                <div class="form-group">
-                  <label for="videoFormatSelect"><i class="fa-solid fa-crop"></i> Formato de Salida</label>
-                  <select id="videoFormatSelect" class="form-select">
-                    <option value="16-9">Horizontal (16:9) - YouTube / TV</option>
-                    <option value="9-16">Vertical (9:16) - TikTok / Shorts / Reels</option>
-                    <option value="1-1">Cuadrado (1:1) - Post de Instagram</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="videoStyleSelect"><i class="fa-solid fa-sliders"></i> Estilo del Video</label>
-                  <select id="videoStyleSelect" class="form-select">
-                    <option value="Comercial">Comercial (Promocional)</option>
-                    <option value="Educativo">Educativo (Tutorial)</option>
-                    <option value="Podcast">Podcast (Mesa redonda)</option>
-                    <option value="Anuncio">Anuncio (Redes Sociales)</option>
-                  </select>
-                </div>
-
-                <button type="submit" class="btn-primary w-full">
-                  <i class="fa-solid fa-clapperboard"></i> Generar Video
-                </button>
-              </form>
+              </div>
             </div>
 
-            <div class="tool-preview-card glass-card" id="videoPreviewContainer">
-              <div class="processing-overlay" id="videoProcessOverlay">
-                <div class="studio-spinner"></div>
-                <div class="processing-text">Generando Video...</div>
-                <div class="processing-log" id="videoProcessLog">Compilando pistas de audio...</div>
-              </div>
-              <h3 class="preview-title"><i class="fa-solid fa-circle-play"></i> Reproductor de Vista Previa</h3>
-              
-              <div class="video-preview-wrapper" id="videoPlayerBox">
-                <div class="video-watermark">SYNTHETIC DIGITAL LABS</div>
-                <img src="/assets/ref_blue.png" alt="Video Placeholder" class="sim-video-bg" id="videoPlayerImg">
-                <div class="video-subtitle-ticker" id="videoSubtitleTicker">Texto de subtítulos del guión...</div>
+            <!-- Simulated Webcam recording screen (hidden by default) -->
+            <div class="split-info-card glass-card" id="instantAvatarRecordingCard" style="display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 350px; text-align: center; gap: 20px;">
+              <h3 style="margin: 0; color: var(--neon-cyan);"><i class="fa-solid fa-circle fa-beat" style="color: var(--neon-red); font-size: 0.8rem; margin-right: 10px;"></i> Grabando Avatar Instantáneo</h3>
+              <div class="webcam-sim-frame" style="position: relative; width: 100%; max-width: 480px; height: 270px; background: #080517; border: 2px solid var(--neon-cyan); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow-cyan);">
+                <!-- Simulated face outline helper -->
+                <div class="face-outline-helper" style="position: absolute; width: 180px; height: 220px; border: 2px dashed rgba(0, 240, 255, 0.4); border-radius: 50%; box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);"></div>
                 
-                <div class="video-controls">
-                  <i class="fa-solid fa-play video-play-btn" id="videoPlayBtn"></i>
-                  <div class="video-timeline" id="videoTimeline">
-                    <div class="video-timeline-fill" id="videoTimelineFill"></div>
+                <!-- Simulated webcam static/noise or mock camera icon -->
+                <div class="camera-lens-sim" style="text-align: center; color: var(--neon-cyan); z-index: 2; padding: 20px;">
+                  <i class="fa-solid fa-video fa-fade" style="font-size: 3rem; margin-bottom: 15px; color: var(--neon-cyan);"></i>
+                  <h4 id="recordingStatusText" style="margin: 5px 0;">Inicializando cámara...</h4>
+                  <div class="progress-bar-sm" style="width: 200px; height: 5px; background: rgba(0, 240, 255, 0.15); border-radius: 3px; margin: 10px auto; overflow: hidden; position: relative;">
+                    <div id="recordingProgressFill" style="width: 0%; height: 100%; background: var(--neon-cyan); position: absolute; left: 0; top: 0;"></div>
                   </div>
-                  <span class="video-time-label" id="videoTimeLabel">0:00 / 0:05</span>
                 </div>
-              </div>
 
-              <div class="avatar-preview-info">
-                <div class="avatar-preview-name" id="videoPreviewTitle">Video de Presentación</div>
-                <div class="avatar-preview-style" id="videoPreviewDetails">Vertical (9:16) • Voz Cloned</div>
+                <!-- Red REC indicator -->
+                <div class="rec-badge" style="position: absolute; top: 15px; left: 15px; display: flex; align-items: center; gap: 8px; font-weight: bold; color: var(--neon-red); font-size: 0.8rem; text-shadow: 0 0 5px rgba(255, 0, 85, 0.5);">
+                  <span class="pulse-dot" style="background-color: var(--neon-red); width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+                  <span>REC</span>
+                </div>
+
+                <!-- Recording Timer -->
+                <div id="recordingTimerVal" style="position: absolute; bottom: 15px; right: 15px; font-family: monospace; font-size: 1rem; color: #fff; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-light);">0:00</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photo Avatar Panel -->
+          <div class="hg-tab-content" id="avatar-panel-photo">
+            <div class="split-info-card glass-card">
+              <div class="split-left">
+                <h3>Crea Avatar desde una Foto</h3>
+                <p>Sube una foto de retrato clara e ilumina el rostro. Nuestra tecnología animará la boca y los ojos sincronizándolos con cualquier guion escrito.</p>
+                
+                <form id="avatarCreationForm" class="photo-upload-form">
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-upload"></i> Subir Imagen de Rostro</label>
+                    <div class="upload-zone" id="avatarUploadZone">
+                      <i class="fa-solid fa-cloud-arrow-up"></i>
+                      <span>Arrastra tu archivo aquí o haz clic para buscar</span>
+                      <span class="upload-file-name" id="avatarFileName"></span>
+                      <input type="file" id="avatarImageInput" accept="image/*">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="avatarNameInput"><i class="fa-solid fa-signature"></i> Nombre del Avatar</label>
+                    <input type="text" id="avatarNameInput" class="form-input" placeholder="Ej. Mi Avatar Foto" required>
+                  </div>
+
+                  <button type="submit" class="btn-primary" id="createAvatarBtn">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Crear Presentador Inteligente
+                  </button>
+                </form>
+              </div>
+              <div class="split-right flex-center">
+                <div class="avatar-preview-box">
+                  <img src="assets/nova_avatar.png" alt="Avatar Preview" id="avatarPreviewImg">
+                  <span class="ap-badge"><i class="fa-solid fa-eye"></i> Previsualización</span>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- 2.4 CLONAR VOZ VIEW PANEL -->
-        <section class="studio-view" id="view-voice-clone">
-          <div class="tool-split-layout">
-            <div class="tool-form-card glass-card">
-              <!-- Legal Warning Banner -->
-              <div class="legal-box">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <div>
-                  <h5>Aviso Legal de Consentimiento</h5>
-                  <p>La clonación de voz solo puede realizarse con autorización expresa del dueño de la voz. Al usar este módulo, te comprometes a contar con la autorización de uso correspondiente. Synthetic Digital Lab no permite suplantar identidades de terceros sin consentimiento formal.</p>
-                </div>
-              </div>
-
-              <form id="voiceCloneForm">
+        <!-- 2.4 VOCES VIEW PANEL -->
+        <section class="studio-view" id="view-voices">
+          <!-- Voice Cloner Box -->
+          <div class="voice-cloner-container glass-card">
+            <div class="cloner-header">
+              <h3><i class="fa-solid fa-microphone-lines gradient-text"></i> Clonador de Voz Instantáneo</h3>
+              <span class="badge-premium"><i class="fa-solid fa-crown"></i> Premium</span>
+            </div>
+            <p>Clona cualquier timbre de voz subiendo un audio de 10 segundos o grabando directamente. Podrás escribir cualquier texto y sonará con ese tono de voz.</p>
+            
+            <div class="cloner-grid">
+              <div class="cloner-inputs">
                 <div class="form-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="legalConsentCheckbox">
-                    <span class="custom-checkbox"></span>
-                    <span>Confirmo que tengo autorización expresa para usar y clonar esta voz.</span>
-                  </label>
-                </div>
-
-                <div class="form-group">
-                  <label><i class="fa-solid fa-file-audio"></i> Subir Archivo de Audio Muestra</label>
+                  <label><i class="fa-solid fa-upload"></i> Subir archivo de audio (WAV, MP3)</label>
                   <div class="upload-zone" id="voiceUploadZone">
-                    <i class="fa-solid fa-microphone-lines"></i>
-                    <span>Carga un archivo de audio (MP3, WAV, M4A) de al menos 10 segundos</span>
+                    <i class="fa-solid fa-file-audio"></i>
+                    <span>Sube una grabación limpia sin ruido de fondo</span>
                     <span class="upload-file-name" id="voiceFileName"></span>
                     <input type="file" id="voiceAudioInput" accept="audio/*">
                   </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="voiceNameInput"><i class="fa-solid fa-signature"></i> Nombre de la Voz</label>
-                  <input type="text" id="voiceNameInput" class="form-input" placeholder="Ej. Voz Corporativa Juan, Mi Voz Clonada" required>
+                <div class="voice-record-row">
+                  <button type="button" class="btn-outline" id="btnRecordVoice">
+                    <i class="fa-solid fa-circle"></i> Grabar en vivo
+                  </button>
+                  <span class="record-indicator" id="recordIndicator" style="display: none;">
+                    <span class="rec-dot"></span> Grabando... <span class="rec-timer">0:00</span>
+                  </span>
                 </div>
 
-                <div class="form-group">
-                  <label for="voiceLangSelect"><i class="fa-solid fa-earth-americas"></i> Idioma del Audio</label>
-                  <select id="voiceLangSelect" class="form-select">
-                    <option value="Español (ES)">Español (ES)</option>
-                    <option value="Español (MX)">Español (MX)</option>
-                    <option value="Inglés (US)">Inglés (US)</option>
-                    <option value="Portugués (BR)">Portugués (BR)</option>
-                  </select>
+                <div class="form-group" style="margin-top: 15px;">
+                  <label for="voiceNameInput"><i class="fa-solid fa-tag"></i> Nombre de la Voz</label>
+                  <input type="text" id="voiceNameInput" class="form-input" placeholder="Ej. Mi Voz Natural" required>
                 </div>
-
-                <div class="form-group">
-                  <label for="voiceTypeSelect"><i class="fa-solid fa-sliders"></i> Tipo / Tono de Voz</label>
-                  <select id="voiceTypeSelect" class="form-select">
-                    <option value="Comercial">Comercial (Dinámica y Expresiva)</option>
-                    <option value="Narrativa">Narrativa (Tranquila para audiolibros)</option>
-                    <option value="Educativa">Educativa (Clara para tutoriales)</option>
-                    <option value="Podcast">Podcast (Cercana e Informal)</option>
-                  </select>
-                </div>
-
-                <button type="submit" class="btn-primary w-full" id="voiceSubmitBtn" disabled>
-                  <i class="fa-solid fa-fingerprint"></i> Clonar Voz
-                </button>
-              </form>
-            </div>
-
-            <div class="tool-preview-card glass-card">
-              <div class="processing-overlay" id="voiceProcessOverlay">
-                <div class="studio-spinner"></div>
-                <div class="processing-text">Analizando Registro Vocal...</div>
-                <div class="processing-log" id="voiceProcessLog">Mapeando frecuencias de timbre...</div>
-              </div>
-              <h3 class="preview-title"><i class="fa-solid fa-wave-square"></i> Perfil Sonoro Generado</h3>
-              
-              <div class="voice-visualizer-box">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
               </div>
 
-              <div class="audio-player-card" id="clonedVoicePlayerCard" style="display: none;">
-                <div class="play-btn" id="clonedVoicePlayBtn"><i class="fa-solid fa-play"></i></div>
-                <div class="audio-player-info">
-                  <div class="audio-title" id="clonedVoiceTitle">Firma de Voz Registrada</div>
-                  <div class="audio-subtitle" id="clonedVoiceSubtitle">Voz Clonada • Comercial</div>
-                </div>
-                <span class="audio-duration">0:04</span>
-              </div>
-
-              <p class="section-subtitle" style="font-size: 0.82rem; margin-top: 20px; line-height: 1.5;">
-                <i class="fa-solid fa-shield-halved" style="color: var(--neon-cyan);"></i> Synthetic Digital Lab almacena el hash biométrico cifrado y restringe su reproducción a tu cuenta de usuario exclusiva.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2.5 TEXTO A VOZ VIEW PANEL -->
-        <section class="studio-view" id="view-tts">
-          <div class="tool-split-layout">
-            <div class="tool-form-card glass-card">
-              <form id="ttsForm">
-                <div class="form-group">
-                  <label for="ttsTextInput"><i class="fa-solid fa-align-left"></i> Escribe tu texto</label>
-                  <textarea id="ttsTextInput" class="form-textarea" placeholder="Escribe el texto que deseas convertir en archivo de audio de voz..." required style="min-height: 150px;"></textarea>
-                </div>
-
-                <div class="form-group">
-                  <label for="ttsVoiceSelect"><i class="fa-solid fa-user"></i> Voz / Intérprete</label>
-                  <select id="ttsVoiceSelect" class="form-select">
-                    <!-- Populated dynamically via JS with default voices + cloned voices -->
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="ttsLangSelect"><i class="fa-solid fa-language"></i> Idioma</label>
-                  <select id="ttsLangSelect" class="form-select">
-                    <!-- Populated dynamically based on browser options -->
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="ttsSpeedInput"><i class="fa-solid fa-gauge-high"></i> Velocidad: <span id="ttsSpeedVal">1.0</span>x</label>
-                  <input type="range" id="ttsSpeedInput" min="0.5" max="2" step="0.1" value="1.0" style="accent-color: var(--neon-cyan); width: 100%;">
-                </div>
-
-                <div class="form-group">
-                  <label for="ttsPitchInput"><i class="fa-solid fa-music"></i> Tono: <span id="ttsPitchVal">1.0</span></label>
-                  <input type="range" id="ttsPitchInput" min="0.5" max="2" step="0.1" value="1.0" style="accent-color: var(--neon-purple); width: 100%;">
-                </div>
-
-                <button type="submit" class="btn-primary w-full">
-                  <i class="fa-solid fa-volume-high"></i> Generar Locución de Audio
-                </button>
-              </form>
-            </div>
-
-            <div class="tool-preview-card glass-card">
-              <div class="processing-overlay" id="ttsProcessOverlay">
-                <div class="studio-spinner"></div>
-                <div class="processing-text">Sintetizando Audio...</div>
-                <div class="processing-log" id="ttsProcessLog">Mapeando fonemas de texto...</div>
-              </div>
-              <h3 class="preview-title"><i class="fa-solid fa-headphones"></i> Reproductor de Voz Generado</h3>
-              
-              <div class="voice-visualizer-box" id="ttsVisualizer">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-              </div>
-
-              <div class="audio-player-card" id="ttsPlayerCard" style="display: none;">
-                <div class="play-btn" id="ttsPlayBtn"><i class="fa-solid fa-play"></i></div>
-                <div class="audio-player-info">
-                  <div class="audio-title" id="ttsAudioTitle">Locución de Audio</div>
-                  <div class="audio-subtitle" id="ttsAudioSubtitle">Sintetizado con Éxito</div>
-                </div>
-                <span class="audio-duration" id="ttsAudioDuration">0:00</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2.6 GENERADOR DE GUIONES VIEW PANEL -->
-        <section class="studio-view" id="view-script-gen">
-          <div class="tool-split-layout">
-            <div class="tool-form-card glass-card">
-              <form id="scriptForm">
-                <div class="form-group">
-                  <label for="scriptTypeSelect"><i class="fa-solid fa-clapperboard"></i> Tipo de Guión</label>
-                  <select id="scriptTypeSelect" class="form-select">
-                    <option value="video-corto">Video Corto (TikTok/Reel/Short)</option>
-                    <option value="anuncio">Anuncio Comercial de Producto</option>
-                    <option value="podcast">Introducción y Temario de Podcast</option>
-                    <option value="presentacion">Presentación de Marca / Startup</option>
-                    <option value="ventas">Vídeo Explicativo de Ventas (VSL)</option>
-                    <option value="educativo">Tutorial Instructivo de Clases</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="scriptTopicInput"><i class="fa-solid fa-lightbulb"></i> Tema o Idea del Proyecto</label>
-                  <input type="text" id="scriptTopicInput" class="form-input" placeholder="Ej. Lanzamiento de un nuevo software ERP con IA" required>
-                </div>
-
-                <div class="form-group">
-                  <label for="scriptToneSelect"><i class="fa-solid fa-face-smile"></i> Tono de la Narración</label>
-                  <select id="scriptToneSelect" class="form-select">
-                    <option value="profesional">Profesional & Técnico (Formal)</option>
-                    <option value="cercano">Cercano & Amigable (Informal)</option>
-                    <option value="directo">Directo & Enérgico (Acción rápida)</option>
-                    <option value="emocional">Emocional & Inspirador (Historias)</option>
-                    <option value="comercial">Comercial & Vendedor (Convincente)</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="scriptDurationSelect"><i class="fa-solid fa-clock"></i> Duración Estimada</label>
-                  <select id="scriptDurationSelect" class="form-select">
-                    <option value="30s">30 Segundos (Aprox. 65 palabras)</option>
-                    <option value="60s">60 Segundos (Aprox. 130 palabras)</option>
-                    <option value="90s">90 Segundos (Aprox. 200 palabras)</option>
-                    <option value="3m">3 Minutos (Aprox. 400 palabras)</option>
-                  </select>
-                </div>
-
-                <button type="submit" class="btn-primary w-full">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i> Generar Guión con IA
-                </button>
-              </form>
-            </div>
-
-            <div class="script-output-card glass-card" style="position: relative;">
-              <div class="processing-overlay" id="scriptProcessOverlay">
-                <div class="studio-spinner"></div>
-                <div class="processing-text">Redactando Guión...</div>
-                <div class="processing-log" id="scriptProcessLog">Bocetando estructura dramática...</div>
-              </div>
-              <h3 class="preview-title"><i class="fa-solid fa-file-lines"></i> Guión Redactado</h3>
-              
-              <textarea id="scriptOutputTextarea" class="script-textarea" readonly placeholder="El guión generado por Inteligencia Artificial aparecerá aquí de forma editable..."></textarea>
-              
-              <div class="script-actions">
-                <button class="btn-secondary" id="copyScriptBtn"><i class="fa-solid fa-copy"></i> Copiar Guión</button>
-                <button class="btn-primary-sm btn-shortcut" data-target="video-avatar" id="sendScriptToVideoBtn" disabled><i class="fa-solid fa-circle-arrow-right"></i> Enviar a Video</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2.7 TRADUCTOR DE VOZ VIEW PANEL -->
-        <section class="studio-view" id="view-translator">
-          <div class="tool-split-layout">
-            <div class="tool-form-card glass-card">
-              <form id="translateForm">
-                <div class="form-group">
-                  <label><i class="fa-solid fa-file-audio"></i> Subir Audio a Traducir</label>
-                  <div class="upload-zone" id="translateUploadZone">
-                    <i class="fa-solid fa-file-arrow-up"></i>
-                    <span>Carga un archivo de voz original a traducir</span>
-                    <span class="upload-file-name" id="translateFileName"></span>
-                    <input type="file" id="translateAudioInput" accept="audio/*">
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label for="translateSourceLangSelect"><i class="fa-solid fa-language"></i> Idioma de Origen</label>
-                  <select id="translateSourceLangSelect" class="form-select">
-                    <option value="es">Español</option>
-                    <option value="en">Inglés</option>
-                    <option value="pt">Portugués</option>
-                    <option value="fr">Francés</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="translateTargetLangSelect"><i class="fa-solid fa-globe"></i> Idioma Destino</label>
-                  <select id="translateTargetLangSelect" class="form-select">
-                    <option value="en">Inglés</option>
-                    <option value="es">Español</option>
-                    <option value="pt">Portugués</option>
-                    <option value="fr">Francés</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="translateCloneStyle" checked>
+              <div class="cloner-legal">
+                <div class="consent-box">
+                  <h4>Declaración Jurada y Autorización Legal</h4>
+                  <p>Declaro formalmente que poseo todos los derechos legales y el consentimiento expreso de la persona propietaria de esta voz para su clonación y uso sintético en esta plataforma, eximiendo a Synthetic Digital Labs de cualquier responsabilidad derivada.</p>
+                  <label class="consent-checkbox-label">
+                    <input type="checkbox" id="voiceConsentCheck">
                     <span class="custom-checkbox"></span>
-                    <span>Mantener estilo de voz original (Clonar tono del hablante)</span>
+                    <span class="checkbox-text">Acepto los términos éticos y comerciales</span>
                   </label>
                 </div>
-
-                <button type="submit" class="btn-primary w-full">
-                  <i class="fa-solid fa-language"></i> Traducir Audio
+                <button class="btn-primary w-full" id="btnCloneVoice" disabled>
+                  <i class="fa-solid fa-microchip"></i> Clonar Voz Ahora (Resta 50 créditos)
                 </button>
+              </div>
+            </div>
+
+            <!-- List of Cloned Voices -->
+            <div class="cloned-list-section" style="margin-top: 25px;">
+              <h4>Tus Voces Clonadas</h4>
+              <div class="voices-list-mini" id="clonedVoicesList">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Public Voice Library Section -->
+          <div class="public-voices-section" style="margin-top: 35px;">
+            <div class="section-title-row">
+              <h3><i class="fa-solid fa-list gradient-text"></i> Biblioteca de Voces Públicas</h3>
+              <!-- Search & Filters -->
+              <div class="voices-filters">
+                <input type="text" id="voiceSearchInput" class="form-input-sm" placeholder="Buscar voz...">
+                <select id="voiceGenderFilter" class="form-select-sm">
+                  <option value="all">Todos los géneros</option>
+                  <option value="Femenino">Femenino</option>
+                  <option value="Masculino">Masculino</option>
+                </select>
+                <select id="voiceLangFilter" class="form-select-sm">
+                  <option value="all">Todos los idiomas</option>
+                  <option value="Español">Español</option>
+                  <option value="Inglés">Inglés</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="hg-voices-grid" id="publicVoicesGrid">
+              <!-- Populated dynamically with play icons + animation wave elements -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 2.5 EDITOR DE VIDEO (CANVAS WORKSPACE) -->
+        <section class="studio-view" id="view-editor">
+          <div class="editor-canvas-layout">
+            <!-- Left Preset Column -->
+            <div class="editor-left-panel">
+              <div class="panel-section">
+                <h4><i class="fa-solid fa-circle-user"></i> Presentador</h4>
+                <div class="mini-grid-presets" id="miniAvatarsGrid">
+                  <!-- Avatars lists for quick click selection -->
+                </div>
+              </div>
+
+              <div class="panel-section" style="margin-top: 20px;">
+                <h4><i class="fa-solid fa-microphone"></i> Voz del Video</h4>
+                <div class="mini-list-presets" id="miniVoicesGrid">
+                  <!-- Voices lists for quick click selection -->
+                </div>
+              </div>
+
+              <div class="panel-section" style="margin-top: 20px;">
+                <h4><i class="fa-solid fa-palette"></i> Fondo del Lienzo</h4>
+                <div class="bg-selector-grid">
+                  <button class="bg-btn active" data-bg="dark" style="background: #050215; border: 1px solid var(--neon-cyan);"></button>
+                  <button class="bg-btn" data-bg="gradient-blue" style="background: linear-gradient(135deg, #020010, #001f3f);"></button>
+                  <button class="bg-btn" data-bg="gradient-purple" style="background: linear-gradient(135deg, #030012, #1f003f);"></button>
+                  <button class="bg-btn" data-bg="green-screen" style="background: #00ff00;"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Central Canvas Column -->
+            <div class="editor-center-panel">
+              <div class="canvas-header-toolbar">
+                <div class="ratio-switchers">
+                  <button class="ratio-btn active" id="btnRatio169" title="Horizontal 16:9">
+                    <i class="fa-solid fa-desktop"></i> Horizontal (16:9)
+                  </button>
+                  <button class="ratio-btn" id="btnRatio916" title="Vertical 9:16">
+                    <i class="fa-solid fa-mobile-screen"></i> Vertical (9:16)
+                  </button>
+                </div>
+                <button class="btn-primary" id="btnGenerateVideo">
+                  <i class="fa-solid fa-circle-check"></i> Generar Video
+                </button>
+              </div>
+
+              <!-- Main Interactive Canvas Stage -->
+              <div class="canvas-outer-wrapper">
+                <div class="video-canvas-stage ratio-16-9" id="videoCanvasStage">
+                  <div class="canvas-glow"></div>
+                  <!-- Selected Avatar Graphic -->
+                  <img src="assets/nova_avatar.png" alt="Canvas Avatar" id="canvasAvatarImg" class="canvas-avatar">
+                  
+                  <!-- Subtitles overlay on canvas -->
+                  <div class="canvas-subtitle-overlay" id="canvasSubtitleOverlay">
+                    <span>Haz clic en reproducir guion para ver el avatar hablar</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Timeline representation -->
+              <div class="timeline-container glass-card">
+                <div class="timeline-header">
+                  <span>Escenas del Video</span>
+                  <button class="btn-secondary-sm" id="btnAddScene"><i class="fa-solid fa-plus"></i> Añadir Escena</button>
+                </div>
+                <div class="timeline-row">
+                  <div class="timeline-scene-card active">
+                    <span class="ts-index">Escena 1</span>
+                    <span class="ts-duration" id="timelineDurationLabel">5.0s</span>
+                  </div>
+                  <div class="timeline-scene-add">
+                    <i class="fa-solid fa-plus"></i>
+                  </div>
+                </div>
+                <div class="timeline-slider-row">
+                  <label for="sceneDurationSlider">Duración de Escena: </label>
+                  <input type="range" id="sceneDurationSlider" min="2" max="15" value="5" step="0.5">
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Configuration Column -->
+            <div class="editor-right-panel">
+              <!-- AI Script Generator prompt inside the panel -->
+              <div class="right-panel-box glass-card">
+                <h4><i class="fa-solid fa-wand-magic-sparkles"></i> Redactor de Guión IA</h4>
+                <div class="form-group-sm">
+                  <input type="text" id="editorScriptTopic" class="form-input-sm" placeholder="Tema (ej. Vender Curso Python)">
+                </div>
+                <div class="form-row-sm">
+                  <select id="editorScriptType" class="form-select-sm">
+                    <option value="publicidad">Anuncio</option>
+                    <option value="tutorial">Tutorial</option>
+                    <option value="presentacion">Presentación</option>
+                  </select>
+                  <select id="editorScriptTone" class="form-select-sm">
+                    <option value="profesional">Profesional</option>
+                    <option value="persuasivo">Persuasivo</option>
+                    <option value="casual">Casual</option>
+                  </select>
+                </div>
+                <button type="button" class="btn-primary-sm w-full" id="btnGenerateEditorScript">Redactar Guión</button>
+              </div>
+
+              <!-- Script Area -->
+              <div class="right-panel-box glass-card" style="margin-top: 15px; flex-grow: 1; display: flex; flex-direction: column;">
+                <h4><i class="fa-solid fa-file-signature"></i> Guión de Video</h4>
+                <textarea id="editorScriptTextarea" class="form-textarea-editor" placeholder="Escribe el texto que dirá el presentador del video..." style="flex-grow: 1; resize: none; margin-bottom: 12px;">¡Hola! Bienvenidos a Synthetic Digital Labs. Hoy les mostraré cómo crear avatares y clonar voces de forma profesional.</textarea>
+                
+                <div class="script-footer-controls">
+                  <div class="voice-selection-tag">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <div class="v-tag-info">
+                      <span id="selectedVoiceNameDisplay">Elena Voz</span>
+                      <span id="selectedVoiceLangDisplay">Español</span>
+                    </div>
+                  </div>
+
+                  <div class="play-script-row">
+                    <button type="button" class="btn-outline-sm" id="btnPlayScriptSpeech" title="Escuchar audio del guion">
+                      <i class="fa-solid fa-play"></i> Escuchar Guion
+                    </button>
+                    <button type="button" class="btn-outline-sm" id="btnStopScriptSpeech" title="Detener audio" style="display: none;">
+                      <i class="fa-solid fa-stop"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Fast Translation Row -->
+                <div class="translate-script-row" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                  <select id="editorTranslateLang" class="form-select-sm">
+                    <option value="en">Traducir a Inglés</option>
+                    <option value="es">Traducir a Español</option>
+                    <option value="pt">Traducir a Portugués</option>
+                  </select>
+                  <button type="button" class="btn-secondary-sm" id="btnTranslateEditorScript">Traducir</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2.6 BIBLIOTECA (LIBRARY) VIEW PANEL -->
+        <section class="studio-view" id="view-library">
+          <div class="tabs-header-hg">
+            <button class="hg-tab-btn active" data-tab="lib-videos">Videos Generados</button>
+            <button class="hg-tab-btn" data-tab="lib-audios">Locuciones (TTS)</button>
+            <button class="hg-tab-btn" data-tab="lib-cloned">Voces Clonadas</button>
+            <button class="hg-tab-btn" data-tab="lib-avatars">Avatares creados</button>
+            <button class="hg-tab-btn" data-tab="lib-scripts">Guiones guardados</button>
+          </div>
+
+          <!-- Video grid -->
+          <div class="hg-tab-content active" id="lib-videos-panel">
+            <div class="hg-library-grid" id="libraryVideosGrid">
+              <!-- Loaded via JS -->
+            </div>
+          </div>
+
+          <!-- Audio grid -->
+          <div class="hg-tab-content" id="lib-audios-panel">
+            <div class="hg-library-grid" id="libraryAudiosGrid">
+              <!-- Loaded via JS -->
+            </div>
+          </div>
+
+          <!-- Cloned Voices grid -->
+          <div class="hg-tab-content" id="lib-cloned-panel">
+            <div class="hg-library-grid" id="libraryClonedGrid">
+              <!-- Loaded via JS -->
+            </div>
+          </div>
+
+          <!-- Custom Avatars grid -->
+          <div class="hg-tab-content" id="lib-avatars-panel">
+            <div class="hg-library-grid" id="libraryAvatarsGrid">
+              <!-- Loaded via JS -->
+            </div>
+          </div>
+
+          <!-- Saved Scripts grid -->
+          <div class="hg-tab-content" id="lib-scripts-panel">
+            <div class="hg-library-grid" id="libraryScriptsGrid">
+              <!-- Loaded via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 2.7 CONFIGURACIÓN (SETTINGS) VIEW PANEL -->
+        <section class="studio-view" id="view-settings">
+          <div class="split-info-card glass-card">
+            <div class="split-left">
+              <h3>Ajustes de Perfil</h3>
+              <form id="settingsForm">
+                <div class="form-group">
+                  <label for="settingsUsername"><i class="fa-solid fa-user"></i> Nombre de Usuario</label>
+                  <input type="text" id="settingsUsername" class="form-input" value="Usuario SDL">
+                </div>
+                <div class="form-group">
+                  <label for="settingsEmail"><i class="fa-solid fa-envelope"></i> Correo de contacto</label>
+                  <input type="email" id="settingsEmail" class="form-input" value="usuario@syntheticdigitallab.com" readonly>
+                </div>
+                <div class="form-group">
+                  <label><i class="fa-solid fa-credit-card"></i> Suscripción Activa</label>
+                  <input type="text" class="form-input" value="Creador Pro ($29 / mes)" readonly style="color: var(--neon-cyan); font-weight: bold;">
+                </div>
+                <button type="submit" class="btn-primary">Guardar Cambios</button>
               </form>
             </div>
-
-            <div class="tool-preview-card glass-card">
-              <div class="processing-overlay" id="translateProcessOverlay">
-                <div class="studio-spinner"></div>
-                <div class="processing-text">Traduciendo Audio...</div>
-                <div class="processing-log" id="translateProcessLog">Transcribiendo pista de audio...</div>
-              </div>
-              <h3 class="preview-title"><i class="fa-solid fa-headphones"></i> Audio Traducido</h3>
-              
-              <div class="voice-visualizer-box" id="translateVisualizer">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
+            
+            <div class="split-right">
+              <h3>Créditos y Consumos</h3>
+              <div class="settings-credits-box">
+                <div class="scb-row">
+                  <span>Plan Asignado:</span>
+                  <strong>150 créditos</strong>
+                </div>
+                <div class="scb-row">
+                  <span>Consumidos:</span>
+                  <strong style="color: var(--neon-purple);">30 créditos</strong>
+                </div>
+                <div class="scb-row">
+                  <span>Disponibles:</span>
+                  <strong style="color: var(--neon-cyan);" id="settingsCreditsVal">120 créditos</strong>
+                </div>
+                <button class="btn-secondary w-full" id="btnResetCredits" style="margin-top: 15px;">
+                  <i class="fa-solid fa-arrows-rotate"></i> Recargar Créditos (Simulado)
+                </button>
               </div>
 
-              <div class="audio-player-card" id="translatePlayerCard" style="display: none;">
-                <div class="play-btn" id="translatePlayBtn"><i class="fa-solid fa-play"></i></div>
-                <div class="audio-player-info">
-                  <div class="audio-title" id="translateAudioTitle">Audio Traducido</div>
-                  <div class="audio-subtitle" id="translateAudioSubtitle">Traducido al Inglés</div>
-                </div>
-                <button class="project-action-btn" id="translateDownloadBtn" title="Descargar Audio"><i class="fa-solid fa-download"></i></button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2.8 EDITOR DE PROYECTOS VIEW PANEL -->
-        <section class="studio-view" id="view-projects-editor">
-          <div class="projects-header-actions">
-            <div class="search-bar-wrapper">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="projectSearchInput" class="search-input" placeholder="Buscar proyecto...">
-            </div>
-            <button class="btn-primary btn-shortcut" data-target="video-avatar">
-              <i class="fa-solid fa-plus"></i> Nuevo Proyecto
-            </button>
-          </div>
-
-          <div class="projects-grid" id="projectsGrid">
-            <!-- Rendered dynamically via JS from localStorage -->
-          </div>
-        </section>
-
-        <!-- 2.9 BIBLIOTECA VIEW PANEL -->
-        <section class="studio-view" id="view-library">
-          <nav class="library-tabs-nav">
-            <span class="lib-tab-btn active" data-tab="avatars">Avatares</span>
-            <span class="lib-tab-btn" data-tab="voices">Voces</span>
-            <span class="lib-tab-btn" data-tab="videos">Videos</span>
-            <span class="lib-tab-btn" data-tab="audios">Audios</span>
-            <span class="lib-tab-btn" data-tab="scripts">Guiones</span>
-          </nav>
-
-          <!-- Avatars Tab -->
-          <div class="library-tab-panel active" id="tab-panel-avatars">
-            <div class="library-grid" id="libAvatarsGrid">
-              <!-- Rendered dynamically via JS -->
-            </div>
-          </div>
-
-          <!-- Voices Tab -->
-          <div class="library-tab-panel" id="tab-panel-voices">
-            <div class="library-grid" id="libVoicesGrid">
-              <!-- Rendered dynamically via JS -->
-            </div>
-          </div>
-
-          <!-- Videos Tab -->
-          <div class="library-tab-panel" id="tab-panel-videos">
-            <div class="library-grid" id="libVideosGrid">
-              <!-- Rendered dynamically via JS -->
-            </div>
-          </div>
-
-          <!-- Audios Tab -->
-          <div class="library-tab-panel" id="tab-panel-audios">
-            <div class="library-grid" id="libAudiosGrid">
-              <!-- Rendered dynamically via JS -->
-            </div>
-          </div>
-
-          <!-- Scripts Tab -->
-          <div class="library-tab-panel" id="tab-panel-scripts">
-            <div class="library-grid" id="libScriptsGrid">
-              <!-- Rendered dynamically via JS -->
-            </div>
-          </div>
-        </section>
-
-        <!-- 2.10 CONFIGURACIÓN VIEW PANEL -->
-        <section class="studio-view" id="view-settings">
-          <div class="config-layout">
-            <!-- User settings & Plan -->
-            <div>
-              <!-- Profile Card -->
-              <div class="config-card glass-card" style="margin-bottom: 24px;">
-                <h4 class="config-title"><i class="fa-solid fa-circle-user"></i> Datos del Usuario</h4>
-                <form id="settingsProfileForm">
-                  <div class="form-group">
-                    <label for="settingsNameInput">Nombre Completo</label>
-                    <input type="text" id="settingsNameInput" class="form-input" value="Usuario SDL" required>
-                  </div>
-                  <div class="form-group">
-                    <label for="settingsEmailInput">Correo Electrónico</label>
-                    <input type="email" id="settingsEmailInput" class="form-input" value="usuario@syntheticdigitallab.com" required>
-                  </div>
-                  <button type="submit" class="btn-primary w-full">Guardar Perfil</button>
-                </form>
-              </div>
-
-              <!-- Plan Settings -->
-              <div class="config-card glass-card">
-                <h4 class="config-title"><i class="fa-solid fa-shield-halved"></i> Plan de Suscripción</h4>
-                <div class="form-group" style="margin-bottom: 24px;">
-                  <label>Plan Activo: <strong id="settingsPlanText" style="color: var(--neon-purple); margin-left: 5px;">Pro Creador</strong></label>
-                  <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">Tienes acceso completo a avatares premium, clonación de voz segura y descargas en Full HD de video.</p>
-                </div>
-                <div class="form-group">
-                  <label>Créditos Mensuales</label>
-                  <div class="credits-progress-wrapper" style="width: 100%;">
-                    <div class="credits-bar" style="width: 100%; height: 8px;">
-                      <div class="credits-bar-fill" id="settingsCreditsFill" style="width: 80%;"></div>
-                    </div>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-                    <span id="settingsCreditsText">120 / 150 créditos utilizados</span>
-                    <span>Renovación: 24 Jun 2026</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Integrations and API Keys -->
-            <div>
-              <!-- Integrations -->
-              <div class="config-card glass-card" style="margin-bottom: 24px;">
-                <h4 class="config-title"><i class="fa-solid fa-puzzle-piece"></i> Integraciones API de Terceros</h4>
-                <div class="integration-item connected">
-                  <div class="integration-info">
-                    <div class="integration-icon"><i class="fa-solid fa-robot"></i></div>
-                    <div class="integration-meta">
-                      <span class="integration-name">OpenAI API (GPT-4o)</span>
-                      <span class="integration-desc">Generación de guiones avanzados</span>
-                    </div>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" id="integrationOpenAI" checked>
-                    <span class="switch-slider"></span>
-                  </label>
-                </div>
-                <div class="integration-item">
-                  <div class="integration-info">
-                    <div class="integration-icon"><i class="fa-solid fa-microphone"></i></div>
-                    <div class="integration-meta">
-                      <span class="integration-name">ElevenLabs Voice</span>
-                      <span class="integration-desc">Clonación e inflexión de voces</span>
-                    </div>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" id="integrationElevenLabs">
-                    <span class="switch-slider"></span>
-                  </label>
-                </div>
-                <div class="integration-item">
-                  <div class="integration-info">
-                    <div class="integration-icon"><i class="fa-solid fa-video"></i></div>
-                    <div class="integration-meta">
-                      <span class="integration-name">D-ID Presenter</span>
-                      <span class="integration-desc">Mapeo labial y gesticulación de foto</span>
-                    </div>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" id="integrationDID">
-                    <span class="switch-slider"></span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Custom API Keys -->
-              <div class="config-card glass-card">
-                <h4 class="config-title"><i class="fa-solid fa-key"></i> Claves API de Desarrollador</h4>
-                <div class="form-group">
-                  <label for="configApiKeyInput">SDL AI Studio Key</label>
-                  <div style="display: flex; gap: 10px;">
-                    <input type="password" id="configApiKeyInput" class="form-input" value="sdl_sk_live_8f3c7e2b109d4c" readonly style="font-family: monospace;">
-                    <button class="btn-secondary" id="btnCopyApiKey" style="padding: 0 16px;"><i class="fa-solid fa-copy"></i></button>
-                  </div>
-                  <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-top: 5px;">Utiliza esta API Key para conectar tus automatizaciones locales con el compilador del AI Studio.</p>
+              <div class="developer-settings-box" style="margin-top: 20px;">
+                <h3><i class="fa-solid fa-code"></i> Claves API</h3>
+                <p>Usa esta clave para conectar el motor de avatares con tu CMS externo.</p>
+                <div class="api-key-row">
+                  <input type="password" id="apiKeyVal" class="form-input" value="sdl_live_9a7c3b28d09e1f5a8b7c6d4" readonly style="font-family: monospace;">
+                  <button class="btn-outline-sm" id="btnToggleApiKey"><i class="fa-solid fa-eye"></i></button>
                 </div>
               </div>
             </div>
@@ -1342,16 +1093,7 @@
     </div>
   </div>
 
-  <!-- ==========================================================================
-       GLOBAL NOTIFICATION & MODAL TEMPLATES
-       ========================================================================== -->
-  
-  <!-- Toasts container -->
-  <div class="toast-container" id="toastContainer">
-    <!-- Toast notifications dynamically added here -->
-  </div>
-
-  <!-- Modal overlay -->
+  <!-- Global Modal Overlay -->
   <div class="studio-modal-overlay" id="globalModalOverlay">
     <div class="studio-modal-box">
       <i class="fa-solid fa-xmark modal-close-btn" id="globalModalCloseBtn"></i>
@@ -1362,7 +1104,48 @@
     </div>
   </div>
 
+  <!-- Global Toast container -->
+  <div class="toast-container" id="toastContainer">
+    <!-- Toast notifications dynamically added here -->
+  </div>
+
+  <!-- ==========================================================================
+       GLOBAL VIRTUAL VOICE AGENT "NOVA" (Siri/Jarvis Style)
+       ========================================================================== -->
+  <!-- Nova Voice Assistant -->
+  <div id="novaAgent" class="nova-siri-container hidden" aria-live="polite">
+    <div class="nova-avatar-wrapper">
+      <img src="assets/nova_avatar.png" alt="Nova Robot Avatar" class="nova-robot-char">
+      <div class="nova-voice-waves">
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+      </div>
+    </div>
+    <div class="nova-speech-bubble" id="novaBubble">
+      <span class="nova-bubble-text" id="novaBubbleText">¿En qué puedo ayudarte?</span>
+    </div>
+  </div>
+
+  <!-- Initial site consent for cookies + microphone -->
+  <div id="novaConsentPanel" class="nova-consent-panel" role="dialog" aria-modal="true" aria-labelledby="novaConsentTitle">
+    <div class="nova-consent-card">
+      <span class="nova-consent-orbit"></span>
+      <div class="nova-consent-copy">
+        <span class="nova-consent-eyebrow">Asistente IA disponible</span>
+        <h2 id="novaConsentTitle">Activa Nova al entrar</h2>
+        <p>Autoriza cookies y micrófono para hablar con Nova diciendo <strong>"Hey Nova"</strong>.</p>
+      </div>
+      <button id="novaConsentAccept" class="nova-consent-accept" type="button">
+        Aceptar cookies y micrófono
+      </button>
+      <span id="novaConsentStatus" class="nova-consent-status">Se abrirá el permiso del navegador.</span>
+    </div>
+  </div>
+
   <!-- Scripts -->
-  <script src="/main.js" type="module"></script>
+  <script src="main.js"></script>
 </body>
 </html>

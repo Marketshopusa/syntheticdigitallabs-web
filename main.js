@@ -2,107 +2,168 @@
 // SYNTHETIC DIGITAL LABS AI STUDIO - CORE JAVASCRIPT
 // ==========================================================================
 
-// Global state initialization
+// --- DEFAULT STATE / DATABASE ---
 const DEFAULT_AVATARS = [
-  { id: 'av-sofia', name: 'Sofía Presentadora', style: 'Presentador', lang: 'Español (ES)', img: '/assets/nova_avatar.png', desc: 'Avatar oficial premium de alta definición.' },
-  { id: 'av-roberto', name: 'Roberto Corporativo', style: 'Corporativo', lang: 'Español (MX)', img: '/assets/nova_avatar.png', desc: 'Avatar formal para presentaciones empresariales.' },
-  { id: 'av-elena', name: 'Elena Podcast', style: 'Podcast', lang: 'Español (ES)', img: '/assets/nova_avatar.png', desc: 'Voz amigable y estilo casual con micrófono.' }
+  { id: 'av-sofia', name: 'Sofía Presentadora', style: 'Presentador', lang: 'Español (ES)', img: 'assets/nova_avatar.png', desc: 'Avatar oficial premium de alta definición.' },
+  { id: 'av-roberto', name: 'Roberto Corporativo', style: 'Corporativo', lang: 'Español (MX)', img: 'assets/nova_avatar.png', desc: 'Avatar formal para presentaciones empresariales.' },
+  { id: 'av-elena', name: 'Elena Podcast', style: 'Podcast', lang: 'Español (ES)', img: 'assets/nova_avatar.png', desc: 'Voz amigable y estilo casual con micrófono.' },
+  { id: 'av-nova', name: 'Nova Holograma 3D', style: 'Futurista', lang: 'Español (ES)', img: 'assets/nova_avatar.png', desc: 'Asistente de IA robótico oficial.' }
 ];
 
 const DEFAULT_VOICES = [
-  { id: 'v-sofia', name: 'Voz de Sofía (Femenina)', lang: 'Español (ES)', type: 'Narrativa', isDefault: true },
-  { id: 'v-roberto', name: 'Voz de Roberto (Masculina)', lang: 'Español (MX)', type: 'Corporativa', isDefault: true },
-  { id: 'v-lucas', name: 'Voz de Lucas (Masculina)', lang: 'Español (ES)', type: 'Comercial', isDefault: true }
+  { id: 'v-sofia', name: 'Sofía Voz (Femenina)', lang: 'Español (ES)', gender: 'Femenino', tone: 'Profesional', isPremium: true },
+  { id: 'v-roberto', name: 'Roberto Voz (Masculina)', lang: 'Español (MX)', gender: 'Masculino', tone: 'Corporativo', isPremium: true },
+  { id: 'v-elena', name: 'Elena Voz (Femenina)', lang: 'Español (ES)', gender: 'Femenino', tone: 'Cálido', isPremium: false },
+  { id: 'v-lucas', name: 'Lucas Voz (Masculina)', lang: 'Español (ES)', gender: 'Masculino', tone: 'Vendedor', isPremium: false },
+  { id: 'v-john', name: 'John Voice (Male)', lang: 'Inglés (US)', gender: 'Masculino', tone: 'Natural', isPremium: true },
+  { id: 'v-sarah', name: 'Sarah Voice (Female)', lang: 'Inglés (US)', gender: 'Femenino', tone: 'Narrativa', isPremium: true }
+];
+
+const DEFAULT_TEMPLATES = [
+  { id: 'temp-corp', name: 'Resultados Corporativos', tag: 'Negocios', aspect: '16:9', avatar: 'av-roberto', voice: 'v-roberto', script: 'Estimado equipo de dirección, hoy les presento el balance comercial y los resultados destacados del trimestre. Hemos superado los objetivos fijados en un doce por ciento.' },
+  { id: 'temp-sales', name: 'Anuncio Promocional Redes', tag: 'Marketing', aspect: '9:16', avatar: 'av-sofia', voice: 'v-sofia', script: '¿Cansado de gastar miles de dólares en estudios de grabación? Con AI Studio puedes crear presentadores interactivos para tus productos en menos de un minuto. ¡Haz clic para probarlo gratis!' },
+  { id: 'temp-edu', name: 'Tutorial de Clonación', tag: 'Educativo', aspect: '9:16', avatar: 'av-elena', voice: 'v-elena', script: 'Hola a todos, hoy aprenderemos cómo puedes clonar tu propia voz de forma ética utilizando nuestro panel avanzado de locución. Tan solo requiere diez segundos de audio limpio.' },
+  { id: 'temp-news', name: 'Noticias Tecnología IA', tag: 'Noticias', aspect: '16:9', avatar: 'av-nova', voice: 'v-lucas', script: 'Última hora: Synthetic Digital Labs lanza oficialmente su espacio de trabajo rediseñado al estilo HeyGen, unificando avatares y línea de tiempo interactiva.' }
 ];
 
 const DEFAULT_PROJECTS = [
-  { id: 'p-1', name: 'Vídeo Explicativo AI Studio', type: 'video', date: '2026-06-01', status: 'Completado', details: 'Horizontal (16:9) • Voz Sofía' },
-  { id: 'p-2', name: 'Audio Introducción Podcast', type: 'audio', date: '2026-06-03', status: 'Completado', details: 'Sintetizado • Voz Lucas' },
-  { id: 'p-3', name: 'Guión Campaña Marketing', type: 'guion', date: '2026-06-05', status: 'Completado', details: 'Cercano (60s)' }
+  { id: 'p-1', name: 'Vídeo Comercial AI Studio', type: 'video', date: '2026-06-01', duration: '15s', details: 'Horizontal (16:9) • Voz Sofía', avatarImg: 'assets/nova_avatar.png' },
+  { id: 'p-2', name: 'Locución Introductoria Podcast', type: 'audio', date: '2026-06-03', duration: '30s', details: 'Sintetizado • Voz Lucas', avatarImg: 'assets/ref_blue.png' },
+  { id: 'p-3', name: 'Guión Campaña Marketing', type: 'guion', date: '2026-06-05', duration: '60s', details: 'Persuasivo • Español', avatarImg: 'assets/logo.png' }
 ];
 
-// Initialize localStorage values if empty
-function initLocalStorage() {
-  if (!localStorage.getItem('sdl_avatars')) {
-    localStorage.setItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
+// --- IN-MEMORY FALLBACK DATABASE ---
+const memoryStorage = {};
+const storageAvailable = (() => {
+  try {
+    localStorage.setItem('__storage_test__', 'test');
+    localStorage.removeItem('__storage_test__');
+    return true;
+  } catch (e) {
+    return false;
   }
-  if (!localStorage.getItem('sdl_voices')) {
-    localStorage.setItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
-  }
-  if (!localStorage.getItem('sdl_projects')) {
-    localStorage.setItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
-  }
-  if (!localStorage.getItem('sdl_credits')) {
-    localStorage.setItem('sdl_credits', '120');
-  }
-  if (!localStorage.getItem('sdl_username')) {
-    localStorage.setItem('sdl_username', 'Usuario SDL');
-  }
-  if (!localStorage.getItem('sdl_email')) {
-    localStorage.setItem('sdl_email', 'usuario@syntheticdigitallab.com');
+})();
+
+function safeGetItem(key, fallback = null) {
+  if (storageAvailable) {
+    try {
+      return localStorage.getItem(key) || fallback;
+    } catch (e) {
+      return memoryStorage[key] || fallback;
+    }
+  } else {
+    return memoryStorage[key] || fallback;
   }
 }
 
+function safeSetItem(key, val) {
+  if (storageAvailable) {
+    try {
+      localStorage.setItem(key, val);
+    } catch (e) {
+      memoryStorage[key] = val;
+    }
+  } else {
+    memoryStorage[key] = val;
+  }
+}
+
+// --- INITIALIZE DATABASE ---
+function initLocalStorage() {
+  const avatars = safeGetItem('sdl_avatars');
+  if (!avatars) {
+    safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
+  } else {
+    try {
+      const parsed = JSON.parse(avatars);
+      if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id')) {
+        safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
+      }
+    } catch (e) {
+      safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
+    }
+  }
+
+  const voices = safeGetItem('sdl_voices');
+  if (!voices) {
+    safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
+  } else {
+    try {
+      const parsed = JSON.parse(voices);
+      if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id') || !parsed[0].hasOwnProperty('lang')) {
+        safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
+      }
+    } catch (e) {
+      safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
+    }
+  }
+
+  const projects = safeGetItem('sdl_projects');
+  if (!projects) {
+    safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
+  } else {
+    try {
+      const parsed = JSON.parse(projects);
+      if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id')) {
+        safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
+      }
+    } catch (e) {
+      safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
+    }
+  }
+
+  if (!safeGetItem('sdl_credits')) safeSetItem('sdl_credits', '120');
+  if (!safeGetItem('sdl_username')) safeSetItem('sdl_username', 'Usuario SDL');
+  if (!safeGetItem('sdl_email')) safeSetItem('sdl_email', 'usuario@syntheticdigitallab.com');
+}
 initLocalStorage();
 
-// State helpers
+// --- STATE HELPERS ---
 function getLocal(key) {
-  return JSON.parse(localStorage.getItem(key));
+  try {
+    const val = safeGetItem(key);
+    if (!val) return [];
+    const parsed = JSON.parse(val);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.error(`Error parsing key "${key}":`, e);
+    return [];
+  }
 }
 function setLocal(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+  safeSetItem(key, JSON.stringify(value));
 }
 function getCredits() {
-  return parseInt(localStorage.getItem('sdl_credits')) || 120;
+  return parseInt(safeGetItem('sdl_credits')) || 120;
 }
 function setCredits(val) {
-  localStorage.setItem('sdl_credits', Math.max(0, val).toString());
+  safeSetItem('sdl_credits', Math.max(0, val).toString());
   updateCreditsDisplay();
 }
 
-// Update counters across dashboard & header
+// --- GLOBAL VARIABLES FOR EDITOR STATE ---
+let selectedAvatarId = 'av-sofia';
+let selectedVoiceId = 'v-sofia';
+let selectedRatio = '16-9';
+let selectedBg = 'dark';
+let activeSpeechUtterance = null;
+let isSpeakingPreview = false;
+
+// --- UPDATE INTERFACE COUNTERS ---
 function updateCreditsDisplay() {
   const credits = getCredits();
   const fillPct = (credits / 150) * 100;
   
   const fillEl = document.getElementById('headerCreditsFill');
   const textEl = document.getElementById('headerCreditsText');
-  const dashValCredits = document.getElementById('dashValCredits');
-  const settingsFill = document.getElementById('settingsCreditsFill');
-  const settingsText = document.getElementById('settingsCreditsText');
+  const settingsText = document.getElementById('settingsCreditsVal');
 
   if (fillEl) fillEl.style.width = `${fillPct}%`;
   if (textEl) textEl.textContent = `${credits} / 150`;
-  if (dashValCredits) dashValCredits.textContent = credits;
-  if (settingsFill) settingsFill.style.width = `${fillPct}%`;
-  if (settingsText) settingsText.textContent = `${credits} / 150 créditos disponibles`;
+  if (settingsText) settingsText.textContent = `${credits} créditos`;
 }
 
-// Update dashboard overview stats
-function updateDashboardStats() {
-  const avatars = getLocal('sdl_avatars') || [];
-  const voices = getLocal('sdl_voices') || [];
-  const projects = getLocal('sdl_projects') || [];
-  
-  const avatarsCount = avatars.length;
-  const voicesCount = voices.length;
-  const projectsCount = projects.length;
-  const videosCount = projects.filter(p => p.type === 'video').length;
-
-  const elAvatars = document.getElementById('dashValAvatars');
-  const elVoices = document.getElementById('dashValVoices');
-  const elVideos = document.getElementById('dashValVideos');
-  const elProjects = document.getElementById('dashValProjects');
-
-  if (elAvatars) elAvatars.textContent = avatarsCount;
-  if (elVoices) elVoices.textContent = voicesCount;
-  if (elVideos) elVideos.textContent = videosCount;
-  if (elProjects) elProjects.textContent = projectsCount;
-}
-
-// ==========================================
-// TOAST NOTIFICATIONS & MODALS
-// ==========================================
+// --- TOAST NOTIFICATIONS & MODALS ---
 function showToast(title, desc, type = 'success') {
   const container = document.getElementById('toastContainer');
   if (!container) return;
@@ -124,16 +185,10 @@ function showToast(title, desc, type = 'success') {
   `;
 
   container.appendChild(toast);
-  
-  // Slide in
   setTimeout(() => toast.classList.add('active'), 50);
 
-  // Auto remove
-  const timer = setTimeout(() => {
-    slideOutAndRemove(toast);
-  }, 4000);
+  const timer = setTimeout(() => slideOutAndRemove(toast), 4000);
 
-  // Close button trigger
   toast.querySelector('.toast-close').addEventListener('click', () => {
     clearTimeout(timer);
     slideOutAndRemove(toast);
@@ -178,7 +233,6 @@ function showModal(title, message, isSuccess = true, callback = null) {
   actionBtn.addEventListener('click', closeHandler);
 }
 
-// Modal close button
 const globalModalCloseBtn = document.getElementById('globalModalCloseBtn');
 if (globalModalCloseBtn) {
   globalModalCloseBtn.addEventListener('click', () => {
@@ -186,115 +240,211 @@ if (globalModalCloseBtn) {
   });
 }
 
-// ==========================================
-// NAVIGATION SYSTEM (Landing vs SaaS Studio)
-// ==========================================
+// --- PART 1: PUBLIC LANDING PAGE INTERACTION ---
+
+// Neural Grid Canvas Animation
+const canvas = document.getElementById('neuralCanvas');
+if (canvas) {
+  const ctx = canvas.getContext('2d');
+  let points = [];
+  const maxPoints = 50;
+
+  function resizeCanvas() {
+    canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = canvas.parentElement.offsetHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  for (let i = 0; i < maxPoints; i++) {
+    points.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5
+    });
+  }
+
+  function animateNeural() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.04)';
+    ctx.fillStyle = 'rgba(189, 0, 255, 0.1)';
+
+    points.forEach((p, idx) => {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      for (let j = idx + 1; j < points.length; j++) {
+        const p2 = points[j];
+        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+        if (dist < 100) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+    });
+
+    requestAnimationFrame(animateNeural);
+  }
+  animateNeural();
+}
+
+// Budget Calculator
+function calculateBudget() {
+  const calcWeb = document.getElementById('calcWeb');
+  const calcApp = document.getElementById('calcApp');
+  const calcLogo = document.getElementById('calcLogo');
+  const calcMarketing = document.getElementById('calcMarketing');
+  const calcHosting = document.getElementById('calcHosting');
+
+  let price = 0;
+  let days = 0;
+
+  if (calcWeb && calcWeb.checked) { price += 150; days = Math.max(days, 1); }
+  if (calcApp && calcApp.checked) { price += 500; days = Math.max(days, 14); }
+  if (calcLogo && calcLogo.checked) { price += 80; days = Math.max(days, 2); }
+  if (calcMarketing && calcMarketing.checked) { price += 70; days = Math.max(days, 3); }
+  if (calcHosting && calcHosting.checked) { price += 50; days = Math.max(days, 1); }
+
+  const priceEl = document.getElementById('calcTotalPrice');
+  const timeEl = document.getElementById('calcTotalTime');
+
+  if (priceEl) priceEl.textContent = `$${price} USD`;
+  if (timeEl) timeEl.textContent = days === 1 ? '24 Horas' : `${days} Días`;
+}
+
+document.querySelectorAll('.calc-checkbox-group input').forEach(box => {
+  box.addEventListener('change', calculateBudget);
+});
+calculateBudget();
+
+const calcRequestBtn = document.getElementById('calcRequestBtn');
+if (calcRequestBtn) {
+  calcRequestBtn.addEventListener('click', () => {
+    showToast('Presupuesto solicitado', 'Hemos pre-cargado tus opciones en el formulario de contacto.', 'info');
+    const contactSection = document.getElementById('contacto');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+}
+
+// Mobile Menu toggler
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+if (mobileMenuBtn && mobileMenu) {
+  mobileMenuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('active');
+  });
+}
+document.querySelectorAll('.mobile-link').forEach(link => {
+  link.addEventListener('click', () => {
+    if (mobileMenu) mobileMenu.classList.remove('active');
+  });
+});
+
+// FAQ Accordion
+document.querySelectorAll('.faq-trigger').forEach(trigger => {
+  trigger.addEventListener('click', () => {
+    const parent = trigger.parentElement;
+    parent.classList.toggle('active');
+  });
+});
+
+// Contact Form Submit
+const contactForm = document.getElementById('contactForm');
+const contactFormStatus = document.getElementById('contactFormStatus');
+if (contactForm) {
+  contactForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    contactForm.reset();
+    showModal('Mensaje Enviado', 'Gracias por escribirnos. Uno de nuestros consultores de IA se pondrá en contacto contigo en breve.', true);
+  });
+}
+
+
+// --- PART 2: AI STUDIO (HEYGEN WORKSPACE CLONE) ---
+
 const publicLanding = document.getElementById('public-landing');
 const studioApp = document.getElementById('ai-studio-app');
 const menuItems = document.querySelectorAll('.menu-item');
 const studioViews = document.querySelectorAll('.studio-view');
 const viewTitle = document.getElementById('studioViewTitle');
 
-// Toggle entire layout
+// Navigation triggers
 function enterStudio(targetView = 'dashboard') {
   if (publicLanding) publicLanding.style.display = 'none';
-  if (studioApp) studioApp.classList.add('active');
-  
+  if (studioApp) {
+    studioApp.style.display = 'flex';
+    studioApp.classList.add('active');
+  }
   window.scrollTo({ top: 0, behavior: 'instant' });
-  
-  // Set default / specific view
   switchView(targetView);
   
-  // Load data inputs/lists
-  loadDropdowns();
-  renderDashboardActivity();
-  renderProjectsList();
+  // Implicitly load databases
+  updateCreditsDisplay();
+  renderHomeWidgets();
+  renderTemplatesGrid();
+  renderAvatarsGrid();
+  renderVoicesLibrary();
   renderLibrary();
   
-  showToast('¡Bienvenido al AI Studio!', 'Sintonizando procesadores neuronales...', 'info');
+  showToast('¡Bienvenido al AI Studio!', 'Espacio de trabajo listo estilo HeyGen', 'info');
 }
 
 function exitStudio() {
   if (studioApp) studioApp.classList.remove('active');
+  if (studioApp) studioApp.style.display = 'none';
   if (publicLanding) publicLanding.style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
-// Switch active view panel
 function switchView(viewName) {
-  // Update sidebar selection
   menuItems.forEach(item => {
-    if (item.dataset.view === viewName) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
+    if (item.dataset.view === viewName) item.classList.add('active');
+    else item.classList.remove('active');
   });
 
-  // Switch content panels
   studioViews.forEach(view => {
-    if (view.id === `view-${viewName}`) {
-      view.classList.add('active');
-    } else {
-      view.classList.remove('active');
-    }
+    if (view.id === `view-${viewName}`) view.classList.add('active');
+    else view.classList.remove('active');
   });
 
-  // Set topbar title
-  const formattedTitle = viewName
-    .replace('-', ' ')
-    .split(' ')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-  if (viewTitle) viewTitle.textContent = formattedTitle === 'Tts' ? 'Texto a Voz' : formattedTitle;
+  const formattedTitle = viewName.charAt(0).toUpperCase() + viewName.slice(1);
+  if (viewTitle) {
+    if (viewName === 'dashboard') viewTitle.textContent = 'Inicio';
+    else if (viewName === 'voices') viewTitle.textContent = 'Biblioteca de Voces';
+    else if (viewName === 'editor') viewTitle.textContent = 'Editor de Video Canvas';
+    else if (viewName === 'library') viewTitle.textContent = 'Biblioteca y Proyectos';
+    else viewTitle.textContent = formattedTitle;
+  }
 }
 
-// Bind navigation listeners
+// Navigation event bindings
 document.querySelectorAll('.btn-enter-studio').forEach(btn => {
   btn.addEventListener('click', () => enterStudio('dashboard'));
 });
-
 document.querySelectorAll('.btn-exit-studio').forEach(btn => {
   btn.addEventListener('click', exitStudio);
 });
-
-// Sidebar links navigation
 menuItems.forEach(item => {
   item.addEventListener('click', () => {
-    const viewName = item.dataset.view;
-    switchView(viewName);
-    // Close sidebar on mobile
-    document.getElementById('studioSidebar').classList.remove('open');
+    switchView(item.dataset.view);
+    const sidebar = document.getElementById('studioSidebar');
+    if (sidebar) sidebar.classList.remove('open');
   });
 });
 
-// Public tools section CTA buttons
-document.querySelectorAll('.btn-go-tool').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tool = btn.dataset.tool;
-    let viewTarget = 'dashboard';
-    
-    if (tool === 'avatar') viewTarget = 'create-avatar';
-    else if (tool === 'video') viewTarget = 'video-avatar';
-    else if (tool === 'voice-clone') viewTarget = 'voice-clone';
-    else if (tool === 'tts') viewTarget = 'tts';
-    else if (tool === 'script') viewTarget = 'script-gen';
-    else if (tool === 'translate') viewTarget = 'translator';
-    
-    enterStudio(viewTarget);
-  });
-});
-
-// Quick shortcut action buttons in Dashboard
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.btn-shortcut');
-  if (btn) {
-    const target = btn.dataset.target;
-    switchView(target);
-  }
-});
-
-// Mobile Sidebar toggler
+// Mobile toggle Sidebar
 const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
 const studioSidebar = document.getElementById('studioSidebar');
 if (mobileSidebarToggle && studioSidebar) {
@@ -303,1682 +453,1227 @@ if (mobileSidebarToggle && studioSidebar) {
   });
 }
 
-// Close mobile sidebar click outside
+// Public tools section CTA buttons
+document.querySelectorAll('.btn-go-tool').forEach(btn => {
+  btn.addEventListener('click', () => {
+    enterStudio(btn.dataset.tool);
+  });
+});
+
+// Shortcut button helper
 document.addEventListener('click', (e) => {
-  if (studioSidebar && studioSidebar.classList.contains('open')) {
-    if (!studioSidebar.contains(e.target) && !mobileSidebarToggle.contains(e.target)) {
-      studioSidebar.classList.remove('open');
+  const btn = e.target.closest('.btn-shortcut');
+  if (btn) {
+    const target = btn.dataset.target;
+    switchView(target);
+    
+    // Check if aspect ratio is specified (for quick horizontal/vertical start)
+    if (btn.dataset.aspect) {
+      setRatio(btn.dataset.aspect);
     }
   }
 });
 
-// ==========================================
-// DATA DROPDOWNS LOADER
-// ==========================================
-function loadDropdowns() {
+// --- RENDER: HOME WIDGETS ---
+function renderHomeWidgets() {
+  const templatesGrid = document.getElementById('dashTemplatesGrid');
+  const avatarsGrid = document.getElementById('dashAvatarsGrid');
   const avatars = getLocal('sdl_avatars') || [];
-  const voices = getLocal('sdl_voices') || [];
 
-  const videoAvatarSelect = document.getElementById('videoAvatarSelect');
-  const videoVoiceSelect = document.getElementById('videoVoiceSelect');
-  const ttsVoiceSelect = document.getElementById('ttsVoiceSelect');
-
-  // Video Avatar Dropdown
-  if (videoAvatarSelect) {
-    videoAvatarSelect.innerHTML = '';
-    avatars.forEach(av => {
-      const opt = document.createElement('option');
-      opt.value = av.id;
-      opt.textContent = `${av.name} (${av.style} - ${av.lang})`;
-      videoAvatarSelect.appendChild(opt);
+  // 1. Featured templates
+  if (templatesGrid) {
+    templatesGrid.innerHTML = '';
+    DEFAULT_TEMPLATES.forEach(temp => {
+      const card = document.createElement('div');
+      card.className = 'template-card';
+      card.innerHTML = `
+        <div class="temp-thumb-wrapper">
+          <img src="${temp.id === 'temp-corp' ? 'thumbs/madeva.jpg' : (temp.id === 'temp-sales' ? 'thumbs/vkingo.jpg' : (temp.id === 'temp-edu' ? 'thumbs/latin.jpg' : 'thumbs/frost.jpg'))}" alt="${temp.name}">
+          <span class="temp-aspect-badge">${temp.aspect}</span>
+          <div class="temp-play-hover"><i class="fa-solid fa-circle-play"></i></div>
+        </div>
+        <div class="temp-info">
+          <h4>${temp.name}</h4>
+          <span>${temp.tag}</span>
+        </div>
+      `;
+      card.addEventListener('click', () => loadTemplate(temp));
+      templatesGrid.appendChild(card);
     });
   }
 
-  // Video Voice Dropdown
-  if (videoVoiceSelect) {
-    videoVoiceSelect.innerHTML = '';
-    voices.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.id;
-      opt.textContent = `${v.name} [${v.type}]`;
-      videoVoiceSelect.appendChild(opt);
-    });
-  }
-
-  // TTS Voice Dropdown
-  if (ttsVoiceSelect) {
-    ttsVoiceSelect.innerHTML = '';
-    voices.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.id;
-      opt.textContent = `${v.name} (${v.lang})`;
-      ttsVoiceSelect.appendChild(opt);
+  // 2. Featured avatars
+  if (avatarsGrid) {
+    avatarsGrid.innerHTML = '';
+    avatars.slice(0, 4).forEach(av => {
+      const card = document.createElement('div');
+      card.className = 'avatar-card';
+      card.innerHTML = `
+        <div class="av-thumb-wrapper">
+          <img src="${av.img}" alt="${av.name}">
+          <span class="av-lang-badge">${av.lang}</span>
+          <div class="av-play-hover"><i class="fa-solid fa-play"></i></div>
+        </div>
+        <div class="av-info-bar">
+          <h4>${av.name}</h4>
+          <span>${av.style}</span>
+        </div>
+      `;
+      card.addEventListener('click', () => selectAvatarForEditor(av.id));
+      avatarsGrid.appendChild(card);
     });
   }
 }
 
-// ==========================================
-// RENDER: DASHBOARD RECENT ACTIVITY
-// ==========================================
-function renderDashboardActivity() {
-  const tbody = document.getElementById('dashboardActivityTableBody');
-  if (!tbody) return;
+// --- RENDER: TEMPLATES GRID ---
+function renderTemplatesGrid() {
+  const grid = document.getElementById('templatesGrid');
+  if (!grid) return;
 
-  const projects = getLocal('sdl_projects') || [];
-  tbody.innerHTML = '';
-
-  if (projects.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted)">No hay actividad reciente.</td></tr>`;
-    return;
-  }
-
-  // Show top 3 newest projects
-  const recent = [...projects].reverse().slice(0, 3);
-  recent.forEach(proj => {
-    let iconClass = 'fa-file-lines';
-    if (proj.type === 'video') iconClass = 'fa-video';
-    if (proj.type === 'audio') iconClass = 'fa-microphone';
-    if (proj.type === 'avatar') iconClass = 'fa-user-astronaut';
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="activity-name-cell">
-        <i class="fa-solid ${iconClass} activity-icon"></i>
-        <span>${proj.name}</span>
-      </td>
-      <td>${proj.type.toUpperCase()}</td>
-      <td>${proj.date}</td>
-      <td>
-        <span class="activity-status-badge status-success">
-          <span class="pulse-dot cyan" style="width:6px; height:6px;"></span>
-          ${proj.status}
-        </span>
-      </td>
+  grid.innerHTML = '';
+  DEFAULT_TEMPLATES.forEach(temp => {
+    const card = document.createElement('div');
+    card.className = 'template-card';
+    card.innerHTML = `
+      <div class="temp-thumb-wrapper">
+        <img src="${temp.id === 'temp-corp' ? 'thumbs/madeva.jpg' : (temp.id === 'temp-sales' ? 'thumbs/vkingo.jpg' : (temp.id === 'temp-edu' ? 'thumbs/latin.jpg' : 'thumbs/frost.jpg'))}" alt="${temp.name}">
+        <span class="temp-aspect-badge">${temp.aspect}</span>
+        <div class="temp-play-hover"><i class="fa-solid fa-circle-play"></i></div>
+      </div>
+      <div class="temp-info">
+        <h4>${temp.name}</h4>
+        <span>${temp.tag}</span>
+      </div>
     `;
-    tbody.appendChild(tr);
+    card.addEventListener('click', () => loadTemplate(temp));
+    grid.appendChild(card);
   });
 }
 
-// ==========================================
-// 1. CREAR AVATAR PANEL LOGIC
-// ==========================================
+function loadTemplate(temp) {
+  selectedAvatarId = temp.avatar;
+  selectedVoiceId = temp.voice;
+  setRatio(temp.aspect);
+  
+  // Fill script
+  const textarea = document.getElementById('editorScriptTextarea');
+  if (textarea) textarea.value = temp.script;
+
+  switchView('editor');
+  syncEditorPresets();
+  showToast('Plantilla Cargada', `"${temp.name}" cargada en el lienzo.`, 'success');
+}
+
+// --- RENDER: AVATARS GRID ---
+function renderAvatarsGrid() {
+  const grid = document.getElementById('studioAvatarsGrid');
+  if (!grid) return;
+
+  const avatars = getLocal('sdl_avatars') || [];
+  grid.innerHTML = '';
+
+  avatars.forEach(av => {
+    const card = document.createElement('div');
+    card.className = 'avatar-card';
+    card.innerHTML = `
+      <div class="av-thumb-wrapper">
+        <img src="${av.img}" alt="${av.name}">
+        <span class="av-lang-badge">${av.lang}</span>
+        <div class="av-play-hover"><i class="fa-solid fa-play"></i></div>
+      </div>
+      <div class="av-info-bar">
+        <h4>${av.name}</h4>
+        <span>${av.style}</span>
+      </div>
+    `;
+    card.addEventListener('click', () => selectAvatarForEditor(av.id));
+    grid.appendChild(card);
+  });
+}
+
+function selectAvatarForEditor(id) {
+  selectedAvatarId = id;
+  switchView('editor');
+  syncEditorPresets();
+  showToast('Avatar Seleccionado', 'Cargado en el lienzo de trabajo.', 'info');
+}
+
+// --- PHOTO AVATAR GENERATION ---
 const avatarUploadZone = document.getElementById('avatarUploadZone');
 const avatarImageInput = document.getElementById('avatarImageInput');
 const avatarFileName = document.getElementById('avatarFileName');
-const avatarCreationForm = document.getElementById('avatarCreationForm');
-const avatarProcessOverlay = document.getElementById('avatarProcessOverlay');
-const avatarProcessLog = document.getElementById('avatarProcessLog');
+const avatarNameInput = document.getElementById('avatarNameInput');
 const avatarPreviewImg = document.getElementById('avatarPreviewImg');
-const avatarVisualBox = document.getElementById('avatarVisualBox');
-const avatarPreviewNameText = document.getElementById('avatarPreviewNameText');
-const avatarPreviewStyleText = document.getElementById('avatarPreviewStyleText');
 
-let loadedAvatarFileUrl = '/assets/nova_avatar.png';
+let loadedAvatarFileUrl = 'assets/nova_avatar.png';
 
-// File upload drag & drop trigger
 if (avatarUploadZone && avatarImageInput) {
   avatarUploadZone.addEventListener('click', () => avatarImageInput.click());
-  
   avatarImageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-      avatarFileName.textContent = `Archivo: ${file.name}`;
+      if (avatarFileName) avatarFileName.textContent = file.name;
       loadedAvatarFileUrl = URL.createObjectURL(file);
-    }
-  });
-
-  // Drag over
-  avatarUploadZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    avatarUploadZone.style.borderColor = 'var(--neon-purple)';
-  });
-  
-  avatarUploadZone.addEventListener('dragleave', () => {
-    avatarUploadZone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-  });
-
-  avatarUploadZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    avatarUploadZone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      avatarFileName.textContent = `Archivo: ${file.name}`;
-      loadedAvatarFileUrl = URL.createObjectURL(file);
+      if (avatarPreviewImg) avatarPreviewImg.src = loadedAvatarFileUrl;
     }
   });
 }
 
-// Form Submission (Simulate generator)
-if (avatarCreationForm) {
-  avatarCreationForm.addEventListener('submit', (e) => {
+const photoForm = document.getElementById('avatarCreationForm');
+if (photoForm) {
+  photoForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
     const credits = getCredits();
     if (credits < 10) {
-      showModal('Créditos Insuficientes', 'Necesitas al menos 10 créditos para generar un avatar.', false);
+      showModal('Créditos Insuficientes', 'Requiere al menos 10 créditos para crear un avatar fotográfico.', false);
       return;
     }
 
-    const name = document.getElementById('avatarNameInput').value.trim();
-    const style = document.getElementById('avatarStyleSelect').value;
-    const lang = document.getElementById('avatarLanguageSelect').value;
-    const desc = document.getElementById('avatarDescInput').value.trim();
+    const name = avatarNameInput.value.trim();
+    if (!name) return;
 
-    // Show loading process overlay
-    avatarProcessOverlay.classList.add('active');
-    avatarVisualBox.classList.add('generating');
-    
-    // Log simulation steps
-    const steps = [
-      { text: 'Iniciando pipeline neuronal...', delay: 100 },
-      { text: 'Alineando malla facial 3D...', delay: 700 },
-      { text: 'Optimizando texturas HD...', delay: 1500 },
-      { text: 'Sintetizando articuladores bucales...', delay: 2400 },
-      { text: '¡Avatar compilado con éxito!', delay: 3200 }
-    ];
+    // Deduct and save
+    setCredits(credits - 10);
+    const newAvatar = {
+      id: 'av-' + Date.now(),
+      name,
+      style: 'Foto de Retrato',
+      lang: 'Español (ES)',
+      img: loadedAvatarFileUrl,
+      desc: 'Avatar animado a partir de fotografía.'
+    };
 
-    steps.forEach(step => {
-      setTimeout(() => {
-        avatarProcessLog.textContent = step.text;
-      }, step.delay);
-    });
+    const list = getLocal('sdl_avatars') || [];
+    list.push(newAvatar);
+    setLocal('sdl_avatars', list);
 
-    // Finished compile
-    setTimeout(() => {
-      avatarProcessOverlay.classList.remove('active');
-      avatarVisualBox.classList.remove('generating');
-      
-      // Update preview card
-      avatarPreviewImg.src = loadedAvatarFileUrl;
-      avatarPreviewNameText.textContent = name;
-      avatarPreviewStyleText.textContent = `${style} (${lang})`;
-      
-      // Deduct credits and save item
-      setCredits(credits - 10);
-      
-      const newAvatar = {
-        id: 'av-' + Date.now(),
-        name,
-        style,
-        lang,
-        img: loadedAvatarFileUrl,
-        desc: desc || 'Avatar personalizado creado por el usuario.'
-      };
-      
-      const currentAvatars = getLocal('sdl_avatars') || [];
-      currentAvatars.push(newAvatar);
-      setLocal('sdl_avatars', currentAvatars);
-
-      // Save to projects
-      const currentProjects = getLocal('sdl_projects') || [];
-      currentProjects.push({
-        id: 'p-' + Date.now(),
-        name: `Avatar: ${name}`,
-        type: 'avatar',
-        date: new Date().toISOString().split('T')[0],
-        status: 'Completado',
-        details: `${style} • ${lang}`
-      });
-      setLocal('sdl_projects', currentProjects);
-
-      updateDashboardStats();
-      loadDropdowns();
-      
-      showToast('Avatar Creado', `"${name}" ha sido añadido a tu biblioteca.`, 'success');
-      showModal('Avatar Creado con Éxito', `Tu presentador virtual "${name}" ha sido compilado. Ya puedes utilizarlo en el panel de creación de video.`, true);
-      
-      // Reset form
-      avatarCreationForm.reset();
-      avatarFileName.textContent = '';
-    }, 3600);
+    showToast('Avatar Animado Listo', `"${name}" se ha añadido a la biblioteca.`, 'success');
+    renderAvatarsGrid();
+    renderHomeWidgets();
+    photoForm.reset();
+    if (avatarFileName) avatarFileName.textContent = '';
   });
 }
 
-// ==========================================
-// 2. VIDEO CON AVATAR PANEL LOGIC
-// ==========================================
-const videoCreationForm = document.getElementById('videoCreationForm');
-const videoProcessOverlay = document.getElementById('videoProcessOverlay');
-const videoProcessLog = document.getElementById('videoProcessLog');
-const videoPlayerBox = document.getElementById('videoPlayerBox');
-const videoPlayerImg = document.getElementById('videoPlayerImg');
-const videoSubtitleTicker = document.getElementById('videoSubtitleTicker');
-const videoPlayBtn = document.getElementById('videoPlayBtn');
-const videoTimelineFill = document.getElementById('videoTimelineFill');
-const videoTimeLabel = document.getElementById('videoTimeLabel');
-const videoPreviewTitle = document.getElementById('videoPreviewTitle');
-const videoPreviewDetails = document.getElementById('videoPreviewDetails');
+// --- INSTANT AVATAR WEBCAM SIMULATOR ---
+const btnStartInstantAvatar = document.getElementById('btnStartInstantAvatar');
+const instantAvatarStartCard = document.getElementById('instantAvatarStartCard');
+const instantAvatarRecordingCard = document.getElementById('instantAvatarRecordingCard');
+const recordingStatusText = document.getElementById('recordingStatusText');
+const recordingProgressFill = document.getElementById('recordingProgressFill');
+const recordingTimerVal = document.getElementById('recordingTimerVal');
 
-let currentGeneratedScriptText = "";
-let simulatedVideoTimelineTimer = null;
-let simulatedVideoSeconds = 0;
-let isVideoPlaying = false;
-
-if (videoCreationForm) {
-  videoCreationForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
+if (btnStartInstantAvatar) {
+  btnStartInstantAvatar.addEventListener('click', () => {
     const credits = getCredits();
-    if (credits < 20) {
-      showModal('Créditos Insuficientes', 'Necesitas al menos 20 créditos para generar un video con avatar.', false);
+    if (credits < 30) {
+      showModal('Créditos Insuficientes', 'Requiere al menos 30 créditos para generar un avatar instantáneo con cámara web.', false);
       return;
     }
 
-    const avatarId = document.getElementById('videoAvatarSelect').value;
-    const script = document.getElementById('videoScriptTextarea').value.trim();
-    const format = document.getElementById('videoFormatSelect').value;
-    const style = document.getElementById('videoStyleSelect').value;
-    const voiceId = document.getElementById('videoVoiceSelect').value;
+    if (instantAvatarStartCard && instantAvatarRecordingCard) {
+      instantAvatarStartCard.style.display = 'none';
+      instantAvatarRecordingCard.style.display = 'flex';
+      
+      let sec = 0;
+      let progress = 0;
+      if (recordingStatusText) recordingStatusText.textContent = 'Inicializando cámara y audio...';
+      if (recordingProgressFill) {
+        recordingProgressFill.style.width = '0%';
+        recordingProgressFill.style.background = 'var(--neon-cyan)';
+      }
+      if (recordingTimerVal) recordingTimerVal.textContent = '0:00';
 
-    currentGeneratedScriptText = script;
-
-    // Fetch avatar name for details
-    const avatars = getLocal('sdl_avatars') || [];
-    const chosenAv = avatars.find(a => a.id === avatarId) || { name: 'Avatar', img: '/assets/ref_blue.png' };
-    
-    // Show loading state
-    videoProcessOverlay.classList.add('active');
-    
-    const steps = [
-      { text: 'Analizando estructura de guión...', delay: 100 },
-      { text: 'Cargando malla tridimensional del avatar...', delay: 800 },
-      { text: 'Renderizando labios con precisión fónica...', delay: 1600 },
-      { text: 'Compilando frames de vídeo en servidor...', delay: 2400 },
-      { text: 'Generando archivo de salida MP4...', delay: 3200 },
-      { text: '¡Video compilado con éxito!', delay: 4000 }
-    ];
-
-    steps.forEach(step => {
+      // Phase 1: connecting camera (1.5 seconds)
       setTimeout(() => {
-        videoProcessLog.textContent = step.text;
-      }, step.delay);
-    });
+        if (recordingStatusText) recordingStatusText.textContent = 'Grabando presentador... Hable de forma natural.';
+        
+        const interval = setInterval(() => {
+          sec += 1;
+          progress = (sec / 5) * 100;
+          
+          if (recordingProgressFill) recordingProgressFill.style.width = `${progress}%`;
+          if (recordingTimerVal) recordingTimerVal.textContent = `0:0${sec}`;
+          
+          if (sec >= 5) {
+            clearInterval(interval);
+            
+            // Phase 2: Processing avatar (2 seconds)
+            if (recordingStatusText) recordingStatusText.textContent = 'Procesando gesticulaciones corporales...';
+            if (recordingProgressFill) {
+              recordingProgressFill.style.width = '100%';
+              recordingProgressFill.style.background = 'var(--neon-purple)';
+            }
+            
+            setTimeout(() => {
+              // Deduct credits and save
+              setCredits(credits - 30);
+              
+              const newAvatar = {
+                id: 'av-' + Date.now(),
+                name: 'Mi Avatar Grabado (Webcam)',
+                style: 'Instant Avatar',
+                lang: 'Español (ES)',
+                img: 'assets/nova_avatar.png',
+                desc: 'Clon digital generado a partir de webcam.'
+              };
 
-    setTimeout(() => {
-      videoProcessOverlay.classList.remove('active');
+              const list = getLocal('sdl_avatars') || [];
+              list.push(newAvatar);
+              setLocal('sdl_avatars', list);
 
-      // Update Preview Details
-      videoPreviewTitle.textContent = `Vídeo: ${chosenAv.name}`;
-      videoPreviewDetails.textContent = `${format === '16-9' ? 'Horizontal (16:9)' : format === '9-16' ? 'Vertical (9:16)' : 'Cuadrado (1:1)'} • Estilo ${style}`;
-      
-      // Update formats aspect ratios classes
-      videoPlayerBox.className = 'video-preview-wrapper';
-      if (format === '9-16') videoPlayerBox.classList.add('aspect-9-16');
-      if (format === '1-1') videoPlayerBox.classList.add('aspect-1-1');
-
-      // Update Player Image to represent the avatar
-      videoPlayerImg.src = chosenAv.img;
-      videoPlayerImg.style.opacity = '0.85';
-
-      // Deduct credits and save
-      setCredits(credits - 20);
-
-      const videoName = `Vídeo: ${chosenAv.name} (${style})`;
-      const newVideoProject = {
-        id: 'p-' + Date.now(),
-        name: videoName,
-        type: 'video',
-        date: new Date().toISOString().split('T')[0],
-        status: 'Completado',
-        details: `${format === '16-9' ? 'Horizontal (16:9)' : format === '9-16' ? 'Vertical (9:16)' : 'Cuadrado (1:1)'} • ${style}`
-      };
-
-      const currentProjects = getLocal('sdl_projects') || [];
-      currentProjects.push(newVideoProject);
-      setLocal('sdl_projects', currentProjects);
-
-      // Update Library Videos
-      const currentVideos = getLocal('sdl_videos') || [];
-      currentVideos.push({
-        id: 'vid-' + Date.now(),
-        name: videoName,
-        avatarImg: chosenAv.img,
-        format,
-        script: script.slice(0, 100) + '...',
-        date: new Date().toISOString().split('T')[0]
-      });
-      setLocal('sdl_videos', currentVideos);
-
-      updateDashboardStats();
-      
-      showToast('Video Generado', 'Tu video ha sido renderizado y guardado.', 'success');
-      showModal('Video Generado', '¡Tu producción de video con IA ha finalizado! Puedes ver la reproducción simulada en el reproductor de la derecha o descargarlo desde tu panel de Proyectos.', true);
-
-      // Trigger automatic simulated play helper
-      resetSimulatedVideo();
-      playSimulatedVideo();
-
-      videoCreationForm.reset();
-    }, 4500);
+              showToast('Avatar Generado', '"Mi Avatar Grabado" listo en biblioteca.', 'success');
+              
+              // Reset UI views
+              instantAvatarStartCard.style.display = 'flex';
+              instantAvatarRecordingCard.style.display = 'none';
+              
+              // Refresh views
+              renderAvatarsGrid();
+              renderHomeWidgets();
+              
+              // Take back to the dashboard or update lists
+              updateDashboardStats();
+            }, 2000);
+          }
+        }, 1000);
+      }, 1500);
+    }
   });
 }
 
-// Simulated video player logic
-function resetSimulatedVideo() {
-  clearInterval(simulatedVideoTimelineTimer);
-  simulatedVideoSeconds = 0;
-  isVideoPlaying = false;
-  videoPlayBtn.className = 'fa-solid fa-play video-play-btn';
-  videoTimelineFill.style.width = '0%';
-  videoTimeLabel.textContent = '0:00 / 0:05';
-  videoSubtitleTicker.classList.remove('active');
-  videoSubtitleTicker.textContent = '';
+// --- RENDER: VOICES & PREVIEW SAMPLES ---
+let playingAudioVoiceId = null;
+
+function renderVoicesLibrary() {
+  const grid = document.getElementById('publicVoicesGrid');
+  if (!grid) return;
+
+  const voices = getLocal('sdl_voices') || [];
+  grid.innerHTML = '';
+
+  voices.forEach(voice => {
+    const card = document.createElement('div');
+    card.className = 'voice-card';
+    card.innerHTML = `
+      <div class="voice-card-left">
+        <button class="voice-play-btn" data-voice-id="${voice.id}" title="Escuchar muestra">
+          <i class="fa-solid fa-play"></i>
+        </button>
+        <div class="voice-meta">
+          <div class="voice-meta-header">
+            <span class="voice-name">${voice.name}</span>
+            <span class="voice-flag">${(voice.lang || '').includes('ES') || (voice.lang || '').includes('Español') ? '🇪🇸' : '🇺🇸'}</span>
+            ${voice.isPremium ? '<span class="badge-premium" style="font-size:0.55rem; padding:1px 5px;">Pro</span>' : ''}
+          </div>
+          <div class="voice-tags-row">
+            <span class="voice-tag">${voice.gender}</span>
+            <span class="voice-tag">${voice.tone}</span>
+          </div>
+        </div>
+        <div class="voice-waves-anim" style="display:none;">
+          <span class="voice-wave-bar"></span>
+          <span class="voice-wave-bar"></span>
+          <span class="voice-wave-bar"></span>
+          <span class="voice-wave-bar"></span>
+          <span class="voice-wave-bar"></span>
+        </div>
+      </div>
+      <button class="btn-primary-sm btn-select-voice" data-voice-id="${voice.id}">Seleccionar</button>
+    `;
+
+    // Play button preview logic
+    const playBtn = card.querySelector('.voice-play-btn');
+    const waveAnim = card.querySelector('.voice-waves-anim');
+    playBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleVoicePreview(voice, playBtn, waveAnim);
+    });
+
+    // Select button logic
+    card.querySelector('.btn-select-voice').addEventListener('click', () => {
+      selectedVoiceId = voice.id;
+      switchView('editor');
+      syncEditorPresets();
+      showToast('Voz Cargada', `Se usará la voz de ${voice.name} para las locuciones.`, 'info');
+    });
+
+    grid.appendChild(card);
+  });
 }
 
-function playSimulatedVideo() {
-  if (isVideoPlaying) {
-    clearInterval(simulatedVideoTimelineTimer);
-    isVideoPlaying = false;
-    videoPlayBtn.className = 'fa-solid fa-play video-play-btn';
-    videoSubtitleTicker.classList.remove('active');
+function toggleVoicePreview(voice, button, waveAnim) {
+  if (playingAudioVoiceId === voice.id) {
+    // Stop
+    window.speechSynthesis.cancel();
+    button.classList.remove('playing');
+    button.innerHTML = '<i class="fa-solid fa-play"></i>';
+    waveAnim.style.display = 'none';
+    playingAudioVoiceId = null;
   } else {
-    isVideoPlaying = true;
-    videoPlayBtn.className = 'fa-solid fa-pause video-play-btn';
-    videoSubtitleTicker.classList.add('active');
-    
-    // Split script in words to show progressive subtitle
-    const scriptWords = currentGeneratedScriptText ? currentGeneratedScriptText.split(' ') : ['Iniciando', 'presentación', 'de', 'Synthetic', 'Digital', 'Lab', 'AI', 'Studio.'];
-    const totalDuration = 5; // 5 seconds demo
-    
-    simulatedVideoTimelineTimer = setInterval(() => {
-      simulatedVideoSeconds += 0.1;
-      
-      const progress = (simulatedVideoSeconds / totalDuration) * 100;
-      videoTimelineFill.style.width = `${progress}%`;
-      
-      // Update time label
-      const currentSecondsRounded = Math.floor(simulatedVideoSeconds);
-      videoTimeLabel.textContent = `0:0${currentSecondsRounded} / 0:0${totalDuration}`;
+    // Stop any current
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.voice-play-btn.playing').forEach(btn => {
+      btn.classList.remove('playing');
+      btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+    });
+    document.querySelectorAll('.voice-waves-anim').forEach(w => w.style.display = 'none');
 
-      // Update subtitle ticker depending on time
-      const wordCount = scriptWords.length;
-      const index = Math.min(Math.floor((simulatedVideoSeconds / totalDuration) * wordCount), wordCount - 1);
-      
-      // Slice and show running text
-      const currentTextSlice = scriptWords.slice(0, index + 3).join(' ');
-      videoSubtitleTicker.textContent = currentTextSlice;
+    // Start
+    playingAudioVoiceId = voice.id;
+    button.classList.add('playing');
+    button.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    waveAnim.style.display = 'flex';
 
-      if (simulatedVideoSeconds >= totalDuration) {
-        resetSimulatedVideo();
-        showToast('Fin de Reproducción', 'Simulación de video finalizada.', 'info');
-      }
-    }, 100);
+    const textSample = (voice.lang || '').includes('ES') || (voice.lang || '').includes('Español')
+      ? `Hola, soy ${voice.name.split(' ')[0]}. Esta es una demostración en alta fidelidad de mi clon digital en español.`
+      : `Hello, I'm ${voice.name.split(' ')[0]}. This is an ultra realistic preview of my synthetic voice clone.`;
+
+    const utterance = new SpeechSynthesisUtterance(textSample);
+    
+    // Match locale voice
+    const sysVoices = window.speechSynthesis.getVoices();
+    const match = sysVoices.find(v => v.lang.toLowerCase().includes(((voice.lang || '').includes('ES') || (voice.lang || '').includes('Español')) ? 'es' : 'en'));
+    if (match) utterance.voice = match;
+
+    utterance.onend = () => {
+      button.classList.remove('playing');
+      button.innerHTML = '<i class="fa-solid fa-play"></i>';
+      waveAnim.style.display = 'none';
+      playingAudioVoiceId = null;
+    };
+
+    window.speechSynthesis.speak(utterance);
   }
 }
 
-if (videoPlayBtn) {
-  videoPlayBtn.addEventListener('click', playSimulatedVideo);
+// Voice search filter triggers
+const voiceSearchInput = document.getElementById('voiceSearchInput');
+const voiceGenderFilter = document.getElementById('voiceGenderFilter');
+const voiceLangFilter = document.getElementById('voiceLangFilter');
+
+function filterVoicesList() {
+  const query = voiceSearchInput ? voiceSearchInput.value.toLowerCase().trim() : '';
+  const gender = voiceGenderFilter ? voiceGenderFilter.value : 'all';
+  const lang = voiceLangFilter ? voiceLangFilter.value : 'all';
+
+  const cards = document.querySelectorAll('#publicVoicesGrid .voice-card');
+  cards.forEach(card => {
+    const name = card.querySelector('.voice-name').textContent.toLowerCase();
+    const genderTag = card.querySelectorAll('.voice-tag')[0].textContent;
+    const langTag = card.querySelector('.voice-flag').textContent === '🇪🇸' ? 'Español' : 'Inglés';
+
+    const matchQuery = name.includes(query);
+    const matchGender = gender === 'all' || gender === genderTag;
+    const matchLang = lang === 'all' || lang.includes(langTag);
+
+    if (matchQuery && matchGender && matchLang) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
 }
 
-// ==========================================
-// 3. CLONAR VOZ PANEL LOGIC
-// ==========================================
-const legalConsentCheckbox = document.getElementById('legalConsentCheckbox');
-const voiceSubmitBtn = document.getElementById('voiceSubmitBtn');
+if (voiceSearchInput) voiceSearchInput.addEventListener('input', filterVoicesList);
+if (voiceGenderFilter) voiceGenderFilter.addEventListener('change', filterVoicesList);
+if (voiceLangFilter) voiceLangFilter.addEventListener('change', filterVoicesList);
+
+// --- VOICE CLONING SIMULATOR ---
 const voiceUploadZone = document.getElementById('voiceUploadZone');
 const voiceAudioInput = document.getElementById('voiceAudioInput');
 const voiceFileName = document.getElementById('voiceFileName');
-const voiceCloneForm = document.getElementById('voiceCloneForm');
-const voiceProcessOverlay = document.getElementById('voiceProcessOverlay');
-const voiceProcessLog = document.getElementById('voiceProcessLog');
-const clonedVoicePlayerCard = document.getElementById('clonedVoicePlayerCard');
-const clonedVoiceTitle = document.getElementById('clonedVoiceTitle');
-const clonedVoiceSubtitle = document.getElementById('clonedVoiceSubtitle');
-const clonedVoicePlayBtn = document.getElementById('clonedVoicePlayBtn');
+const voiceNameInput = document.getElementById('voiceNameInput');
+const voiceConsentCheck = document.getElementById('voiceConsentCheck');
+const btnCloneVoice = document.getElementById('btnCloneVoice');
+const btnRecordVoice = document.getElementById('btnRecordVoice');
+const recordIndicator = document.getElementById('recordIndicator');
 
-let isConsentGiven = false;
-let loadedVoiceFileUrl = null;
-let audioSpeakRef = null;
+let voiceAudioFileUploaded = false;
+let isVoiceRecording = false;
 
-if (legalConsentCheckbox && voiceSubmitBtn) {
-  legalConsentCheckbox.addEventListener('change', (e) => {
-    isConsentGiven = e.target.checked;
-    voiceSubmitBtn.disabled = !isConsentGiven;
-  });
-}
-
-// Voice file uploader binding
 if (voiceUploadZone && voiceAudioInput) {
   voiceUploadZone.addEventListener('click', () => voiceAudioInput.click());
-  
   voiceAudioInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-      voiceFileName.textContent = `Audio: ${file.name}`;
-      loadedVoiceFileUrl = URL.createObjectURL(file);
-    }
-  });
-
-  voiceUploadZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    voiceUploadZone.style.borderColor = 'var(--neon-blue)';
-  });
-  
-  voiceUploadZone.addEventListener('dragleave', () => {
-    voiceUploadZone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-  });
-
-  voiceUploadZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    voiceUploadZone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('audio/')) {
-      voiceFileName.textContent = `Audio: ${file.name}`;
-      loadedVoiceFileUrl = URL.createObjectURL(file);
+      if (voiceFileName) voiceFileName.textContent = file.name;
+      voiceAudioFileUploaded = true;
+      checkCloneVoiceUnlock();
     }
   });
 }
 
-// Form Submission for Voice Clone
-if (voiceCloneForm) {
-  voiceCloneForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    if (!isConsentGiven) {
-      showModal('Advertencia Legal', 'Debes confirmar bajo declaración de consentimiento legal que posees los derechos de clonación de la voz.', false);
-      return;
-    }
-
-    const credits = getCredits();
-    if (credits < 15) {
-      showModal('Créditos Insuficientes', 'Necesitas al menos 15 créditos para realizar la clonación de voz.', false);
-      return;
-    }
-
-    const name = document.getElementById('voiceNameInput').value.trim();
-    const lang = document.getElementById('voiceLangSelect').value;
-    const type = document.getElementById('voiceTypeSelect').value;
-
-    // Trigger loader
-    voiceProcessOverlay.classList.add('active');
-    
-    const steps = [
-      { text: 'Extrayendo muestras de audio...', delay: 100 },
-      { text: 'Aislando frecuencias del hablante...', delay: 800 },
-      { text: 'Eliminando ruidos de fondo...', delay: 1600 },
-      { text: 'Registrando fonemas de identidad vocal...', delay: 2400 },
-      { text: 'Compilando modelo sintético...', delay: 3200 },
-      { text: '¡Firma de voz clonada correctamente!', delay: 3800 }
-    ];
-
-    steps.forEach(step => {
-      setTimeout(() => {
-        voiceProcessLog.textContent = step.text;
-      }, step.delay);
-    });
-
-    setTimeout(() => {
-      voiceProcessOverlay.classList.remove('active');
-      
-      // Update details card
-      clonedVoicePlayerCard.style.display = 'flex';
-      clonedVoiceTitle.textContent = `Voz: ${name}`;
-      clonedVoiceSubtitle.textContent = `Voz Clonada • Idioma: ${lang} • ${type}`;
-
-      // Deduct credits and save voice
-      setCredits(credits - 15);
-
-      const newVoice = {
-        id: 'v-' + Date.now(),
-        name: `Voz de ${name} (Clonada)`,
-        lang,
-        type,
-        isDefault: false
-      };
-
-      const currentVoices = getLocal('sdl_voices') || [];
-      currentVoices.push(newVoice);
-      setLocal('sdl_voices', currentVoices);
-
-      // Save to projects
-      const currentProjects = getLocal('sdl_projects') || [];
-      currentProjects.push({
-        id: 'p-' + Date.now(),
-        name: `Clonación: ${name}`,
-        type: 'audio',
-        date: new Date().toISOString().split('T')[0],
-        status: 'Completado',
-        details: `${lang} • Estilo ${type}`
-      });
-      setLocal('sdl_projects', currentProjects);
-
-      updateDashboardStats();
-      loadDropdowns();
-
-      showToast('Voz Clonada', `"${name}" registrada correctamente.`, 'success');
-      showModal('Clonación Completa', `¡Tu firma biométrica de voz "${name}" ha sido generada con éxito! Ya está disponible en tus selectores de Texto a Voz y Generador de Videos.`, true);
-
-      // Reset form
-      voiceCloneForm.reset();
-      legalConsentCheckbox.checked = false;
-      isConsentGiven = false;
-      voiceSubmitBtn.disabled = true;
-      voiceFileName.textContent = '';
-    }, 4200);
-  });
-}
-
-// Cloned Voice player simulation triggers actual browser SpeechSynthesis welcoming the user!
-if (clonedVoicePlayBtn) {
-  clonedVoicePlayBtn.addEventListener('click', () => {
-    if ('speechSynthesis' in window) {
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        clonedVoicePlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-      } else {
-        clonedVoicePlayBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        const utterance = new SpeechSynthesisUtterance('Hola. He clonado esta muestra vocal y ya está lista para leer cualquier texto que necesites.');
-        utterance.lang = 'es-ES';
-        utterance.rate = 1.0;
-        
-        // Visualizer bar animation trigger
-        const bars = document.querySelectorAll('#view-voice-clone .visualizer-bar');
-        bars.forEach(b => b.classList.add('active'));
-
-        utterance.onend = () => {
-          clonedVoicePlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-          bars.forEach(b => b.classList.remove('active'));
-        };
-
-        window.speechSynthesis.speak(utterance);
-      }
+if (btnRecordVoice) {
+  btnRecordVoice.addEventListener('click', () => {
+    if (!isVoiceRecording) {
+      isVoiceRecording = true;
+      btnRecordVoice.innerHTML = '<i class="fa-solid fa-square"></i> Detener';
+      if (recordIndicator) recordIndicator.style.display = 'flex';
+      if (voiceFileName) voiceFileName.textContent = 'Grabando muestra de voz...';
     } else {
-      showToast('Sintetizador no soportado', 'Tu navegador no admite reproducción de voz.', 'error');
+      isVoiceRecording = false;
+      btnRecordVoice.innerHTML = '<i class="fa-solid fa-circle"></i> Grabar en vivo';
+      if (recordIndicator) recordIndicator.style.display = 'none';
+      if (voiceFileName) voiceFileName.textContent = 'Muestra grabada en vivo.wav';
+      voiceAudioFileUploaded = true;
+      checkCloneVoiceUnlock();
     }
   });
 }
 
-// ==========================================
-// 4. TEXTO A VOZ (TTS) REAL INTEGRATION
-// ==========================================
-const ttsForm = document.getElementById('ttsForm');
-const ttsProcessOverlay = document.getElementById('ttsProcessOverlay');
-const ttsProcessLog = document.getElementById('ttsProcessLog');
-const ttsVisualizer = document.getElementById('ttsVisualizer');
-const ttsPlayerCard = document.getElementById('ttsPlayerCard');
-const ttsAudioTitle = document.getElementById('ttsAudioTitle');
-const ttsAudioSubtitle = document.getElementById('ttsAudioSubtitle');
-const ttsPlayBtn = document.getElementById('ttsPlayBtn');
-const ttsAudioDuration = document.getElementById('ttsAudioDuration');
-
-const ttsSpeedInput = document.getElementById('ttsSpeedInput');
-const ttsSpeedVal = document.getElementById('ttsSpeedVal');
-const ttsPitchInput = document.getElementById('ttsPitchInput');
-const ttsPitchVal = document.getElementById('ttsPitchVal');
-
-let currentTTSUtteranceText = "";
-let currentTTSSpeed = 1.0;
-let currentTTSPitch = 1.0;
-let currentTTSVoiceIndex = 0;
-
-// Speed slider
-if (ttsSpeedInput && ttsSpeedVal) {
-  ttsSpeedInput.addEventListener('input', (e) => {
-    ttsSpeedVal.textContent = e.target.value;
-    currentTTSSpeed = parseFloat(e.target.value);
-  });
+if (voiceConsentCheck) {
+  voiceConsentCheck.addEventListener('change', checkCloneVoiceUnlock);
 }
 
-// Pitch slider
-if (ttsPitchInput && ttsPitchVal) {
-  ttsPitchInput.addEventListener('input', (e) => {
-    ttsPitchVal.textContent = e.target.value;
-    currentTTSPitch = parseFloat(e.target.value);
-  });
-}
-
-// Populate real browser voices into options in addition to cloned ones
-function populateTtsBrowserVoices() {
-  if ('speechSynthesis' in window) {
-    const defaultVoiceSelect = document.getElementById('ttsLangSelect');
-    if (!defaultVoiceSelect) return;
-    
-    // Clear list
-    defaultVoiceSelect.innerHTML = '';
-    
-    const voices = window.speechSynthesis.getVoices();
-    
-    // Find Spanish voices and show first, then English, etc.
-    const sorted = [...voices].sort((a, b) => {
-      if (a.lang.includes('es') && !b.lang.includes('es')) return -1;
-      if (!a.lang.includes('es') && b.lang.includes('es')) return 1;
-      return 0;
-    });
-
-    sorted.forEach((voice, index) => {
-      const opt = document.createElement('option');
-      opt.value = index;
-      opt.textContent = `${voice.name} (${voice.lang})`;
-      defaultVoiceSelect.appendChild(opt);
-    });
+function checkCloneVoiceUnlock() {
+  if (btnCloneVoice) {
+    btnCloneVoice.disabled = !(voiceAudioFileUploaded && voiceConsentCheck.checked);
   }
 }
 
-if ('speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = populateTtsBrowserVoices;
-  populateTtsBrowserVoices();
-}
-
-// Form Submit
-if (ttsForm) {
-  ttsForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
+if (btnCloneVoice) {
+  btnCloneVoice.addEventListener('click', () => {
     const credits = getCredits();
-    if (credits < 2) {
-      showModal('Créditos Insuficientes', 'Necesitas al menos 2 créditos para generar locución de audio.', false);
+    if (credits < 50) {
+      showModal('Créditos Insuficientes', 'Requiere al menos 50 créditos para clonar una voz sintética.', false);
       return;
     }
 
-    const text = document.getElementById('ttsTextInput').value.trim();
-    const chosenVoiceId = document.getElementById('ttsVoiceSelect').value;
-    const browserVoiceIdx = document.getElementById('ttsLangSelect').value;
+    const name = voiceNameInput.value.trim();
+    if (!name) return;
 
-    currentTTSUtteranceText = text;
-    currentTTSVoiceIndex = browserVoiceIdx;
+    setCredits(credits - 50);
 
-    // Trigger overlay animation
-    ttsProcessOverlay.classList.add('active');
-    
-    const steps = [
-      { text: 'Procesando texto...', delay: 100 },
-      { text: 'Ajustando modulación y entonación...', delay: 800 },
-      { text: 'Generando locución artificial...', delay: 1500 }
-    ];
+    const newVoice = {
+      id: 'v-' + Date.now(),
+      name: `${name} (Voz Clonada)`,
+      lang: 'Español (ES)',
+      gender: 'Personalizado',
+      tone: 'Clonado',
+      isPremium: true
+    };
 
-    steps.forEach(step => {
-      setTimeout(() => {
-        ttsProcessLog.textContent = step.text;
-      }, step.delay);
-    });
+    const currentVoices = getLocal('sdl_voices') || [];
+    currentVoices.push(newVoice);
+    setLocal('sdl_voices', currentVoices);
 
-    setTimeout(() => {
-      ttsProcessOverlay.classList.remove('active');
-      
-      // Update details card
-      ttsPlayerCard.style.display = 'flex';
-      
-      const voices = getLocal('sdl_voices') || [];
-      const selectedVoice = voices.find(v => v.id === chosenVoiceId) || { name: 'Voz Estándar' };
-      ttsAudioTitle.textContent = `Locución: ${selectedVoice.name}`;
-      ttsAudioSubtitle.textContent = `Sintetizado • ${text.slice(0, 30)}...`;
-      
-      // Calculate average duration based on words count
-      const wordCount = text.split(' ').length;
-      const durationSeconds = Math.max(2, Math.round(wordCount / 2.5)); // 2.5 words per second
-      ttsAudioDuration.textContent = `0:${durationSeconds < 10 ? '0' + durationSeconds : durationSeconds}`;
+    // Save cloned list dynamic display
+    renderClonedVoicesList();
+    renderVoicesLibrary();
 
-      // Deduct credits and save
-      setCredits(credits - 2);
-
-      const audName = `Locución: ${selectedVoice.name}`;
-      const newAudioProject = {
-        id: 'p-' + Date.now(),
-        name: audName,
-        type: 'audio',
-        date: new Date().toISOString().split('T')[0],
-        status: 'Completado',
-        details: `Voz: ${selectedVoice.name} • ${wordCount} Palabras`
-      };
-
-      // Add to projects list
-      const currentProjects = getLocal('sdl_projects') || [];
-      currentProjects.push(newAudioProject);
-      setLocal('sdl_projects', currentProjects);
-
-      // Add to Library Audios
-      const currentAudios = getLocal('sdl_audios') || [];
-      currentAudios.push({
-        id: 'aud-' + Date.now(),
-        name: audName,
-        text: text,
-        date: new Date().toISOString().split('T')[0]
-      });
-      setLocal('sdl_audios', currentAudios);
-
-      updateDashboardStats();
-      
-      showToast('Audio Generado', 'Firma de audio lista para reproducirse.', 'success');
-      showModal('Locución Sintetizada', '¡La locución se ha generado correctamente! Haz clic en el botón de play para reproducir el audio utilizando la síntesis nativa de tu navegador.', true);
-
-      ttsForm.reset();
-      ttsSpeedVal.textContent = '1.0';
-      ttsPitchVal.textContent = '1.0';
-    }, 2000);
+    showToast('Voz Clonada con Éxito', `El timbre neuronal de "${name}" está listo.`, 'success');
+    voiceNameInput.value = '';
+    if (voiceFileName) voiceFileName.textContent = '';
+    if (voiceConsentCheck) voiceConsentCheck.checked = false;
+    btnCloneVoice.disabled = true;
+    voiceAudioFileUploaded = false;
   });
 }
 
-// Speak locution audio trigger
-if (ttsPlayBtn) {
-  ttsPlayBtn.addEventListener('click', () => {
-    if ('speechSynthesis' in window) {
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        ttsPlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        
-        // Stop visualizer animation
-        const bars = document.querySelectorAll('#ttsVisualizer .visualizer-bar');
-        bars.forEach(b => b.classList.remove('active'));
-      } else {
-        ttsPlayBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        
-        const utterance = new SpeechSynthesisUtterance(currentTTSUtteranceText || 'Estudio de Inteligencia Artificial de Synthetic Digital Labs.');
-        
-        // Load browser voice if index selected
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0 && currentTTSVoiceIndex !== null) {
-          const sorted = [...voices].sort((a, b) => {
-            if (a.lang.includes('es') && !b.lang.includes('es')) return -1;
-            if (!a.lang.includes('es') && b.lang.includes('es')) return 1;
-            return 0;
-          });
-          utterance.voice = sorted[currentTTSVoiceIndex];
-        }
-
-        utterance.rate = currentTTSSpeed;
-        utterance.pitch = currentTTSPitch;
-
-        // Visualizer bar animation
-        const bars = document.querySelectorAll('#ttsVisualizer .visualizer-bar');
-        bars.forEach(b => b.classList.add('active'));
-
-        utterance.onend = () => {
-          ttsPlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-          bars.forEach(b => b.classList.remove('active'));
-        };
-
-        window.speechSynthesis.speak(utterance);
-      }
-    } else {
-      showToast('SpeechSynthesis no disponible', 'Tu navegador no permite la síntesis de voz.', 'error');
-    }
-  });
-}
-
-// ==========================================
-// 5. GENERADOR DE GUIONES PANEL LOGIC
-// ==========================================
-const scriptForm = document.getElementById('scriptForm');
-const scriptProcessOverlay = document.getElementById('scriptProcessOverlay');
-const scriptProcessLog = document.getElementById('scriptProcessLog');
-const scriptOutputTextarea = document.getElementById('scriptOutputTextarea');
-const copyScriptBtn = document.getElementById('copyScriptBtn');
-const sendScriptToVideoBtn = document.getElementById('sendScriptToVideoBtn');
-
-const SCRIPT_TEMPLATES = {
-  'video-corto': (topic, tone) => {
-    return `[GUION PARA VIDEO CORTO - TIPO REEL/TIKTOK]
-TEMA: ${topic}
-TONO: ${tone}
-DURACIÓN: 30-60 segundos
-
-[0:00 - GANCHO]
-(Visual: Primer plano dinámico, cara expresiva)
-"¿Sabías que la mayoría de las personas comete este grave error al iniciar con ${topic}? ¡Sí, yo también caí ahí!"
-
-[0:10 - DESARROLLO]
-(Visual: Texto emergente en pantalla y gestos rápidos)
-"El truco no está en esforzarse el doble. Está en cambiar el enfoque. Aquí tienes los 3 pasos esenciales para dominarlo y lograr resultados de inmediato de forma inteligente:"
-
-[0:20 - CLAVE]
-(Visual: Mostrar gráfico o avatar señalando el fondo)
-"Paso 1: Define tu objetivo.
-Paso 2: Automatiza lo repetitivo.
-Paso 3: Mide tus conversiones."
-
-[0:45 - ACCIÓN (CTA)]
-(Visual: Apuntar con el dedo hacia abajo en pantalla)
-"Si quieres llevar esto al siguiente nivel, haz clic en el enlace de mi perfil y regístrate hoy mismo. ¡No te quedes fuera!"`;
-  },
-  'anuncio': (topic, tone) => {
-    return `[GUION COMERCIAL - ANUNCIO DE PRODUCTO]
-TEMA: ${topic}
-TONO: ${tone}
-DURACIÓN: 60 segundos
-
-[0:00 - EMPATÍA / PROBLEMA]
-(Música de fondo: Tensa y sutil. Visual: Presentador serio)
-"Sabemos lo frustrante que es perder horas de trabajo intentando resolver ${topic} sin ver una sola conversión real."
-
-[0:15 - INTRODUCCIÓN DE LA SOLUCIÓN]
-(Música cambia a: Alegre e inspiradora. Visual: Presentador sonríe)
-"Por eso creamos una plataforma revolucionaria. Te presentamos la solución definitiva diseñada para automatizar todo el proceso y dejar atrás las complicaciones de una vez por todas."
-
-[0:30 - BENEFICIOS / PRUEBA]
-(Visual: Texto e iconos emergentes en color cyan)
-"Con nuestra tecnología vas a poder:
-- Reducir tus costos hasta en un 80%.
-- Escalar tu producción sin contratar más personal.
-- Tener soporte especializado 24/7 en español."
-
-[0:48 - OFERTA Y LLAMADO A LA ACCIÓN]
-(Visual: Mostrar botón virtual en pantalla)
-"Inicia hoy tu prueba completamente gratuita y comprueba los resultados por ti mismo. Visita nuestro sitio web oficial en syntheticdigitallab.com."`;
-  },
-  'podcast': (topic, tone) => {
-    return `[GUION DE PODCAST - INTRODUCCIÓN Y TEMARIO]
-TEMA: ${topic}
-TONO: ${tone}
-DURACIÓN: 2-3 minutos
-
-[0:00 - INTRO CLÁSICA PODCAST]
-(Efecto de sonido: Entrada de música suave - Fade out)
-"Hola a todos y bienvenidos a un nuevo episodio de Innovación Digital. Hoy tenemos un tema caliente sobre la mesa que está cambiando el juego por completo: vamos a hablar a fondo sobre ${topic}."
-
-[0:45 - DESGLOSE DE TEMARIO]
-(Visual: Plano medio con fondo cyberpunk relajado)
-"En este episodio analizaremos:
-1. El origen del problema y por qué los métodos clásicos ya no funcionan.
-2. Casos de éxito reales de empresas que implementaron soluciones tecnológicas.
-3. El futuro del sector y cómo prepararte para la próxima ola digital."
-
-[1:45 - DIÁLOGO / ENGAGE]
-(Visual: Presentador gesticula cómodamente)
-"Queremos leer sus comentarios. Cuéntennos en la caja de opiniones cuál ha sido su mayor reto con este tema. Quédense con nosotros porque lo que viene a continuación les va a volar la cabeza. ¡Comenzamos!"`;
-  },
-  'presentacion': (topic, tone) => {
-    return `[GUION DE PRESENTACIÓN DE MARCA / STARTUP]
-TEMA: ${topic}
-TONO: ${tone}
-DURACIÓN: 90 segundos
-
-[0:00 - MISIÓN Y VISIÓN]
-"En Synthetic Digital Labs, creemos que la tecnología no debería ser una barrera, sino el motor que impulse tus ideas. Nuestra misión con ${topic} es clara: democratizar la creación digital."
-
-[0:25 - EL VALOR AGREGADO]
-"Hemos construido un ecosistema SaaS potente, accesible y extremadamente rápido. Un lugar donde cualquier emprendedor o corporación puede dar el salto al futuro digital sin complicaciones."
-
-[0:50 - NUESTRO COMPROMISO]
-"Detrás de cada línea de código y cada avatar sintético, hay un equipo comprometido con tu éxito. Porque cuando tú creces, nosotros también."
-
-[1:15 - CONTACTO FINAL]
-"Llegó el momento de transformar tu negocio. Escríbenos a infoweb@syntheticdigitallab.com y diseñemos tu futuro hoy."`;
-  },
-  'ventas': (topic, tone) => {
-    return `[GUION DE VÍDEO EXPLICATIVO DE VENTAS (VSL)]
-TEMA: ${topic}
-TONO: ${tone}
-DURACIÓN: 3 minutos o más
-
-[SECCIÓN 1: CAPTAR ATENCIÓN]
-"Si eres dueño de negocio y estás buscando escalar, presta atención por los próximos 2 minutos. Te voy a revelar el método exacto para resolver ${topic} sin quemar tu presupuesto."
-
-[SECCIÓN 2: AGITAR EL DOLOR]
-"Seguramente has intentado contratar agencias, comprar herramientas caras y el resultado siempre es el mismo: frustración y dinero perdido. Eso pasa porque no estás usando automatización inteligente."
-
-[SECCIÓN 3: LA REVELACIÓN]
-"Nuestra plataforma te da el control total. Accede a herramientas listas para usar que configuran tu ecosistema en minutos y comienzan a capturar leads en piloto automático."
-
-[SECCIÓN 4: CIERRE Y LLAMADO DE ACCIÓN]
-"Esta oferta no estará disponible para siempre. Agenda una sesión estratégica personalizada hoy y reclama un 20% de descuento en tu plan Pro."`;
-  },
-  'educativo': (topic, tone) => {
-    return `[GUION PARA TUTORIAL INSTRUCTIVO / EDUCATIVO]
-TEMA: ${topic}
-TONO: ${tone}
-DURACIÓN: 2-3 minutos
-
-[0:00 - PRESENTACIÓN DEL OBJETIVO]
-"Hola alumnos, bienvenidos a esta clase práctica. Hoy aprenderemos de manera sencilla los fundamentos de ${topic} y cómo aplicarlos paso a paso."
-
-[0:20 - PASO A PASO EXPLICATIVO]
-"Comencemos por el concepto básico. ¿Qué es y por qué es tan relevante?
-(Visual: Mostrar pizarra virtual o esquemas interactivos)
-A continuación, realizaremos la primera configuración básica:
-Paso 1: Abrir el panel de control.
-Paso 2: Asignar las variables de entorno.
-Paso 3: Validar la salida en la consola de depuración."
-
-[1:30 - RESUMEN DE LA CLASE]
-"En resumen, recuerden siempre verificar que la base de datos esté sincronizada antes de compilar. Esto les ahorrará el 90% de los errores comunes."
-
-[2:00 - TAREA / CIERRE]
-"Descarguen el material de apoyo en el enlace y nos vemos en la próxima sesión. ¡Buen código!"`;
-  }
-};
-
-if (scriptForm) {
-  scriptForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const type = document.getElementById('scriptTypeSelect').value;
-    const topic = document.getElementById('scriptTopicInput').value.trim();
-    const tone = document.getElementById('scriptToneSelect').value;
-    const duration = document.getElementById('scriptDurationSelect').value;
-
-    scriptProcessOverlay.classList.add('active');
-
-    const steps = [
-      { text: 'Analizando el tema comercial...', delay: 100 },
-      { text: 'Estructurando gancho y CTA...', delay: 800 },
-      { text: 'Redactando borrador de guión...', delay: 1500 }
-    ];
-
-    steps.forEach(step => {
-      setTimeout(() => {
-        scriptProcessLog.textContent = step.text;
-      }, step.delay);
-    });
-
-    setTimeout(() => {
-      scriptProcessOverlay.classList.remove('active');
-
-      // Generate script using template helper
-      const templateFn = SCRIPT_TEMPLATES[type] || SCRIPT_TEMPLATES['video-corto'];
-      const scriptOutput = templateFn(topic, tone);
-
-      scriptOutputTextarea.value = scriptOutput;
-      
-      // Enable CTA actions
-      sendScriptToVideoBtn.disabled = false;
-
-      // Save to projects
-      const currentProjects = getLocal('sdl_projects') || [];
-      currentProjects.push({
-        id: 'p-' + Date.now(),
-        name: `Guión: ${topic.slice(0, 20)}...`,
-        type: 'guion',
-        date: new Date().toISOString().split('T')[0],
-        status: 'Completado',
-        details: `${type.toUpperCase()} • Tono ${tone}`
-      });
-      setLocal('sdl_projects', currentProjects);
-
-      // Save to Library Scripts
-      const currentScripts = getLocal('sdl_scripts') || [];
-      currentScripts.push({
-        id: 'sc-' + Date.now(),
-        name: `Guión: ${topic.slice(0, 25)}`,
-        content: scriptOutput,
-        date: new Date().toISOString().split('T')[0]
-      });
-      setLocal('sdl_scripts', currentScripts);
-
-      updateDashboardStats();
-
-      showToast('Guión Redactado', 'Tu guión está listo y guardado.', 'success');
-    }, 2000);
-  });
-}
-
-// Copy script to clipboard
-if (copyScriptBtn) {
-  copyScriptBtn.addEventListener('click', () => {
-    const text = scriptOutputTextarea.value;
-    if (!text) {
-      showToast('Error al copiar', 'No hay ningún guión redactado.', 'error');
-      return;
-    }
-
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('Copiado al Portapapeles', 'Guión copiado de forma exitosa.', 'success');
-    }).catch(() => {
-      showToast('Error', 'No se pudo acceder al portapapeles.', 'error');
-    });
-  });
-}
-
-// Send script to video view
-if (sendScriptToVideoBtn) {
-  sendScriptToVideoBtn.addEventListener('click', () => {
-    const text = scriptOutputTextarea.value;
-    const videoTextarea = document.getElementById('videoScriptTextarea');
-    
-    if (videoTextarea && text) {
-      // Clean script metadata labels for readability in video creator
-      const cleanText = text.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
-      videoTextarea.value = cleanText;
-      
-      switchView('video-avatar');
-      showToast('Guión Importado', 'El texto se ha copiado en el creador de video.', 'success');
-    }
-  });
-}
-
-// ==========================================
-// 6. TRADUCTOR DE VOZ PANEL LOGIC
-// ==========================================
-const translateForm = document.getElementById('translateForm');
-const translateProcessOverlay = document.getElementById('translateProcessOverlay');
-const translateProcessLog = document.getElementById('translateProcessLog');
-const translateUploadZone = document.getElementById('translateUploadZone');
-const translateAudioInput = document.getElementById('translateAudioInput');
-const translateFileName = document.getElementById('translateFileName');
-const translatePlayerCard = document.getElementById('translatePlayerCard');
-const translateAudioTitle = document.getElementById('translateAudioTitle');
-const translateAudioSubtitle = document.getElementById('translateAudioSubtitle');
-const translatePlayBtn = document.getElementById('translatePlayBtn');
-
-let loadedTranslateAudioUrl = null;
-
-if (translateUploadZone && translateAudioInput) {
-  translateUploadZone.addEventListener('click', () => translateAudioInput.click());
-  
-  translateAudioInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      translateFileName.textContent = `Archivo: ${file.name}`;
-      loadedTranslateAudioUrl = URL.createObjectURL(file);
-    }
-  });
-
-  translateUploadZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    translateUploadZone.style.borderColor = 'var(--neon-blue)';
-  });
-  
-  translateUploadZone.addEventListener('dragleave', () => {
-    translateUploadZone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-  });
-
-  translateUploadZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    translateUploadZone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('audio/')) {
-      translateFileName.textContent = `Archivo: ${file.name}`;
-      loadedTranslateAudioUrl = URL.createObjectURL(file);
-    }
-  });
-}
-
-if (translateForm) {
-  translateForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const credits = getCredits();
-    if (credits < 5) {
-      showModal('Créditos Insuficientes', 'Necesitas al menos 5 créditos para traducir audio.', false);
-      return;
-    }
-
-    const sourceLang = document.getElementById('translateSourceLangSelect').value;
-    const targetLang = document.getElementById('translateTargetLangSelect').value;
-    const keepStyle = document.getElementById('translateCloneStyle').checked;
-
-    translateProcessOverlay.classList.add('active');
-
-    const steps = [
-      { text: 'Transcribiendo audio original...', delay: 100 },
-      { text: 'Traduciendo bloque semántico...', delay: 800 },
-      { text: 'Clonando entonación del hablante...', delay: 1600 },
-      { text: 'Sintetizando pista traducida...', delay: 2400 },
-      { text: '¡Traducción completada con éxito!', delay: 3000 }
-    ];
-
-    steps.forEach(step => {
-      setTimeout(() => {
-        translateProcessLog.textContent = step.text;
-      }, step.delay);
-    });
-
-    setTimeout(() => {
-      translateProcessOverlay.classList.remove('active');
-
-      translatePlayerCard.style.display = 'flex';
-      translateAudioTitle.textContent = `Audio Traducido (${targetLang.toUpperCase()})`;
-      translateAudioSubtitle.textContent = `Idioma origen: ${sourceLang.toUpperCase()} • Estilo clonado`;
-
-      // Deduct credits and save
-      setCredits(credits - 5);
-
-      const transName = `Traducción: ${sourceLang.toUpperCase()} a ${targetLang.toUpperCase()}`;
-      // Add to projects list
-      const currentProjects = getLocal('sdl_projects') || [];
-      currentProjects.push({
-        id: 'p-' + Date.now(),
-        name: transName,
-        type: 'audio',
-        date: new Date().toISOString().split('T')[0],
-        status: 'Completado',
-        details: `Traducción ${sourceLang.toUpperCase()} a ${targetLang.toUpperCase()}`
-      });
-      setLocal('sdl_projects', currentProjects);
-
-      updateDashboardStats();
-
-      showToast('Audio Traducido', 'Traducción completada con éxito.', 'success');
-      showModal('Audio Traducido', '¡La traducción de voz se ha completado! Puedes escuchar el resultado simulado en inglés/español con el reproductor de la derecha.', true);
-
-      translateForm.reset();
-      translateFileName.textContent = '';
-    }, 3500);
-  });
-}
-
-// Speak translation voice trigger
-if (translatePlayBtn) {
-  translatePlayBtn.addEventListener('click', () => {
-    if ('speechSynthesis' in window) {
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        translatePlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        
-        const bars = document.querySelectorAll('#translateVisualizer .visualizer-bar');
-        bars.forEach(b => b.classList.remove('active'));
-      } else {
-        translatePlayBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        
-        // Translate visual greeting based on targets
-        const targetLang = document.getElementById('translateTargetLangSelect') ? document.getElementById('translateTargetLangSelect').value : 'en';
-        let speechText = "Hello! I am speaking with the voice identity translated to English.";
-        let speakLocale = "en-US";
-        
-        if (targetLang === 'es') {
-          speechText = "Hola, estoy hablando en español con el tono de voz original.";
-          speakLocale = "es-ES";
-        } else if (targetLang === 'pt') {
-          speechText = "Olá, estou falando em português com a voz clonada.";
-          speakLocale = "pt-BR";
-        } else if (targetLang === 'fr') {
-          speechText = "Bonjour, je parle français avec le timbre de voix d'origine.";
-          speakLocale = "fr-FR";
-        }
-
-        const utterance = new SpeechSynthesisUtterance(speechText);
-        utterance.lang = speakLocale;
-
-        const bars = document.querySelectorAll('#translateVisualizer .visualizer-bar');
-        bars.forEach(b => b.classList.add('active'));
-
-        utterance.onend = () => {
-          translatePlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-          bars.forEach(b => b.classList.remove('active'));
-        };
-
-        window.speechSynthesis.speak(utterance);
-      }
-    } else {
-      showToast('Sintetizador no disponible', 'Tu navegador no permite la síntesis de voz.', 'error');
-    }
-  });
-}
-
-// Download translated audio mock click
-const translateDownloadBtn = document.getElementById('translateDownloadBtn');
-if (translateDownloadBtn) {
-  translateDownloadBtn.addEventListener('click', () => {
-    showToast('Descarga Iniciada', 'El archivo de audio traducido se está descargando.', 'success');
-  });
-}
-
-// ==========================================
-// 7. EDITOR DE PROYECTOS PANEL LOGIC
-// ==========================================
-const projectsGrid = document.getElementById('projectsGrid');
-const projectSearchInput = document.getElementById('projectSearchInput');
-
-function renderProjectsList() {
-  if (!projectsGrid) return;
-
-  const projects = getLocal('sdl_projects') || [];
-  const searchQuery = projectSearchInput ? projectSearchInput.value.toLowerCase().trim() : '';
-  
-  projectsGrid.innerHTML = '';
-
-  const filtered = projects.filter(p => p.name.toLowerCase().includes(searchQuery));
-
-  if (filtered.length === 0) {
-    projectsGrid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:var(--text-muted)">No se encontraron proyectos.</div>`;
+function renderClonedVoicesList() {
+  const container = document.getElementById('clonedVoicesList');
+  if (!container) return;
+
+  const voices = getLocal('sdl_voices') || [];
+  const cloned = voices.filter(v => v.tone === 'Clonado');
+  container.innerHTML = '';
+
+  if (cloned.length === 0) {
+    container.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted)">Aún no tienes voces clonadas.</span>';
     return;
   }
 
-  // Render cards
-  filtered.forEach(proj => {
-    const card = document.createElement('div');
-    card.className = 'project-card glass-card';
-    card.innerHTML = `
-      <div class="project-card-header">
-        <span class="project-badge-type">${proj.type}</span>
-        <span class="project-status">
-          <span class="pulse-dot cyan" style="width:6px; height:6px;"></span>
-          ${proj.status}
-        </span>
-      </div>
-      <h4>${proj.name}</h4>
-      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 8px;">${proj.details}</p>
-      <div class="project-date"><i class="fa-regular fa-calendar"></i> Creado: ${proj.date}</div>
-      <div class="project-card-footer">
-        <div class="project-actions-btns">
-          <button class="project-action-btn btn-download-project" data-id="${proj.id}" title="Descargar"><i class="fa-solid fa-download"></i></button>
-          <button class="project-action-btn delete-btn btn-delete-project" data-id="${proj.id}" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
-        </div>
-      </div>
-    `;
-    projectsGrid.appendChild(card);
-  });
-
-  // Re-bind actions
-  document.querySelectorAll('.btn-download-project').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showToast('Descargando archivo', 'Tu archivo de alta definición se está procesando...', 'info');
-    });
-  });
-
-  document.querySelectorAll('.btn-delete-project').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = btn.dataset.id;
-      deleteProject(id);
-    });
+  cloned.forEach(v => {
+    const badge = document.createElement('span');
+    badge.className = 'mini-voice-badge';
+    badge.innerHTML = `<i class="fa-solid fa-microphone"></i> ${v.name}`;
+    container.appendChild(badge);
   });
 }
+renderClonedVoicesList();
 
-function deleteProject(id) {
-  const current = getLocal('sdl_projects') || [];
-  const updated = current.filter(p => p.id !== id);
-  setLocal('sdl_projects', updated);
-  
-  renderProjectsList();
-  renderDashboardActivity();
-  updateDashboardStats();
-  
-  showToast('Proyecto Eliminado', 'El proyecto ha sido borrado de la lista.', 'info');
+
+// --- PART 3: EDITOR DE VIDEO (CANVAS WORKSPACE) ---
+
+// Toggle horizontal / vertical Canvas
+function setRatio(ratio) {
+  selectedRatio = ratio;
+  const stage = document.getElementById('videoCanvasStage');
+  const btn169 = document.getElementById('btnRatio169');
+  const btn916 = document.getElementById('btnRatio916');
+
+  if (!stage) return;
+
+  if (ratio === '16-9') {
+    stage.className = 'video-canvas-stage ratio-16-9';
+    if (btn169) btn169.classList.add('active');
+    if (btn916) btn916.classList.remove('active');
+  } else {
+    stage.className = 'video-canvas-stage ratio-9-16';
+    if (btn169) btn169.classList.remove('active');
+    if (btn916) btn916.classList.add('active');
+  }
 }
 
-if (projectSearchInput) {
-  projectSearchInput.addEventListener('input', renderProjectsList);
-}
+const btnRatio169 = document.getElementById('btnRatio169');
+const btnRatio916 = document.getElementById('btnRatio916');
+if (btnRatio169) btnRatio169.addEventListener('click', () => setRatio('16-9'));
+if (btnRatio916) btnRatio916.addEventListener('click', () => setRatio('9-16'));
 
-// ==========================================
-// 8. BIBLIOTECA PANEL LOGIC (TABS)
-// ==========================================
-const libTabBtns = document.querySelectorAll('.lib-tab-btn');
-const libTabPanels = document.querySelectorAll('.library-tab-panel');
-
-libTabBtns.forEach(btn => {
+// Background change triggers
+document.querySelectorAll('.bg-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const tabName = btn.dataset.tab;
-    
-    libTabBtns.forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
-    libTabPanels.forEach(panel => {
-      if (panel.id === `tab-panel-${tabName}`) {
-        panel.classList.add('active');
-      } else {
-        panel.classList.remove('active');
-      }
-    });
-
-    renderLibraryTab(tabName);
+    
+    selectedBg = btn.dataset.bg;
+    const canvasStage = document.getElementById('videoCanvasStage');
+    if (canvasStage) {
+      if (selectedBg === 'dark') canvasStage.style.background = '#050212';
+      else if (selectedBg === 'gradient-blue') canvasStage.style.background = 'linear-gradient(135deg, #020010, #001f3f)';
+      else if (selectedBg === 'gradient-purple') canvasStage.style.background = 'linear-gradient(135deg, #030012, #1f003f)';
+      else if (selectedBg === 'green-screen') canvasStage.style.background = '#00ff00';
+    }
   });
 });
 
-function renderLibrary() {
-  const activeTab = document.querySelector('.lib-tab-btn.active');
-  if (activeTab) {
-    renderLibraryTab(activeTab.dataset.tab);
+// Sync presets inside editor sidebar
+function syncEditorPresets() {
+  const avatars = getLocal('sdl_avatars') || [];
+  const voices = getLocal('sdl_voices') || [];
+
+  // 1. Render mini avatars
+  const miniAvs = document.getElementById('miniAvatarsGrid');
+  if (miniAvs) {
+    miniAvs.innerHTML = '';
+    avatars.forEach(av => {
+      const p = document.createElement('div');
+      p.className = `mini-av-preset ${av.id === selectedAvatarId ? 'active' : ''}`;
+      p.innerHTML = `<img src="${av.img}" alt="${av.name}" title="${av.name}">`;
+      p.addEventListener('click', () => {
+        selectedAvatarId = av.id;
+        document.querySelectorAll('.mini-av-preset').forEach(box => box.classList.remove('active'));
+        p.classList.add('active');
+        updateCanvasAvatar();
+      });
+      miniAvs.appendChild(p);
+    });
   }
+
+  // 2. Render mini voices
+  const miniVcs = document.getElementById('miniVoicesGrid');
+  if (miniVcs) {
+    miniVcs.innerHTML = '';
+    voices.forEach(vc => {
+      const p = document.createElement('div');
+      p.className = `mini-voice-preset ${vc.id === selectedVoiceId ? 'active' : ''}`;
+      p.textContent = (vc.name || '').split(' ')[0] + ` (${(vc.lang || '').split(' ')[0]})`;
+      p.addEventListener('click', () => {
+        selectedVoiceId = vc.id;
+        document.querySelectorAll('.mini-voice-preset').forEach(box => box.classList.remove('active'));
+        p.classList.add('active');
+        updateVoiceTagDisplays();
+      });
+      miniVcs.appendChild(p);
+    });
+  }
+
+  updateCanvasAvatar();
+  updateVoiceTagDisplays();
 }
 
-function renderLibraryTab(tabName) {
-  const gridId = `lib${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Grid`;
-  const gridEl = document.getElementById(gridId);
-  if (!gridEl) return;
+function updateCanvasAvatar() {
+  const avatars = getLocal('sdl_avatars') || [];
+  const activeAv = avatars.find(a => a.id === selectedAvatarId) || DEFAULT_AVATARS[0];
+  const canvasImg = document.getElementById('canvasAvatarImg');
+  if (canvasImg) canvasImg.src = activeAv.img;
+}
 
-  gridEl.innerHTML = '';
-
-  if (tabName === 'avatars') {
-    const items = getLocal('sdl_avatars') || [];
-    items.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'lib-card glass-card';
-      card.innerHTML = `
-        <img src="${item.img}" alt="${item.name}" class="lib-avatar-img">
-        <h4 class="lib-card-title">${item.name}</h4>
-        <span class="lib-card-subtitle">${item.style}</span>
-        <div class="lib-card-actions">
-          <button class="btn-danger btn-delete-lib-item" data-type="avatars" data-id="${item.id}" style="width:100%;"><i class="fa-solid fa-trash"></i> Borrar</button>
-        </div>
-      `;
-      gridEl.appendChild(card);
-    });
-  } 
+function updateVoiceTagDisplays() {
+  const voices = getLocal('sdl_voices') || [];
+  const activeVc = voices.find(v => v.id === selectedVoiceId) || DEFAULT_VOICES[0];
   
-  else if (tabName === 'voices') {
-    const items = getLocal('sdl_voices') || [];
-    items.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'lib-card glass-card';
-      card.innerHTML = `
-        <div class="tool-icon" style="margin: 0 auto 16px auto;"><i class="fa-solid fa-microphone-lines"></i></div>
-        <h4 class="lib-card-title">${item.name}</h4>
-        <span class="lib-card-subtitle">${item.lang} • ${item.type}</span>
-        <div class="lib-card-actions">
-          <button class="btn-danger btn-delete-lib-item" data-type="voices" data-id="${item.id}" style="width:100%;" ${item.isDefault ? 'disabled title="Voz del sistema por defecto"' : ''}><i class="fa-solid fa-trash"></i> Borrar</button>
-        </div>
-      `;
-      gridEl.appendChild(card);
-    });
-  }
-  
-  else if (tabName === 'videos') {
-    const items = getLocal('sdl_videos') || [];
-    if (items.length === 0) {
-      gridEl.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 20px; color:var(--text-muted)">Aún no tienes videos guardados en la biblioteca.</div>`;
+  const vName = document.getElementById('selectedVoiceNameDisplay');
+  const vLang = document.getElementById('selectedVoiceLangDisplay');
+
+  if (vName) vName.textContent = (activeVc.name || '').split(' ')[0];
+  if (vLang) vLang.textContent = activeVc.lang;
+}
+
+// AI Script Generator within editor panel
+const btnGenScript = document.getElementById('btnGenerateEditorScript');
+if (btnGenScript) {
+  btnGenScript.addEventListener('click', () => {
+    const topic = document.getElementById('editorScriptTopic').value.trim();
+    const type = document.getElementById('editorScriptType').value;
+    const tone = document.getElementById('editorScriptTone').value;
+
+    if (!topic) {
+      showToast('Ingresa un Tema', 'Por favor escribe el tema del guión.', 'error');
       return;
     }
-    items.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'lib-card glass-card';
-      card.innerHTML = `
-        <img src="${item.avatarImg}" alt="${item.name}" class="lib-avatar-img" style="border-radius:10px; height: 90px; width: auto; aspect-ratio: 16/9; object-fit: cover;">
-        <h4 class="lib-card-title">${item.name}</h4>
-        <span class="lib-card-subtitle">${item.date}</span>
-        <div class="lib-card-actions">
-          <button class="btn-danger btn-delete-lib-item" data-type="videos" data-id="${item.id}" style="width:100%;"><i class="fa-solid fa-trash"></i> Borrar</button>
-        </div>
-      `;
-      gridEl.appendChild(card);
-    });
-  }
 
-  else if (tabName === 'audios') {
-    const items = getLocal('sdl_audios') || [];
-    if (items.length === 0) {
-      gridEl.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 20px; color:var(--text-muted)">Aún no tienes audios guardados en la biblioteca.</div>`;
-      return;
+    let scriptText = '';
+    if (type === 'publicidad') {
+      scriptText = `¡Atención! Si buscas revolucionar tu negocio con ${topic}, esta es tu oportunidad. Diseñado para un enfoque ${tone}, nuestro sistema automatiza tus ventas.`;
+    } else if (type === 'tutorial') {
+      scriptText = `Hola a todos. Hoy veremos los pasos sencillos para dominar ${topic}. De forma práctica y con un tono ${tone}, avanzaremos paso a paso en este video.`;
+    } else {
+      scriptText = `Bienvenidos. Presentamos la guía definitiva sobre ${topic}. Analizaremos la estructura actual con un enfoque ${tone} y detallado para empresas.`;
     }
-    items.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'lib-card glass-card';
-      card.innerHTML = `
-        <div class="tool-icon" style="margin: 0 auto 16px auto;"><i class="fa-solid fa-headphones"></i></div>
-        <h4 class="lib-card-title">${item.name}</h4>
-        <span class="lib-card-subtitle">${item.date}</span>
-        <div class="lib-card-actions">
-          <button class="btn-danger btn-delete-lib-item" data-type="audios" data-id="${item.id}" style="width:100%;"><i class="fa-solid fa-trash"></i> Borrar</button>
-        </div>
-      `;
-      gridEl.appendChild(card);
-    });
-  }
 
-  else if (tabName === 'scripts') {
-    const items = getLocal('sdl_scripts') || [];
-    if (items.length === 0) {
-      gridEl.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 20px; color:var(--text-muted)">Aún no tienes guiones redactados en la biblioteca.</div>`;
-      return;
-    }
-    items.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'lib-card glass-card';
-      card.innerHTML = `
-        <div class="tool-icon" style="margin: 0 auto 16px auto;"><i class="fa-solid fa-file-invoice"></i></div>
-        <h4 class="lib-card-title">${item.name}</h4>
-        <span class="lib-card-subtitle">${item.date}</span>
-        <div class="lib-card-actions">
-          <button class="btn-danger btn-delete-lib-item" data-type="scripts" data-id="${item.id}" style="width:100%;"><i class="fa-solid fa-trash"></i> Borrar</button>
-        </div>
-      `;
-      gridEl.appendChild(card);
-    });
-  }
+    const textarea = document.getElementById('editorScriptTextarea');
+    if (textarea) textarea.value = scriptText;
 
-  // Bind deletion buttons inside library grids
-  document.querySelectorAll('.btn-delete-lib-item').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = btn.dataset.id;
-      const type = btn.dataset.type;
-      deleteLibraryItem(type, id);
-    });
+    showToast('Guión Redactado', 'La IA ha escrito tu guión en el cuadro de texto.', 'success');
   });
 }
 
-function deleteLibraryItem(type, id) {
-  const current = getLocal(`sdl_${type}`) || [];
-  const updated = current.filter(item => item.id !== id);
-  setLocal(`sdl_${type}`, updated);
-  
-  renderLibraryTab(type.replace('sdl_', ''));
-  updateDashboardStats();
-  loadDropdowns();
-  
-  showToast('Elemento Eliminado', 'El recurso ha sido eliminado de tu biblioteca.', 'info');
-}
+// TTS Script Audio Preview
+const btnPlayScriptSpeech = document.getElementById('btnPlayScriptSpeech');
+const btnStopScriptSpeech = document.getElementById('btnStopScriptSpeech');
+const canvasSubtitleOverlay = document.getElementById('canvasSubtitleOverlay');
 
-// ==========================================
-// 9. CONFIGURACIÓN PANEL LOGIC
-// ==========================================
-const settingsProfileForm = document.getElementById('settingsProfileForm');
-const settingsNameInput = document.getElementById('settingsNameInput');
-const settingsEmailInput = document.getElementById('settingsEmailInput');
+if (btnPlayScriptSpeech) {
+  btnPlayScriptSpeech.addEventListener('click', () => {
+    const scriptText = document.getElementById('editorScriptTextarea').value.trim();
+    if (!scriptText) {
+      showToast('Escribe un texto', 'No hay guión que leer.', 'error');
+      return;
+    }
 
-// Load profile values on view
-settingsNameInput.value = localStorage.getItem('sdl_username') || 'Usuario SDL';
-settingsEmailInput.value = localStorage.getItem('sdl_email') || 'usuario@syntheticdigitallab.com';
+    if (!('speechSynthesis' in window)) {
+      showToast('No soportado', 'La síntesis de voz no es compatible con este navegador.', 'error');
+      return;
+    }
 
-if (settingsProfileForm) {
-  settingsProfileForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+    // Stop current
+    window.speechSynthesis.cancel();
 
-    const name = settingsNameInput.value.trim();
-    const email = settingsEmailInput.value.trim();
+    const voices = getLocal('sdl_voices') || [];
+    const activeVc = voices.find(v => v.id === selectedVoiceId) || DEFAULT_VOICES[0];
 
-    localStorage.setItem('sdl_username', name);
-    localStorage.setItem('sdl_email', email);
-
-    // Update sidebar text
-    document.getElementById('sidebarUsername').textContent = name;
+    const utterance = new SpeechSynthesisUtterance(scriptText);
     
-    showToast('Configuración Guardada', 'Tus datos de perfil han sido actualizados.', 'success');
-  });
-}
+    // Find matched system voice locale
+    const sysVoices = window.speechSynthesis.getVoices();
+    const match = sysVoices.find(v => v.lang.toLowerCase().includes(((activeVc.lang || '').includes('ES') || (activeVc.lang || '').includes('Español')) ? 'es' : 'en'));
+    if (match) utterance.voice = match;
 
-// Copy developer API Key trigger
-const btnCopyApiKey = document.getElementById('btnCopyApiKey');
-if (btnCopyApiKey) {
-  btnCopyApiKey.addEventListener('click', () => {
-    const keyVal = document.getElementById('configApiKeyInput').value;
-    navigator.clipboard.writeText(keyVal).then(() => {
-      showToast('Clave Copiada', 'Clave API copiada al portapapeles.', 'success');
-    });
-  });
-}
-
-// Initialize dynamic credit displays on initial entry
-updateCreditsDisplay();
-
-// ==========================================
-// NEURAL NETWORK INTERACTIVE CANVAS BACKGROUND
-// ==========================================
-const canvas = document.getElementById('neuralCanvas');
-if (canvas) {
-  const ctx = canvas.getContext('2d');
-  let particles = [];
-  const particleCount = 50;
-  const connectionDistance = 110;
-  const mouse = { x: null, y: null, radius: 150 };
-
-  // Set Canvas Size
-  function resizeCanvas() {
-    if (!publicLanding || publicLanding.style.display === 'none') return;
-    const parent = canvas.parentElement;
-    canvas.width = parent.offsetWidth;
-    canvas.height = parent.offsetHeight;
-  }
-  
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-
-  // Mouse tracking
-  window.addEventListener('mousemove', (e) => {
-    if (publicLanding && publicLanding.style.display === 'none') return;
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
-  });
-
-  window.addEventListener('mouseleave', () => {
-    mouse.x = null;
-    mouse.y = null;
-  });
-
-  // Particle Class
-  class Particle {
-    constructor() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height;
-      this.vx = (Math.random() - 0.5) * 0.5;
-      this.vy = (Math.random() - 0.5) * 0.5;
-      this.radius = Math.random() * 1.5 + 1;
-    }
-
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#bd00ff';
-      ctx.shadowBlur = 4;
-      ctx.shadowColor = '#bd00ff';
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    }
-
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-
-      if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
-      if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
-
-      if (mouse.x !== null && mouse.y !== null) {
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < mouse.radius) {
-          const force = (mouse.radius - dist) / mouse.radius;
-          this.x += (dx / dist) * force * 0.3;
-          this.y += (dy / dist) * force * 0.3;
-        }
+    utterance.onstart = () => {
+      isSpeakingPreview = true;
+      if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'none';
+      if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'inline-flex';
+      
+      const canvasStage = document.getElementById('videoCanvasStage');
+      if (canvasStage) canvasStage.classList.add('speaking');
+      
+      if (canvasSubtitleOverlay) {
+        canvasSubtitleOverlay.innerHTML = `<span>"${scriptText.length > 60 ? scriptText.slice(0, 57) + '...' : scriptText}"</span>`;
       }
-    }
-  }
+    };
 
-  // Init
-  for (let i = 0; i < particleCount; i++) {
-    particles.push(new Particle());
-  }
+    utterance.onend = () => {
+      stopTTSPreview();
+    };
 
-  function animate() {
-    if (publicLanding && publicLanding.style.display === 'none') {
-      requestAnimationFrame(animate);
-      return;
-    }
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    for (let i = 0; i < particles.length; i++) {
-      particles[i].update();
-      particles[i].draw();
+    utterance.onerror = () => {
+      stopTTSPreview();
+    };
 
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < connectionDistance) {
-          const alpha = (1 - dist / connectionDistance) * 0.12;
-          ctx.strokeStyle = '#00d2ff';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.globalAlpha = alpha;
-          ctx.stroke();
-          ctx.globalAlpha = 1.0;
-        }
-      }
-    }
-    requestAnimationFrame(animate);
-  }
-  animate();
+    activeSpeechUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
+  });
 }
 
-// ==========================================
-// FAQ ACCORDION HANDLER
-// ==========================================
-const faqItems = document.querySelectorAll('.faq-item');
-faqItems.forEach(item => {
-  const trigger = item.querySelector('.faq-trigger');
-  const content = item.querySelector('.faq-content');
+if (btnStopScriptSpeech) {
+  btnStopScriptSpeech.addEventListener('click', stopTTSPreview);
+}
 
-  if (trigger && content) {
-    trigger.addEventListener('click', () => {
-      const isOpen = item.classList.contains('active');
+function stopTTSPreview() {
+  window.speechSynthesis.cancel();
+  isSpeakingPreview = false;
+  
+  if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'inline-flex';
+  if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'none';
+  
+  const canvasStage = document.getElementById('videoCanvasStage');
+  if (canvasStage) canvasStage.classList.remove('speaking');
 
-      faqItems.forEach(otherItem => {
-        if (otherItem !== item) {
-          otherItem.classList.remove('active');
-          const otherContent = otherItem.querySelector('.faq-content');
-          if (otherContent) otherContent.style.maxHeight = null;
-        }
+  if (canvasSubtitleOverlay) {
+    canvasSubtitleOverlay.innerHTML = `<span>Haz clic en reproducir guion para ver el avatar hablar</span>`;
+  }
+}
+
+// Script Translator
+const btnTranslate = document.getElementById('btnTranslateEditorScript');
+if (btnTranslate) {
+  btnTranslate.addEventListener('click', () => {
+    const textEl = document.getElementById('editorScriptTextarea');
+    const lang = document.getElementById('editorTranslateLang').value;
+    if (!textEl || !textEl.value.trim()) return;
+
+    let text = textEl.value;
+    if (lang === 'en') {
+      text = "Hello! Welcome to Synthetic Digital Labs. Today I will show you how to create avatars and clone voices professionally.";
+    } else if (lang === 'pt') {
+      text = "Olá! Bem-vindo ao Synthetic Digital Labs. Hoje vou mostrar como criar avatares e clonar vozes profissionalmente.";
+    } else {
+      text = "¡Hola! Bienvenidos a Synthetic Digital Labs. Hoy les mostraré cómo crear avatares y clonar voces de forma profesional.";
+    }
+
+    textEl.value = text;
+    showToast('Guión Traducido', 'Texto adaptado al idioma elegido.', 'success');
+  });
+}
+
+// Timeline Scene Duration
+const slider = document.getElementById('sceneDurationSlider');
+const durationLbl = document.getElementById('timelineDurationLabel');
+if (slider && durationLbl) {
+  slider.addEventListener('input', () => {
+    durationLbl.textContent = `${parseFloat(slider.value).toFixed(1)}s`;
+  });
+}
+
+// Add scene button trigger
+const btnAddScene = document.getElementById('btnAddScene');
+if (btnAddScene) {
+  btnAddScene.addEventListener('click', () => {
+    showToast('Escena Añadida', 'Nueva escena insertada en la línea de tiempo.', 'info');
+  });
+}
+
+// --- GENERAR VIDEO ACTION ---
+const btnGenVideo = document.getElementById('btnGenerateVideo');
+if (btnGenVideo) {
+  btnGenVideo.addEventListener('click', () => {
+    const script = document.getElementById('editorScriptTextarea').value.trim();
+    if (!script) {
+      showToast('Escribe un guión', 'No puedes generar un video vacío.', 'error');
+      return;
+    }
+
+    const credits = getCredits();
+    if (credits < 20) {
+      showModal('Créditos Insuficientes', 'Generar un video con avatar consume 20 créditos.', false);
+      return;
+    }
+
+    // Stop speaking preview
+    stopTTSPreview();
+
+    // Trigger process simulation modal
+    const overlay = document.getElementById('globalModalOverlay');
+    const icon = document.getElementById('globalModalIcon');
+    const titleEl = document.getElementById('globalModalTitle');
+    const msgEl = document.getElementById('globalModalMessage');
+    const actionBtn = document.getElementById('globalModalActionBtn');
+
+    if (overlay) {
+      icon.className = 'modal-icon';
+      icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      titleEl.textContent = 'Renderizando Video';
+      msgEl.textContent = 'Maquetando el lienzo 3D y alineando voz neuronal con labios...';
+      actionBtn.style.display = 'none';
+      overlay.classList.add('active');
+
+      const steps = [
+        { text: 'Extrayendo guión de escena...', delay: 600 },
+        { text: 'Sintetizando locución de audio...', delay: 1300 },
+        { text: 'Alineando movimiento de labios del avatar...', delay: 2100 },
+        { text: 'Efectuando render de video Canvas...', delay: 2800 },
+        { text: 'Compilando archivo MP4 final...', delay: 3500 }
+      ];
+
+      steps.forEach(step => {
+        setTimeout(() => {
+          msgEl.textContent = step.text;
+        }, step.delay);
       });
 
-      if (isOpen) {
-        item.classList.remove('active');
-        content.style.maxHeight = null;
-      } else {
-        item.classList.add('active');
-        content.style.maxHeight = content.scrollHeight + 'px';
+      // Complete render
+      setTimeout(() => {
+        setCredits(credits - 20);
+        
+        // Save to projects database
+        const avatars = getLocal('sdl_avatars') || [];
+        const chosenAv = avatars.find(a => a.id === selectedAvatarId) || DEFAULT_AVATARS[0];
+        
+        const newProj = {
+          id: 'p-' + Date.now(),
+          name: `Video: ${script.slice(0, 25)}...`,
+          type: 'video',
+          date: new Date().toISOString().split('T')[0],
+          duration: `${slider ? slider.value : '5.0'}s`,
+          details: `${selectedRatio === '16-9' ? 'Horizontal (16:9)' : 'Vertical (9:16)'} • Avatar ${chosenAv.name}`,
+          avatarImg: chosenAv.img
+        };
+
+        const projs = getLocal('sdl_projects') || [];
+        projs.push(newProj);
+        setLocal('sdl_projects', projs);
+
+        icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+        titleEl.textContent = '¡Video Listo!';
+        msgEl.textContent = 'Tu video de avatar ha finalizado la renderización en HD y ha sido añadido a tu biblioteca.';
+        actionBtn.style.display = 'inline-block';
+        actionBtn.textContent = 'Ver en Biblioteca';
+
+        actionBtn.addEventListener('click', () => {
+          overlay.classList.remove('active');
+          switchView('library');
+          renderLibrary();
+        });
+
+        showToast('Video Generado', 'Tu video de avatar se guardó correctamente.', 'success');
+        renderHomeWidgets();
+        updateDashboardStats();
+      }, 4200);
+    }
+  });
+}
+
+
+// --- PART 4: LIBRARY & PROJECTS ---
+
+function renderLibrary() {
+  const videosGrid = document.getElementById('libraryVideosGrid');
+  const audiosGrid = document.getElementById('libraryAudiosGrid');
+  const clonedGrid = document.getElementById('libraryClonedGrid');
+  const avatarsLibGrid = document.getElementById('libraryAvatarsGrid');
+  const scriptsGrid = document.getElementById('libraryScriptsGrid');
+
+  const projects = getLocal('sdl_projects') || [];
+  const avatars = getLocal('sdl_avatars') || [];
+  const voices = getLocal('sdl_voices') || [];
+
+  // 1. Render Videos generated
+  if (videosGrid) {
+    const vids = projects.filter(p => p.type === 'video');
+    videosGrid.innerHTML = '';
+    if (vids.length === 0) {
+      videosGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay videos generados.</p>';
+    } else {
+      vids.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.innerHTML = `
+          <div class="proj-thumb-box">
+            <img src="${v.avatarImg || 'assets/nova_avatar.png'}" alt="Avatar">
+            <span class="proj-duration">${v.duration}</span>
+          </div>
+          <div class="proj-info">
+            <h4 class="proj-title">${v.name}</h4>
+            <span class="proj-date">${v.date} • ${v.details}</span>
+            <div class="proj-actions">
+              <button class="btn-primary-sm w-full btn-dl-mock" data-name="${v.name}"><i class="fa-solid fa-download"></i> Descargar</button>
+              <button class="btn-outline-sm btn-delete-proj" data-id="${v.id}"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        `;
+        videosGrid.appendChild(card);
+      });
+    }
+  }
+
+  // 2. Render Audios generated (TTS)
+  if (audiosGrid) {
+    const auds = projects.filter(p => p.type === 'audio');
+    audiosGrid.innerHTML = '';
+    if (auds.length === 0) {
+      audiosGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay audios generados.</p>';
+    } else {
+      auds.forEach(a => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.innerHTML = `
+          <div class="proj-thumb-box">
+            <i class="fa-solid fa-file-audio proj-media-icon"></i>
+            <span class="proj-duration">${a.duration}</span>
+          </div>
+          <div class="proj-info">
+            <h4 class="proj-title">${a.name}</h4>
+            <span class="proj-date">${a.date} • ${a.details}</span>
+            <div class="proj-actions">
+              <button class="btn-primary-sm w-full btn-play-audio-mock" data-name="${a.name}"><i class="fa-solid fa-play"></i> Escuchar</button>
+              <button class="btn-outline-sm btn-delete-proj" data-id="${a.id}"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        `;
+        audiosGrid.appendChild(card);
+      });
+    }
+  }
+
+  // 3. Render Cloned Voices
+  if (clonedGrid) {
+    const cln = voices.filter(v => v.tone === 'Clonado');
+    clonedGrid.innerHTML = '';
+    if (cln.length === 0) {
+      clonedGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay voces clonadas.</p>';
+    } else {
+      cln.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'voice-card';
+        card.style.flexDirection = 'column';
+        card.style.alignItems = 'flex-start';
+        card.style.gap = '12px';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <strong style="font-size:0.9rem;">${c.name}</strong>
+            <button class="btn-outline-sm btn-delete-voice-lib" data-id="${c.id}"><i class="fa-solid fa-trash"></i></button>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-muted)">Idioma: ${c.lang} • Género: ${c.gender}</span>
+        `;
+        clonedGrid.appendChild(card);
+      });
+    }
+  }
+
+  // 4. Render Created Avatars
+  if (avatarsLibGrid) {
+    const avs = avatars.filter(a => a.id.startsWith('av-') && a.id !== 'av-sofia' && a.id !== 'av-roberto' && a.id !== 'av-elena' && a.id !== 'av-nova');
+    avatarsLibGrid.innerHTML = '';
+    if (avs.length === 0) {
+      avatarsLibGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay avatares personalizados creados.</p>';
+    } else {
+      avs.forEach(av => {
+        const card = document.createElement('div');
+        card.className = 'avatar-card';
+        card.innerHTML = `
+          <div class="av-thumb-wrapper">
+            <img src="${av.img}" alt="${av.name}">
+          </div>
+          <div class="av-info-bar">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4 style="font-size:0.8rem; margin:0;">${av.name}</h4>
+              <button class="btn-outline-sm btn-delete-avatar-lib" data-id="${av.id}" style="padding:2px 6px; font-size:0.65rem;"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <span style="font-size:0.65rem;">${av.style}</span>
+          </div>
+        `;
+        avatarsLibGrid.appendChild(card);
+      });
+    }
+  }
+
+  // 5. Render Scripts
+  if (scriptsGrid) {
+    const scrs = projects.filter(p => p.type === 'guion');
+    scriptsGrid.innerHTML = '';
+    if (scrs.length === 0) {
+      scriptsGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay guiones guardados.</p>';
+    } else {
+      scrs.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.innerHTML = `
+          <div class="proj-info">
+            <h4 class="proj-title">${s.name}</h4>
+            <span class="proj-date">${s.date} • ${s.details}</span>
+            <div class="proj-actions" style="margin-top:12px;">
+              <button class="btn-primary-sm w-full btn-load-script-editor" data-script="${s.name}"><i class="fa-solid fa-edit"></i> Cargar Editor</button>
+              <button class="btn-outline-sm btn-delete-proj" data-id="${s.id}"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        `;
+        scriptsGrid.appendChild(card);
+      });
+    }
+  }
+}
+
+// Binds library tab changes
+document.querySelectorAll('#view-library .hg-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#view-library .hg-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const tab = btn.dataset.tab;
+    const panels = [
+      'lib-videos-panel',
+      'lib-audios-panel',
+      'lib-cloned-panel',
+      'lib-avatars-panel',
+      'lib-scripts-panel'
+    ];
+
+    panels.forEach(p => {
+      const el = document.getElementById(p);
+      if (el) {
+        if (p.startsWith(tab)) el.classList.add('active');
+        else el.classList.remove('active');
       }
     });
+  });
+});
+
+// Bind sub-tabs inside Avatars
+document.querySelectorAll('#view-avatars .hg-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#view-avatars .hg-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const tab = btn.dataset.tab;
+    const panels = [
+      'avatar-panel-studio',
+      'avatar-panel-instant',
+      'avatar-panel-photo'
+    ];
+
+    panels.forEach(p => {
+      const el = document.getElementById(p);
+      if (el) {
+        if (p.endsWith(tab)) el.classList.add('active');
+        else el.classList.remove('active');
+      }
+    });
+  });
+});
+
+// Mock Download button action
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-dl-mock');
+  if (btn) {
+    showToast('Descarga iniciada', `Descargando archivo HD: "${btn.dataset.name}"`, 'success');
+  }
+
+  const playAudioBtn = e.target.closest('.btn-play-audio-mock');
+  if (playAudioBtn) {
+    showToast('Reproduciendo audio', `Locución: "${playAudioBtn.dataset.name}"`, 'info');
+  }
+
+  // Delete project trigger
+  const delBtn = e.target.closest('.btn-delete-proj');
+  if (delBtn) {
+    const id = delBtn.dataset.id;
+    let projs = getLocal('sdl_projects') || [];
+    projs = projs.filter(p => p.id !== id);
+    setLocal('sdl_projects', projs);
+    renderLibrary();
+    updateDashboardStats();
+    showToast('Elemento Eliminado', 'El borrador se eliminó de la biblioteca.', 'info');
+  }
+
+  // Delete custom voice trigger
+  const delVoiceBtn = e.target.closest('.btn-delete-voice-lib');
+  if (delVoiceBtn) {
+    const id = delVoiceBtn.dataset.id;
+    let voices = getLocal('sdl_voices') || [];
+    voices = voices.filter(v => v.id !== id);
+    setLocal('sdl_voices', voices);
+    renderLibrary();
+    renderClonedVoicesList();
+    renderVoicesLibrary();
+    updateDashboardStats();
+    showToast('Voz Eliminada', 'La voz clonada ha sido removida.', 'info');
+  }
+
+  // Delete custom avatar trigger
+  const delAvBtn = e.target.closest('.btn-delete-avatar-lib');
+  if (delAvBtn) {
+    const id = delAvBtn.dataset.id;
+    let avatars = getLocal('sdl_avatars') || [];
+    avatars = avatars.filter(a => a.id !== id);
+    setLocal('sdl_avatars', avatars);
+    renderLibrary();
+    renderAvatarsGrid();
+    renderHomeWidgets();
+    updateDashboardStats();
+    showToast('Avatar Eliminado', 'El avatar se removió de la lista.', 'info');
+  }
+
+  // Load saved script to editor
+  const loadScriptBtn = e.target.closest('.btn-load-script-editor');
+  if (loadScriptBtn) {
+    const scriptName = loadScriptBtn.dataset.script;
+    const projects = getLocal('sdl_projects') || [];
+    const found = projects.find(p => p.name === scriptName && p.type === 'guion');
+    if (found) {
+      const textarea = document.getElementById('editorScriptTextarea');
+      if (textarea) textarea.value = found.details.split(' • ')[0] || found.name;
+      switchView('editor');
+      showToast('Guión cargado', 'Borrador cargado en el editor.', 'success');
+    }
   }
 });
 
-// ==========================================
-// CONTACT FORM SUBMISSION
-// ==========================================
-const contactForm = document.getElementById('contactForm');
-const contactFormStatus = document.getElementById('contactFormStatus');
 
-if (contactForm && contactFormStatus) {
-  contactForm.addEventListener('submit', (e) => {
+// --- PART 5: CONFIGURACIONES (SETTINGS) ---
+
+const settingsForm = document.getElementById('settingsForm');
+if (settingsForm) {
+  settingsForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const name = document.getElementById('contactName').value;
-    const email = document.getElementById('contactEmail').value;
-    const subject = document.getElementById('contactSubject').value;
-    
-    contactFormStatus.className = 'form-status-message success';
-    contactFormStatus.style.display = 'block';
-    contactFormStatus.innerHTML = `<strong>¡Muchas gracias, ${name}!</strong> Tu solicitud para el servicio de <em>${subject}</em> ha sido recibida. Nos comunicaremos contigo a <strong>${email}</strong> en menos de 24 horas.`;
-    
-    contactForm.reset();
-    
-    setTimeout(() => {
-      contactFormStatus.style.display = 'none';
-    }, 6000);
-  });
-}
+    const name = document.getElementById('settingsUsername').value.trim();
+    if (name) {
+      safeSetItem('sdl_username', name);
+      
+      const sidebarName = document.getElementById('sidebarUsername');
+      if (sidebarName) sidebarName.textContent = name;
 
-// ==========================================
-// MOBILE MENU TOGGLE
-// ==========================================
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const mobileMenu = document.getElementById('mobileMenu');
-const mobileLinks = document.querySelectorAll('.mobile-link');
-
-if (mobileMenuBtn && mobileMenu) {
-  mobileMenuBtn.addEventListener('click', () => {
-    mobileMenu.classList.toggle('open');
-    const icon = mobileMenuBtn.querySelector('i');
-    if (mobileMenu.classList.contains('open')) {
-      icon.className = 'fa-solid fa-xmark';
-    } else {
-      icon.className = 'fa-solid fa-bars';
+      showToast('Ajustes Guardados', 'Nombre de perfil actualizado.', 'success');
     }
   });
+}
 
-  mobileLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      mobileMenu.classList.remove('open');
-      mobileMenuBtn.querySelector('i').className = 'fa-solid fa-bars';
-    });
+// Simulated Credits Reload
+const btnResetCredits = document.getElementById('btnResetCredits');
+if (btnResetCredits) {
+  btnResetCredits.addEventListener('click', () => {
+    setCredits(150);
+    showToast('Créditos Recargados', 'Se han restaurado tus 150 créditos mensuales.', 'success');
   });
 }
+
+// API Key toggle view
+const btnToggleApiKey = document.getElementById('btnToggleApiKey');
+const apiKeyVal = document.getElementById('apiKeyVal');
+if (btnToggleApiKey && apiKeyVal) {
+  btnToggleApiKey.addEventListener('click', () => {
+    if (apiKeyVal.type === 'password') {
+      apiKeyVal.type = 'text';
+      btnToggleApiKey.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+    } else {
+      apiKeyVal.type = 'password';
+      btnToggleApiKey.innerHTML = '<i class="fa-solid fa-eye"></i>';
+    }
+  });
+}
+
+// Update stats initially
+function updateDashboardStats() {
+  const avatars = getLocal('sdl_avatars') || [];
+  const voices = getLocal('sdl_voices') || [];
+  const projects = getLocal('sdl_projects') || [];
+  
+  const avatarsCount = avatars.length;
+  const voicesCount = voices.length;
+  const projectsCount = projects.length;
+  const videosCount = projects.filter(p => p.type === 'video').length;
+
+  const elAvatars = document.getElementById('dashValAvatars');
+  const elVoices = document.getElementById('dashValVoices');
+  const elVideos = document.getElementById('dashValVideos');
+  const elProjects = document.getElementById('dashValProjects');
+
+  if (elAvatars) elAvatars.textContent = avatarsCount;
+  if (elVoices) elVoices.textContent = voicesCount;
+  if (elVideos) elVideos.textContent = videosCount;
+  if (elProjects) elProjects.textContent = projectsCount;
+}
+
+// Sidebar Profile load name on start
+const storedUsername = safeGetItem('sdl_username');
+if (storedUsername) {
+  const sidebarName = document.getElementById('sidebarUsername');
+  if (sidebarName) sidebarName.textContent = storedUsername;
+  const settingsUser = document.getElementById('settingsUsername');
+  if (settingsUser) settingsUser.value = storedUsername;
+}
+
 
 // ==========================================
 // VIRTUAL VOICE AGENT "NOVA" (JARVIS/SIRI STYLE)
@@ -1986,7 +1681,8 @@ if (mobileMenuBtn && mobileMenu) {
 class NovaAssistant {
   constructor() {
     this.agentContainer = document.getElementById('novaAgent');
-    this.bubbleText = document.getElementById('novaBubbleText');
+    this.bubbleText = document.getElementById('novaBubble');
+    this.bubbleSpan = document.getElementById('novaBubbleText');
     this.guideBanner = document.getElementById('novaGuideBanner');
     this.closeBannerBtn = document.getElementById('closeGuideBanner');
     this.avatarImg = this.agentContainer ? this.agentContainer.querySelector('.nova-robot-char') : null;
@@ -2035,13 +1731,13 @@ class NovaAssistant {
         console.error('[Nova Speech Error]:', event.error);
         if (event.error === 'not-allowed') {
           this.micPermissionDenied = true;
-          this.updateBubble('Micrófono bloqueado. Tócame para intentar activarlo.');
+          this.updateBubble('Micrófono bloqueado. Di "Hola Nova" al autorizarlo.');
           this.setState('sleep');
         }
       };
 
       this.recognition.onend = () => {
-        // Auto-restart if we are in listening or sleep state, and permission is not denied
+        // Auto-restart passive background listening
         if (!this.micPermissionDenied && (this.state === 'sleep' || this.state === 'listening')) {
           this.startListening();
         }
@@ -2057,7 +1753,7 @@ class NovaAssistant {
     try {
       this.recognition.start();
     } catch (e) {
-      // Ignored if already started
+      // Ignored if already listening
     }
   }
 
@@ -2071,7 +1767,6 @@ class NovaAssistant {
   }
 
   bindEvents() {
-    // Close Banner Event
     if (this.closeBannerBtn && this.guideBanner) {
       this.closeBannerBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2079,7 +1774,6 @@ class NovaAssistant {
       });
     }
 
-    // Clicking the guide banner wakes up Nova manually
     if (this.guideBanner) {
       this.guideBanner.addEventListener('click', (e) => {
         if (e.target !== this.closeBannerBtn && e.target.parentElement !== this.closeBannerBtn) {
@@ -2088,7 +1782,17 @@ class NovaAssistant {
       });
     }
 
-    // Clicking the avatar resets wake timer and talks
+    // Accept consent button at startup
+    const acceptConsentBtn = document.getElementById('novaConsentAccept');
+    const consentPanel = document.getElementById('novaConsentPanel');
+    if (acceptConsentBtn && consentPanel) {
+      acceptConsentBtn.addEventListener('click', () => {
+        consentPanel.style.display = 'none';
+        this.wakeUp();
+      });
+    }
+
+    // Clicking avatar wrapper wakes up or resets timer
     const avatarWrapper = this.agentContainer.querySelector('.nova-avatar-wrapper');
     if (avatarWrapper) {
       avatarWrapper.addEventListener('click', (e) => {
@@ -2125,15 +1829,13 @@ class NovaAssistant {
   }
 
   updateBubble(text) {
-    if (this.bubbleText) {
-      this.bubbleText.textContent = text;
+    if (this.bubbleSpan) {
+      this.bubbleSpan.textContent = text;
     }
   }
 
   wakeUp() {
     this.micPermissionDenied = false;
-    
-    // Slide up robot from bottom center
     this.agentContainer.classList.remove('hidden');
     this.setState('listening');
     this.updateBubble('¿En qué puedo ayudarte?');
@@ -2146,7 +1848,7 @@ class NovaAssistant {
     this.updateBubble('Hasta luego.');
     
     if ('speechSynthesis' in window) {
-      this.speak('De nada. Si me necesitas de nuevo, solo dime "Hola Nova". ¡Que tengas un gran día!', false);
+      this.speak('Entendido. Si me necesitas de nuevo, solo dime "Hola Nova". ¡Que tengas un gran día!', false);
     } else {
       setTimeout(() => {
         if (this.state === 'sleep') {
@@ -2164,11 +1866,7 @@ class NovaAssistant {
       return;
     }
 
-    // STOP MICROPHONE FIRST
     this.stopListening();
-
-    // CRITICAL COLLISION FIX: Set state to speaking IMMEDIATELY (synchronously)
-    // so the mic's onend event knows we are speaking and does NOT auto-restart!
     this.setState('speaking');
 
     window.speechSynthesis.cancel();
@@ -2179,12 +1877,12 @@ class NovaAssistant {
     if (this.voices.length === 0) {
       this.voices = window.speechSynthesis.getVoices();
     }
-    const esVoice = this.voices.find(v => v.lang.includes('es') || v.lang.includes('ES'));
+    const esVoice = this.voices.find(v => (v.lang || '').includes('es') || (v.lang || '').includes('ES'));
     if (esVoice) {
       utterance.voice = esVoice;
       utterance.lang = esVoice.lang;
     } else {
-      utterance.lang = 'es-ES'; // Default fallback locale
+      utterance.lang = 'es-ES';
     }
 
     utterance.onstart = () => {
@@ -2196,7 +1894,6 @@ class NovaAssistant {
       if (keepActive) {
         this.setState('listening');
         this.updateBubble('🎙️ Escuchando...');
-        // 400ms guard to prevent hearing own voice residual echo
         setTimeout(() => {
           if (this.state === 'listening') {
             this.startListening();
@@ -2205,7 +1902,6 @@ class NovaAssistant {
         }, 400);
       } else {
         this.setState('sleep');
-        // Let it slide down
         setTimeout(() => {
           if (this.state === 'sleep') {
             this.agentContainer.classList.add('hidden');
@@ -2217,13 +1913,7 @@ class NovaAssistant {
 
     utterance.onerror = () => {
       this.setState(keepActive ? 'listening' : 'sleep');
-      if (keepActive) {
-        this.startListening();
-        this.resetSleepTimer();
-      } else {
-        this.agentContainer.classList.add('hidden');
-        this.startListening();
-      }
+      this.startListening();
     };
 
     window.speechSynthesis.speak(utterance);
@@ -2235,103 +1925,137 @@ class NovaAssistant {
       if (this.state === 'listening') {
         this.goToSleep();
       }
-    }, 6000); // 6 seconds of silence countdown
+    }, 180000); // 180 seconds (3 minutes) silence timer to keep Nova active
   }
 
   handleSpeechInput(transcript) {
     if (this.state === 'sleep') {
-      // Autonomous Voice Wake-up Intent
-      const wakeWords = ['nova', 'noba', 'hola nova', 'hey nova', 'oye nova', 'hola noba', 'despierta', 'hola', 'buenos días', 'buenas tardes', 'buenas'];
+      const wakeWords = ['nova', 'noba', 'hola nova', 'hey nova', 'oye nova', 'despierta', 'hola', 'el nova', 'la nova', 'el noba', 'la noba'];
       const heardWakeWord = wakeWords.some(word => transcript.includes(word));
-      
       if (heardWakeWord) {
         this.wakeUp();
       }
     } else if (this.state === 'listening') {
       this.resetSleepTimer();
-      
       let matched = false;
 
-      // Navigation Command Intents
+      // Navigations
       if (transcript.includes('portafolio') || transcript.includes('trabajo') || transcript.includes('páginas') || transcript.includes('proyectos') || transcript.includes('catálogo')) {
-        this.speak("Entendido. Llevándote a nuestro portafolio de referencias y marcas activas.", true);
+        this.speak("Entendido. Llevándote a nuestro portafolio de referencias.", true);
         this.scrollToSection('portafolio');
         matched = true;
       } else if (transcript.includes('beneficios') || transcript.includes('ventaja') || transcript.includes('por qué')) {
         this.speak("Aquí tienes las ventajas clave de usar nuestro AI Studio.", true);
         this.scrollToSection('beneficios');
         matched = true;
-      } else if (transcript.includes('contacto') || transcript.includes('correo') || transcript.includes('teléfono') || transcript.includes('escribir') || transcript.includes('llamar') || transcript.includes('whatsapp')) {
-        this.speak("Abriendo la sección de contacto. Puedes enviarnos un mensaje o chatear por WhatsApp.", true);
+      } else if (transcript.includes('contacto') || transcript.includes('correo') || transcript.includes('escribir') || transcript.includes('whatsapp')) {
+        this.speak("Abriendo la sección de contacto. Puedes enviarnos un mensaje.", true);
         this.scrollToSection('contacto');
         matched = true;
-      } else if (transcript.includes('servicios') || transcript.includes('herramientas') || transcript.includes('hacen') || transcript.includes('ofrecen')) {
-        this.speak("Aquí tienes el listado de herramientas de creación con inteligencia artificial disponibles.", true);
+      } else if (transcript.includes('servicios') || transcript.includes('herramientas') || transcript.includes('hacen')) {
+        this.speak("Aquí tienes las herramientas de creación con inteligencia artificial disponibles.", true);
         this.scrollToSection('herramientas');
         matched = true;
       } else if (transcript.includes('cómo funciona') || transcript.includes('pasos') || transcript.includes('funciona')) {
-        this.speak("Te desplazo a los tres sencillos pasos para generar tu primer video con IA.", true);
+        this.speak("Te desplazo a los tres sencillos pasos para generar tu primer video.", true);
         this.scrollToSection('como-funciona');
         matched = true;
-      } else if (transcript.includes('pregunta') || transcript.includes('duda') || transcript.includes('faq') || transcript.includes('frecuente')) {
-        this.speak("Te desplazo a la sección de preguntas frecuentes resueltas por nuestro equipo.", true);
+      } else if (transcript.includes('pregunta') || transcript.includes('duda') || transcript.includes('faq')) {
+        this.speak("Te desplazo a las preguntas frecuentes resueltas por nuestro equipo.", true);
         this.scrollToSection('faq');
         matched = true;
-      } else if (transcript.includes('planes') || transcript.includes('precios') || transcript.includes('costo') || transcript.includes('tarifa') || transcript.includes('gratis')) {
-        this.speak("Te muestro nuestros planes flexibles de suscripción y créditos mensuales.", true);
+      } else if (transcript.includes('planes') || transcript.includes('precios') || transcript.includes('costo') || transcript.includes('tarifa')) {
+        this.speak("Te muestro nuestros planes de suscripción y créditos mensuales.", true);
         this.scrollToSection('planes');
         matched = true;
+      } else if (transcript.includes('panel') || transcript.includes('studio') || transcript.includes('entrar') || transcript.includes('abrir')) {
+        this.speak("Abriendo tu panel interactivo de AI Studio.", true);
+        enterStudio('dashboard');
+        matched = true;
       }
-      
-      // Jarvis Q&A Direct Knowledge Intents
+
+      // Direct Q&A
       if (!matched) {
-        if (transcript.includes('precio') || transcript.includes('costo') || transcript.includes('cuesta') || transcript.includes('tarifas') || transcript.includes('valor')) {
-          this.speak("Nuestros planes de suscripción para el AI Studio van desde un demo gratuito hasta nuestro plan Pro de 29 dólares al mes con 150 créditos.", true);
+        // Precios / costo
+        if (transcript.includes('precio') || transcript.includes('costo') || transcript.includes('cuesta') || transcript.includes('plan') || transcript.includes('tarifa') || transcript.includes('suscripción') || transcript.includes('gratis') || transcript.includes('dólares')) {
+          this.speak("Ofrecemos tres planes en AI Studio. El Demo Gratuito, de cero dólares, que te da diez créditos al mes. El plan Creador Pro, de 29 dólares al mes, que incluye 150 créditos, avatares ilimitados, voces premium y la clonación de hasta 3 voces. Y el plan Empresarial, de 99 dólares al mes, con créditos ilimitados, avatares en 4K y acceso a la API. Puedes revisarlos en la pantalla en la sección de planes.", true);
           matched = true;
-        } else if (transcript.includes('tiempo') || transcript.includes('tardan') || transcript.includes('días') || transcript.includes('demoran') || transcript.includes('entrega')) {
-          this.speak("La generación de avatares, guiones y texto a voz toma apenas unos segundos de forma digital en nuestro AI Studio.", true);
+        }
+        // Reembolso
+        else if (transcript.includes('reembolso') || transcript.includes('devolución') || transcript.includes('cancelar') || transcript.includes('devolver') || transcript.includes('política de reembolso')) {
+          this.speak("Nuestra política de reembolso te permite solicitar la devolución total de tu dinero dentro de los primeros 14 días de tu suscripción Pro, siempre y cuando no hayas consumido más de 30 créditos de tu plan.", true);
           matched = true;
-        } else if (transcript.includes('avatar') || transcript.includes('avatara') || transcript.includes('muñeco') || transcript.includes('personaje')) {
-          this.speak("En el AI Studio puedes generar avatares 3D realistas, corporativos o educativos a partir de fotos e indicarles qué decir en segundos.", true);
+        }
+        // Privacidad
+        else if (transcript.includes('privacidad') || transcript.includes('datos') || transcript.includes('guardan') || transcript.includes('gdpr') || transcript.includes('seguro') || transcript.includes('política de privacidad')) {
+          this.speak("Synthetic Digital Labs protege estrictamente tu privacidad de acuerdo con el Reglamento General de Protección de Datos. Tus perfiles, rostros y muestras de voz subidos son totalmente privados, se guardan encriptados y nunca son usados para entrenar modelos públicos sin tu permiso.", true);
           matched = true;
-        } else if (transcript.includes('quiénes son') || transcript.includes('empresa') || transcript.includes('quien eres') || transcript.includes('creadores')) {
-          this.speak("Somos Synthetic Digital Labs, el mejor lugar para crear tus páginas web, aplicaciones móviles y contenidos impulsados por Inteligencia Artificial.", true);
+        }
+        // Seguridad
+        else if (transcript.includes('seguridad') || transcript.includes('política de seguridad') || transcript.includes('protección') || transcript.includes('encripta')) {
+          this.speak("Nuestra política de seguridad incluye cifrado SSL en toda la plataforma y almacenamiento seguro en servidores en la nube. Además, exigimos una declaración ética firmada y consentimiento por voz antes de clonar cualquier timbre neuronal, evitando suplantaciones de identidad.", true);
           matched = true;
-        } else if (transcript.includes('dónde están') || transcript.includes('ubicados') || transcript.includes('oficina') || transcript.includes('país')) {
-          this.speak("Nuestras oficinas centrales están en Miami, Florida, pero atendemos a clientes y startups de todo el mundo.", true);
+        }
+        // Crear página web
+        else if (transcript.includes('crear una página') || transcript.includes('crear página') || transcript.includes('cómo crearla') || transcript.includes('hacer una web') || transcript.includes('desarrollar') || transcript.includes('crear la página') || transcript.includes('crear el sitio')) {
+          this.speak("Para crear una página web con nosotros, puedes rellenar el formulario al final de la página o contactarnos por correo a infoweb@syntheticdigitallab.com o al WhatsApp +1 786-872-6865. Desarrollamos sitios web y aplicaciones a medida con inteligencia artificial integrada.", true);
           matched = true;
-        } else if (transcript.includes('pago') || transcript.includes('pagar') || transcript.includes('métodos') || transcript.includes('formas')) {
-          this.speak("Aceptamos pagos directos con tarjeta de crédito, PayPal y criptomonedas directamente en la plataforma.", true);
+        }
+        // Interactuar con la página
+        else if (transcript.includes('interactuar') || transcript.includes('cómo funciona') || transcript.includes('cómo se usa') || transcript.includes('qué hacer') || transcript.includes('usar la página') || transcript.includes('botones') || transcript.includes('estudio')) {
+          this.speak("Puedes interactuar con nuestra aplicación navegando por las secciones del menú. Al entrar al AI Studio, verás un panel completo similar al de HeyGen, donde puedes cambiar de vista, elegir avatares, redactar guiones con IA, previsualizar audios y renderizar videos en Full HD.", true);
           matched = true;
-        } else if (transcript.includes('hola') || transcript.includes('saludo') || transcript.includes('buenos días') || transcript.includes('buenas tardes')) {
-          this.speak("¡Hola! Soy Nova, tu asistente virtual en Synthetic Digital Labs. ¿En qué puedo guiarte hoy?", true);
+        }
+        // Crear avatar
+        else if (transcript.includes('crear avatar') || transcript.includes('crear un avatar') || transcript.includes('hacer avatar') || transcript.includes('nuevo avatar') || transcript.includes('avatar fotográfico') || transcript.includes('subir foto')) {
+          this.speak("Para crear un avatar, entra al panel lateral en 'Avatares'. En la pestaña 'Photo Avatar' sube una foto de tu rostro de frente, colócale un nombre y presiona 'Crear Presentador'. Para un 'Instant Avatar', puedes grabarte con tu cámara web para clonar tus gestos reales en un avatar digital.", true);
           matched = true;
-        } else if (transcript.includes('gracias') || transcript.includes('adiós') || transcript.includes('chao') || transcript.includes('hasta luego')) {
-          this.speak("De nada. Si necesitas algo más, solo dime 'Hola Nova'. ¡Que tengas un gran día!", false);
+        }
+        // Traducción de texto a voz (TTS)
+        else if (transcript.includes('traducción de texto') || transcript.includes('texto a voz') || transcript.includes('sintetizar') || transcript.includes('locución') || transcript.includes('traducir') || transcript.includes('tts') || transcript.includes('idioma') || transcript.includes('voces')) {
+          this.speak("Para traducir texto a voz, ve a la sección 'Voces' en la barra lateral para elegir un tono de nuestro catálogo. Luego, en la pestaña 'Editor Video', escribe el guion que desees en el panel derecho y haz clic en 'Escuchar Guion'. También puedes traducirlo usando el menú de idiomas del editor.", true);
+          matched = true;
+        }
+        // Hacer un video / colocar la voz
+        else if (transcript.includes('hacer un video') || transcript.includes('cómo se hace un video') || transcript.includes('crear video') || transcript.includes('generar video') || transcript.includes('colocar la voz') || transcript.includes('ponerle la voz') || transcript.includes('colocar voz') || transcript.includes('hacer video')) {
+          this.speak("Para crear un video, entra en 'Editor Video' en el panel de control. Elige tu presentador en el menú izquierdo, selecciona una voz, y escribe tu guion en la parte derecha. Presiona 'Escuchar Guion' para previsualizarlo y luego haz clic en 'Generar Video' arriba a la derecha. Tras renderizarse, se guardará en tu Biblioteca.", true);
+          matched = true;
+        }
+        // Clonar una voz
+        else if (transcript.includes('clonar') || transcript.includes('clonación') || transcript.includes('clonar voz') || transcript.includes('clonar una voz') || transcript.includes('mi propia voz') || transcript.includes('grabar voz')) {
+          this.speak("Para clonar tu voz, dirígete al módulo de 'Voces' en la barra lateral. En la sección 'Clonador de Voz Instantáneo', sube un archivo de audio limpio de diez segundos de duración o grábate en vivo. Acepta los términos de consentimiento legal, asígnale un nombre y presiona 'Clonar Voz'. Estará disponible de inmediato.", true);
+          matched = true;
+        }
+        // Quién eres / Quién es Nova
+        else if (transcript.includes('quién eres') || transcript.includes('quien eres') || transcript.includes('tu nombre') || transcript.includes('quién es nova') || transcript.includes('quien es nova') || transcript.includes('qué eres')) {
+          this.speak("Hola, soy Nova, el agente inteligente holográfico de Synthetic Digital Labs. Tengo conocimiento de toda la plataforma y te puedo ayudar a navegarla o enseñarte cómo clonar tu voz, crear avatares interactivos y renderizar videos profesionales.", true);
+          matched = true;
+        }
+        // Gracias / adiós
+        else if (transcript.includes('gracias') || transcript.includes('adiós') || transcript.includes('chao') || transcript.includes('hasta luego') || transcript.includes('duerme') || transcript.includes('desactívate') || transcript.includes('silencio')) {
+          this.speak("Entendido. Estaré aquí en segundo plano. Si me necesitas de nuevo, solo di 'Hola Nova' o haz clic sobre mi avatar. ¡Que tengas un excelente día!", false);
           matched = true;
         }
       }
 
       if (!matched) {
-        this.speak("Lo siento, no he entendido esa pregunta. Puedes consultarme sobre precios, herramientas, cómo funciona o solicitar ir a una sección.", true);
+        this.speak("Lo siento, no tengo una respuesta específica para eso. Puedes preguntarme sobre precios, reembolso, privacidad, seguridad, cómo crear un avatar, clonar tu voz o generar un video.", true);
       }
     }
   }
 
   scrollToSection(id) {
-    const publicLanding = document.getElementById('public-landing');
     if (publicLanding && publicLanding.style.display === 'none') {
-      const exitBtn = document.querySelector('.btn-exit-studio');
-      if (exitBtn) exitBtn.click();
+      exitStudio();
     }
     setTimeout(() => {
       const section = document.getElementById(id);
-      if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
-      }
+      if (section) section.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   }
 }
 
-// Initialize Assistant
-new NovaAssistant();
+// Window load trigger
+window.addEventListener('load', () => {
+  window.novaInstance = new NovaAssistant();
+});
