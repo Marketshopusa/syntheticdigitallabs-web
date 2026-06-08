@@ -2738,3 +2738,165 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   LIGHT THEME OVERRIDES
+   ========================================================================== */
+body.light-theme {
+  --bg-dark-base: #f4f5f9;
+  --bg-dark-tint: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-card-hover: rgba(255, 255, 255, 1);
+  --text-main: #141221;
+  --text-muted: #626079;
+  --border-light: rgba(0, 0, 0, 0.08);
+  --border-glow-blue: rgba(0, 210, 255, 0.15);
+  --border-glow-purple: rgba(189, 0, 255, 0.15);
+  --border-glow-cyan: rgba(0, 245, 255, 0.15);
+}
+
+body.light-theme .studio-sidebar {
+  background-color: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .sidebar-logo,
+body.light-theme .sidebar-menu {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .menu-item:hover,
+body.light-theme .menu-item.active {
+  background: rgba(189, 0, 255, 0.08);
+  color: var(--neon-purple);
+}
+
+body.light-theme .studio-header {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .user-name {
+  color: #141221;
+}
+
+body.light-theme .welcome-banner-hg {
+  background: linear-gradient(135deg, rgba(189, 0, 255, 0.08) 0%, rgba(0, 210, 255, 0.08) 100%);
+  border: 1px solid rgba(189, 0, 255, 0.15);
+}
+
+body.light-theme .welcome-banner-hg h1 {
+  color: #141221;
+}
+
+body.light-theme .welcome-banner-hg p {
+  color: #4a475a;
+}
+
+body.light-theme .stat-bubble {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+body.light-theme .template-card,
+body.light-theme .avatar-card,
+body.light-theme .voice-card,
+body.light-theme .project-card,
+body.light-theme .right-panel-box,
+body.light-theme .timeline-container,
+body.light-theme .settings-credits-box,
+body.light-theme .developer-settings-box,
+body.light-theme .split-info-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme .editor-left-panel,
+body.light-theme .editor-right-panel {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .editor-left-panel .panel-section,
+body.light-theme .editor-right-panel .right-panel-box {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .canvas-outer-wrapper {
+  background: #eaeaea;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .form-input,
+body.light-theme .form-select,
+body.light-theme .form-textarea,
+body.light-theme .form-input-sm,
+body.light-theme .form-select-sm,
+body.light-theme .form-textarea-editor {
+  background: #f1f3f6;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #141221;
+}
+
+body.light-theme .form-input:focus,
+body.light-theme .form-select:focus,
+body.light-theme .form-textarea:focus,
+body.light-theme .form-input-sm:focus,
+body.light-theme .form-select-sm:focus,
+body.light-theme .form-textarea-editor:focus {
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 0 2px rgba(189, 0, 255, 0.1);
+}
+
+body.light-theme .btn-secondary,
+body.light-theme .btn-secondary-sm {
+  background: rgba(0, 0, 0, 0.05);
+  color: #141221;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+body.light-theme .btn-secondary:hover,
+body.light-theme .btn-secondary-sm:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .btn-outline,
+body.light-theme .btn-outline-sm {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: #141221;
+}
+body.light-theme .btn-outline:hover,
+body.light-theme .btn-outline-sm:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .hg-tab-btn {
+  color: #626079;
+  border-bottom: 2px solid transparent;
+}
+body.light-theme .hg-tab-btn.active {
+  color: var(--neon-purple);
+  border-bottom-color: var(--neon-purple);
+}
+
+body.light-theme .studio-modal-box {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #141221;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+body.light-theme .toast-notification {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #141221;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+body.light-theme .toast-title {
+  color: #141221;
+}
+
+body.light-theme .toast-desc {
+  color: #626079;
+}

@@ -4,19 +4,19 @@
 
 // --- DEFAULT STATE / DATABASE ---
 const DEFAULT_AVATARS = [
-  { id: 'av-sofia', name: 'Sofía Presentadora', style: 'Presentador', lang: 'Español (ES)', img: 'assets/nova_avatar.png', desc: 'Avatar oficial premium de alta definición.' },
-  { id: 'av-roberto', name: 'Roberto Corporativo', style: 'Corporativo', lang: 'Español (MX)', img: 'assets/nova_avatar.png', desc: 'Avatar formal para presentaciones empresariales.' },
-  { id: 'av-elena', name: 'Elena Podcast', style: 'Podcast', lang: 'Español (ES)', img: 'assets/nova_avatar.png', desc: 'Voz amigable y estilo casual con micrófono.' },
-  { id: 'av-nova', name: 'Nova Holograma 3D', style: 'Futurista', lang: 'Español (ES)', img: 'assets/nova_avatar.png', desc: 'Asistente de IA robótico oficial.' }
+  { id: 'av-sofia', name: 'Sofía Presentadora', style: 'Presentador', lang: 'Español (ES)', img: 'assets/avatar_sofia.png', desc: 'Avatar oficial premium de alta definición.' },
+  { id: 'av-roberto', name: 'Roberto Corporativo', style: 'Corporativo', lang: 'Español (MX)', img: 'assets/avatar_roberto.png', desc: 'Avatar formal para presentaciones empresariales.' },
+  { id: 'av-elena', name: 'Elena Podcast', style: 'Podcast', lang: 'Español (ES)', img: 'assets/avatar_elena.png', desc: 'Voz amigable y estilo casual con micrófono.' },
+  { id: 'av-nova', name: 'Nova Holograma 3D', style: 'Futurista', lang: 'Español (ES)', img: 'assets/avatar_nova.png', desc: 'Asistente de IA robótico oficial.' }
 ];
 
 const DEFAULT_VOICES = [
-  { id: 'v-sofia', name: 'Sofía Voz (Femenina)', lang: 'Español (ES)', gender: 'Femenino', tone: 'Profesional', isPremium: true },
-  { id: 'v-roberto', name: 'Roberto Voz (Masculina)', lang: 'Español (MX)', gender: 'Masculino', tone: 'Corporativo', isPremium: true },
-  { id: 'v-elena', name: 'Elena Voz (Femenina)', lang: 'Español (ES)', gender: 'Femenino', tone: 'Cálido', isPremium: false },
-  { id: 'v-lucas', name: 'Lucas Voz (Masculina)', lang: 'Español (ES)', gender: 'Masculino', tone: 'Vendedor', isPremium: false },
-  { id: 'v-john', name: 'John Voice (Male)', lang: 'Inglés (US)', gender: 'Masculino', tone: 'Natural', isPremium: true },
-  { id: 'v-sarah', name: 'Sarah Voice (Female)', lang: 'Inglés (US)', gender: 'Femenino', tone: 'Narrativa', isPremium: true }
+  { id: 'v-sofia', name: 'Sofía Voz (Femenina)', lang: 'Español (ES)', gender: 'Femenino', tone: 'Profesional', isPremium: true, pitch: 1.15, rate: 1.0 },
+  { id: 'v-roberto', name: 'Roberto Voz (Masculina)', lang: 'Español (MX)', gender: 'Masculino', tone: 'Corporativo', isPremium: true, pitch: 0.8, rate: 0.9 },
+  { id: 'v-elena', name: 'Elena Voz (Femenina)', lang: 'Español (ES)', gender: 'Femenino', tone: 'Cálido', isPremium: false, pitch: 1.05, rate: 1.05 },
+  { id: 'v-lucas', name: 'Lucas Voz (Masculina)', lang: 'Español (ES)', gender: 'Masculino', tone: 'Vendedor', isPremium: false, pitch: 0.85, rate: 1.1 },
+  { id: 'v-john', name: 'John Voice (Male)', lang: 'Inglés (US)', gender: 'Masculino', tone: 'Natural', isPremium: true, pitch: 0.9, rate: 0.95 },
+  { id: 'v-sarah', name: 'Sarah Voice (Female)', lang: 'Inglés (US)', gender: 'Femenino', tone: 'Narrativa', isPremium: true, pitch: 1.1, rate: 1.0 }
 ];
 
 const DEFAULT_TEMPLATES = [
@@ -27,7 +27,7 @@ const DEFAULT_TEMPLATES = [
 ];
 
 const DEFAULT_PROJECTS = [
-  { id: 'p-1', name: 'Vídeo Comercial AI Studio', type: 'video', date: '2026-06-01', duration: '15s', details: 'Horizontal (16:9) • Voz Sofía', avatarImg: 'assets/nova_avatar.png' },
+  { id: 'p-1', name: 'Vídeo Comercial AI Studio', type: 'video', date: '2026-06-01', duration: '15s', details: 'Horizontal (16:9) • Voz Sofía', avatarImg: 'assets/avatar_sofia.png' },
   { id: 'p-2', name: 'Locución Introductoria Podcast', type: 'audio', date: '2026-06-03', duration: '30s', details: 'Sintetizado • Voz Lucas', avatarImg: 'assets/ref_blue.png' },
   { id: 'p-3', name: 'Guión Campaña Marketing', type: 'guion', date: '2026-06-05', duration: '60s', details: 'Persuasivo • Español', avatarImg: 'assets/logo.png' }
 ];
@@ -488,7 +488,7 @@ function renderHomeWidgets() {
       card.className = 'template-card';
       card.innerHTML = `
         <div class="temp-thumb-wrapper">
-          <img src="${temp.id === 'temp-corp' ? 'thumbs/madeva.jpg' : (temp.id === 'temp-sales' ? 'thumbs/vkingo.jpg' : (temp.id === 'temp-edu' ? 'thumbs/latin.jpg' : 'thumbs/frost.jpg'))}" alt="${temp.name}">
+          <img src="${temp.id === 'temp-corp' ? 'thumbs/temp_corp.png' : (temp.id === 'temp-sales' ? 'thumbs/temp_sales.png' : (temp.id === 'temp-edu' ? 'thumbs/temp_edu.png' : 'thumbs/temp_news.png'))}" alt="${temp.name}">
           <span class="temp-aspect-badge">${temp.aspect}</span>
           <div class="temp-play-hover"><i class="fa-solid fa-circle-play"></i></div>
         </div>
@@ -536,7 +536,7 @@ function renderTemplatesGrid() {
     card.className = 'template-card';
     card.innerHTML = `
       <div class="temp-thumb-wrapper">
-        <img src="${temp.id === 'temp-corp' ? 'thumbs/madeva.jpg' : (temp.id === 'temp-sales' ? 'thumbs/vkingo.jpg' : (temp.id === 'temp-edu' ? 'thumbs/latin.jpg' : 'thumbs/frost.jpg'))}" alt="${temp.name}">
+        <img src="${temp.id === 'temp-corp' ? 'thumbs/temp_corp.png' : (temp.id === 'temp-sales' ? 'thumbs/temp_sales.png' : (temp.id === 'temp-edu' ? 'thumbs/temp_edu.png' : 'thumbs/temp_news.png'))}" alt="${temp.name}">
         <span class="temp-aspect-badge">${temp.aspect}</span>
         <div class="temp-play-hover"><i class="fa-solid fa-circle-play"></i></div>
       </div>
@@ -605,7 +605,7 @@ const avatarFileName = document.getElementById('avatarFileName');
 const avatarNameInput = document.getElementById('avatarNameInput');
 const avatarPreviewImg = document.getElementById('avatarPreviewImg');
 
-let loadedAvatarFileUrl = 'assets/nova_avatar.png';
+let loadedAvatarFileUrl = 'assets/avatar_sofia.png';
 
 if (avatarUploadZone && avatarImageInput) {
   avatarUploadZone.addEventListener('click', () => avatarImageInput.click());
@@ -714,7 +714,7 @@ if (btnStartInstantAvatar) {
                 name: 'Mi Avatar Grabado (Webcam)',
                 style: 'Instant Avatar',
                 lang: 'Español (ES)',
-                img: 'assets/nova_avatar.png',
+                img: 'assets/avatar_sofia.png',
                 desc: 'Clon digital generado a partir de webcam.'
               };
 
@@ -831,6 +831,9 @@ function toggleVoicePreview(voice, button, waveAnim) {
 
     const utterance = new SpeechSynthesisUtterance(textSample);
     
+    if (voice.pitch !== undefined) utterance.pitch = voice.pitch;
+    if (voice.rate !== undefined) utterance.rate = voice.rate;
+
     // Match locale voice
     const sysVoices = window.speechSynthesis.getVoices();
     const match = sysVoices.find(v => v.lang.toLowerCase().includes(((voice.lang || '').includes('ES') || (voice.lang || '').includes('Español')) ? 'es' : 'en'));
@@ -951,7 +954,9 @@ if (btnCloneVoice) {
       lang: 'Español (ES)',
       gender: 'Personalizado',
       tone: 'Clonado',
-      isPremium: true
+      isPremium: true,
+      pitch: 0.75 + Math.random() * 0.5,
+      rate: 0.85 + Math.random() * 0.3
     };
 
     const currentVoices = getLocal('sdl_voices') || [];
@@ -1156,6 +1161,9 @@ if (btnPlayScriptSpeech) {
 
     const utterance = new SpeechSynthesisUtterance(scriptText);
     
+    if (activeVc.pitch !== undefined) utterance.pitch = activeVc.pitch;
+    if (activeVc.rate !== undefined) utterance.rate = activeVc.rate;
+
     // Find matched system voice locale
     const sysVoices = window.speechSynthesis.getVoices();
     const match = sysVoices.find(v => v.lang.toLowerCase().includes(((activeVc.lang || '').includes('ES') || (activeVc.lang || '').includes('Español')) ? 'es' : 'en'));
@@ -1361,7 +1369,7 @@ function renderLibrary() {
         card.className = 'project-card';
         card.innerHTML = `
           <div class="proj-thumb-box">
-            <img src="${v.avatarImg || 'assets/nova_avatar.png'}" alt="Avatar">
+            <img src="${v.avatarImg || 'assets/avatar_sofia.png'}" alt="Avatar">
             <span class="proj-duration">${v.duration}</span>
           </div>
           <div class="proj-info">
@@ -2055,7 +2063,37 @@ class NovaAssistant {
   }
 }
 
+// Theme Toggler Logic
+function initTheme() {
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  if (!themeToggleBtn) return;
+
+  const currentTheme = safeGetItem('sdl_theme', 'dark');
+  if (currentTheme === 'light') {
+    document.body.classList.add('light-theme');
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+  } else {
+    document.body.classList.remove('light-theme');
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+  }
+
+  themeToggleBtn.addEventListener('click', () => {
+    if (document.body.classList.contains('light-theme')) {
+      document.body.classList.remove('light-theme');
+      safeSetItem('sdl_theme', 'dark');
+      themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+      showToast('Tema Cambiado', 'Modo oscuro activado.', 'info');
+    } else {
+      document.body.classList.add('light-theme');
+      safeSetItem('sdl_theme', 'light');
+      themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+      showToast('Tema Cambiado', 'Modo claro activado.', 'info');
+    }
+  });
+}
+
 // Window load trigger
 window.addEventListener('load', () => {
   window.novaInstance = new NovaAssistant();
+  initTheme();
 });
