@@ -2900,3 +2900,40 @@ body.light-theme .toast-title {
 body.light-theme .toast-desc {
   color: #626079;
 }
+
+/* Avatar Sub tabs (HeyGen style) */
+.sub-tab-btn {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  padding: 6px 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+.sub-tab-btn:hover {
+  border-color: var(--neon-purple);
+  color: var(--text-main);
+}
+.sub-tab-btn.active {
+  background: rgba(189, 0, 255, 0.1) !important;
+  border-color: var(--neon-purple) !important;
+  color: var(--text-main) !important;
+}
+body.light-theme .sub-tab-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #555;
+}
+body.light-theme .sub-tab-btn:hover {
+  border-color: var(--neon-purple);
+  color: var(--neon-purple);
+}
+body.light-theme .sub-tab-btn.active {
+  background: rgba(189, 0, 255, 0.08) !important;
+  border-color: var(--neon-purple) !important;
+  color: var(--neon-purple) !important;
+}

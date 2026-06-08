@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.2">
+  <link rel="stylesheet" href="style.css?v=2.3">
 </head>
 <body class="light-theme">
 
@@ -677,6 +677,13 @@
 
           <!-- Studio Avatar Panel -->
           <div class="hg-tab-content active" id="avatar-panel-studio">
+            <!-- Sub tabs for avatar types (HeyGen style) -->
+            <div class="sub-tabs-hg" style="margin-top: 15px; margin-bottom: 20px; display: flex; gap: 10px;">
+              <button class="sub-tab-btn active" data-sub="all">Todos</button>
+              <button class="sub-tab-btn" data-sub="Avatar Lite">Avatar Lite</button>
+              <button class="sub-tab-btn" data-sub="Avatar Pro">Avatar Pro</button>
+              <button class="sub-tab-btn" data-sub="Talking Photo">Talking Photo</button>
+            </div>
             <div class="hg-avatars-grid" id="studioAvatarsGrid">
               <!-- Populated via JS -->
             </div>
@@ -1415,6 +1422,6 @@
   </div>
 
   <!-- Scripts -->
-  <script src="main.js?v=2.2"></script>
+  <script src="main.js?v=2.3"></script>
 </body>
 </html>

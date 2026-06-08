@@ -4,10 +4,22 @@
 
 // --- DEFAULT STATE / DATABASE ---
 const DEFAULT_AVATARS = [
-  { id: 'av-sofia', name: 'Sofía Presentadora', style: 'Presentador', lang: 'Español (ES)', img: 'assets/avatar_sofia.png', desc: 'Avatar oficial premium de alta definición.' },
-  { id: 'av-roberto', name: 'Roberto Corporativo', style: 'Corporativo', lang: 'Español (MX)', img: 'assets/avatar_roberto.png', desc: 'Avatar formal para presentaciones empresariales.' },
-  { id: 'av-elena', name: 'Elena Podcast', style: 'Podcast', lang: 'Español (ES)', img: 'assets/avatar_elena.png', desc: 'Voz amigable y estilo casual con micrófono.' },
-  { id: 'av-nova', name: 'Nova Holograma 3D', style: 'Futurista', lang: 'Español (ES)', img: 'assets/avatar_nova.png', desc: 'Asistente de IA robótico oficial.' }
+  { id: 'av-sofia-biz', name: 'Sofía (Traje Formal)', category: 'Avatar Pro', style: 'Avatar Pro', lang: 'Español (ES)', img: 'assets/avatar_sofia.png', desc: 'Avatar premium formal para negocios.' },
+  { id: 'av-roberto-biz', name: 'Roberto (Ejecutivo)', category: 'Avatar Pro', style: 'Avatar Pro', lang: 'Español (MX)', img: 'assets/avatar_roberto.png', desc: 'Presentador ejecutivo de alta fidelidad.' },
+  { id: 'av-elena-pod', name: 'Elena (Podcast)', category: 'Avatar Pro', style: 'Avatar Pro', lang: 'Español (ES)', img: 'assets/avatar_elena.png', desc: 'Estilo casual con micrófono de estudio.' },
+  { id: 'av-nova-fut', name: 'Nova (Holograma 3D)', category: 'Avatar Pro', style: 'Avatar Pro', lang: 'Español (ES)', img: 'assets/avatar_nova.png', desc: 'Presentadora interactiva futurista.' },
+  { id: 'av-sofia-casual', name: 'Sofía (Casual)', category: 'Avatar Lite', style: 'Avatar Lite', lang: 'Español (ES)', img: 'assets/avatar_sofia.png', desc: 'Estilo semi-formal para tutoriales.' },
+  { id: 'av-roberto-sport', name: 'Roberto (Sport)', category: 'Avatar Lite', style: 'Avatar Lite', lang: 'Español (MX)', img: 'assets/avatar_roberto.png', desc: 'Ropa informal para marketing dinámico.' },
+  { id: 'av-elena-edu', name: 'Elena (Explicativa)', category: 'Avatar Lite', style: 'Avatar Lite', lang: 'Español (ES)', img: 'assets/avatar_elena.png', desc: 'Enfoque conversacional para e-learning.' },
+  { id: 'av-nova-human', name: 'Nova (Intelecto)', category: 'Avatar Lite', style: 'Avatar Lite', lang: 'Español (US)', img: 'assets/avatar_nova.png', desc: 'Estilo interactivo para demostraciones.' },
+  { id: 'av-photo-marcus', name: 'Marcus (Talking Photo)', category: 'Talking Photo', style: 'Talking Photo', lang: 'Inglés (US)', img: 'assets/avatar_roberto.png', desc: 'Foto de retrato animada con gesticulación.' },
+  { id: 'av-photo-chloe', name: 'Chloe (Talking Photo)', category: 'Talking Photo', style: 'Talking Photo', lang: 'Inglés (UK)', img: 'assets/avatar_sofia.png', desc: 'Foto de retrato femenino animada por IA.' },
+  { id: 'av-photo-lucia', name: 'Lucía (Talking Photo)', category: 'Talking Photo', style: 'Talking Photo', lang: 'Español (ES)', img: 'assets/avatar_elena.png', desc: 'Foto de retrato español para narración.' },
+  { id: 'av-photo-cyber', name: 'CyberFace (Talking Photo)', category: 'Talking Photo', style: 'Talking Photo', lang: 'Español (ES)', img: 'assets/avatar_nova.png', desc: 'Rostro tecnológico animado por voz.' },
+  { id: 'av-sofia-tele', name: 'Sofía (Teletrabajo)', category: 'Avatar Lite', style: 'Avatar Lite', lang: 'Español (ES)', img: 'assets/avatar_sofia.png', desc: 'Estilo diario desde oficina hogareña.' },
+  { id: 'av-roberto-glass', name: 'Roberto (Moda)', category: 'Avatar Lite', style: 'Avatar Lite', lang: 'Español (MX)', img: 'assets/avatar_roberto.png', desc: 'Estilo de verano para redes sociales.' },
+  { id: 'av-elena-formal', name: 'Elena (Traje de Gala)', category: 'Avatar Pro', style: 'Avatar Pro', lang: 'Español (ES)', img: 'assets/avatar_elena.png', desc: 'Estilo premium elegante para ceremonias.' },
+  { id: 'av-nova-casual', name: 'Nova (Casual Dress)', category: 'Avatar Lite', style: 'Avatar Lite', lang: 'Español (ES)', img: 'assets/avatar_nova.png', desc: 'Estilo cotidiano para videos explicativos.' }
 ];
 
 const DEFAULT_VOICES = [
@@ -20,15 +32,15 @@ const DEFAULT_VOICES = [
 ];
 
 const DEFAULT_TEMPLATES = [
-  { id: 'temp-corp', name: 'Resultados Corporativos', tag: 'Negocios', aspect: '16:9', avatar: 'av-roberto', voice: 'v-roberto', script: 'Estimado equipo de dirección, hoy les presento el balance comercial y los resultados destacados del trimestre. Hemos superado los objetivos fijados en un doce por ciento.' },
-  { id: 'temp-sales', name: 'Anuncio Promocional Redes', tag: 'Marketing', aspect: '9:16', avatar: 'av-sofia', voice: 'v-sofia', script: '¿Cansado de gastar miles de dólares en estudios de grabación? Con AI Studio puedes crear presentadores interactivos para tus productos en menos de un minuto. ¡Haz clic para probarlo gratis!' },
-  { id: 'temp-edu', name: 'Tutorial de Clonación', tag: 'Educativo', aspect: '9:16', avatar: 'av-elena', voice: 'v-elena', script: 'Hola a todos, hoy aprenderemos cómo puedes clonar tu propia voz de forma ética utilizando nuestro panel avanzado de locución. Tan solo requiere diez segundos de audio limpio.' },
-  { id: 'temp-news', name: 'Noticias Tecnología IA', tag: 'Noticias', aspect: '16:9', avatar: 'av-nova', voice: 'v-lucas', script: 'Última hora: Synthetic Digital Labs lanza oficialmente su espacio de trabajo rediseñado, unificando avatares y línea de tiempo interactiva.' }
+  { id: 'temp-corp', name: 'Resultados Corporativos', tag: 'Negocios', aspect: '16:9', avatar: 'av-roberto-biz', voice: 'v-roberto', script: 'Estimado equipo de dirección, hoy les presento el balance comercial y los resultados destacados del trimestre. Hemos superado los objetivos fijados en un doce por ciento.' },
+  { id: 'temp-sales', name: 'Anuncio Promocional Redes', tag: 'Marketing', aspect: '9:16', avatar: 'av-sofia-casual', voice: 'v-sofia', script: '¿Cansado de gastar miles de dólares en estudios de grabación? Con AI Studio puedes crear presentadores interactivos para tus productos en menos de un minuto. ¡Haz clic para probarlo gratis!' },
+  { id: 'temp-edu', name: 'Tutorial de Clonación', tag: 'Educativo', aspect: '9:16', avatar: 'av-elena-pod', voice: 'v-elena', script: 'Hola a todos, hoy aprenderemos cómo puedes clonar tu propia voz de forma ética utilizando nuestro panel avanzado de locución. Tan solo requiere diez segundos de audio limpio.' },
+  { id: 'temp-news', name: 'Noticias Tecnología IA', tag: 'Noticias', aspect: '16:9', avatar: 'av-nova-fut', voice: 'v-lucas', script: 'Última hora: Synthetic Digital Labs lanza oficialmente su espacio de trabajo rediseñado, unificando avatares y línea de tiempo interactiva.' }
 ];
 
 const DEFAULT_PROJECTS = [
   { id: 'p-1', name: 'Vídeo Comercial AI Studio', type: 'video', date: '2026-06-01', duration: '15s', details: 'Horizontal (16:9) • Voz Sofía', avatarImg: 'assets/avatar_sofia.png' },
-  { id: 'p-2', name: 'Locución Introductoria Podcast', type: 'audio', date: '2026-06-03', duration: '30s', details: 'Sintetizado • Voz Lucas', avatarImg: 'assets/ref_blue.png' },
+  { id: 'p-2', name: 'Locución Introductoria Podcast', type: 'audio', date: '2026-06-03', duration: '30s', details: 'Sintetizado • Voz Lucas', avatarImg: 'assets/avatar_roberto.png' },
   { id: 'p-3', name: 'Guión Campaña Marketing', type: 'guion', date: '2026-06-05', duration: '60s', details: 'Persuasivo • Español', avatarImg: 'assets/logo.png' }
 ];
 
@@ -70,7 +82,7 @@ function safeSetItem(key, val) {
 
 // --- INITIALIZE DATABASE ---
 function initLocalStorage() {
-  const currentDbVersion = 'v2.2';
+  const currentDbVersion = 'v2.3';
   const storedDbVersion = safeGetItem('sdl_db_version');
 
   if (storedDbVersion !== currentDbVersion) {
@@ -153,7 +165,7 @@ function setCredits(val) {
 }
 
 // --- GLOBAL VARIABLES FOR EDITOR STATE ---
-let selectedAvatarId = 'av-sofia';
+let selectedAvatarId = 'av-sofia-biz';
 let selectedVoiceId = 'v-sofia';
 let selectedRatio = '16-9';
 let selectedBg = 'dark';
@@ -578,13 +590,20 @@ function loadTemplate(temp) {
   showToast('Plantilla Cargada', `"${temp.name}" cargada en el lienzo.`, 'success');
 }
 
+let activeAvatarSubTab = 'all';
+
 // --- RENDER: AVATARS GRID ---
 function renderAvatarsGrid() {
   const grid = document.getElementById('studioAvatarsGrid');
   if (!grid) return;
 
-  const avatars = getLocal('sdl_avatars') || [];
+  let avatars = getLocal('sdl_avatars') || [];
   grid.innerHTML = '';
+
+  // Filter based on active sub-tab (Avatar Lite, Avatar Pro, Talking Photo)
+  if (activeAvatarSubTab !== 'all') {
+    avatars = avatars.filter(av => av.category === activeAvatarSubTab);
+  }
 
   avatars.forEach(av => {
     const card = document.createElement('div');
@@ -850,7 +869,7 @@ function toggleVoicePreview(voice, button, waveAnim) {
 
     // Match locale voice
     const sysVoices = window.speechSynthesis.getVoices();
-    const match = sysVoices.find(v => v.lang.toLowerCase().includes(((voice.lang || '').includes('ES') || (voice.lang || '').includes('Español')) ? 'es' : 'en'));
+    const match = getSystemVoiceForId(voice, sysVoices);
     if (match) utterance.voice = match;
 
     utterance.onend = () => {
@@ -1180,7 +1199,7 @@ if (btnPlayScriptSpeech) {
 
     // Find matched system voice locale
     const sysVoices = window.speechSynthesis.getVoices();
-    const match = sysVoices.find(v => v.lang.toLowerCase().includes(((activeVc.lang || '').includes('ES') || (activeVc.lang || '').includes('Español')) ? 'es' : 'en'));
+    const match = getSystemVoiceForId(activeVc, sysVoices);
     if (match) utterance.voice = match;
 
     utterance.onstart = () => {
@@ -2161,6 +2180,65 @@ function initTheme() {
     }
   });
 }
+
+// System voice selection helper to map to distinct browser speakers
+function getSystemVoiceForId(voice, sysVoices) {
+  const isSpanish = (voice.lang || '').includes('ES') || (voice.lang || '').includes('Español');
+  const langKey = isSpanish ? 'es' : 'en';
+  const langVoices = sysVoices.filter(v => v.lang.toLowerCase().includes(langKey));
+  
+  if (langVoices.length === 0) return null;
+
+  const isFemale = voice.gender === 'Femenino';
+  const femaleKeywords = ['sabina', 'helena', 'monica', 'juana', 'lucia', 'tessa', 'samantha', 'victoria', 'hazel', 'google', 'zira', 'susan', 'elsy', 'yolanda', 'melina', 'female', 'woman', 'girl'];
+  const maleKeywords = ['jorge', 'raul', 'julio', 'david', 'pablo', 'raul', 'mark', 'george', 'stefano', 'paul', 'danny', 'ravi', 'richard', 'male', 'man', 'boy'];
+
+  let candidateVoices = langVoices;
+  if (isFemale) {
+    candidateVoices = langVoices.filter(v => {
+      const name = v.name.toLowerCase();
+      return femaleKeywords.some(kw => name.includes(kw)) && !maleKeywords.some(kw => name.includes(kw));
+    });
+  } else {
+    candidateVoices = langVoices.filter(v => {
+      const name = v.name.toLowerCase();
+      return maleKeywords.some(kw => name.includes(kw)) || !femaleKeywords.some(kw => name.includes(kw));
+    });
+  }
+
+  if (candidateVoices.length === 0) {
+    candidateVoices = langVoices;
+  }
+
+  // We map index uniquely based on voice id
+  let index = 0;
+  if (voice.id === 'v-sofia') index = 0;
+  else if (voice.id === 'v-roberto') index = 1 % candidateVoices.length;
+  else if (voice.id === 'v-elena') index = 2 % candidateVoices.length;
+  else if (voice.id === 'v-lucas') index = 3 % candidateVoices.length;
+  else if (voice.id === 'v-john') index = 4 % candidateVoices.length;
+  else if (voice.id === 'v-sarah') index = 5 % candidateVoices.length;
+  else {
+    let hash = 0;
+    const testId = voice.id || '';
+    for (let i = 0; i < testId.length; i++) {
+      hash += testId.charCodeAt(i);
+    }
+    index = hash % candidateVoices.length;
+  }
+
+  return candidateVoices[index] || langVoices[0];
+}
+
+// Bind avatar sub-tabs (Lite, Pro, Photo)
+document.querySelectorAll('#avatar-panel-studio .sub-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#avatar-panel-studio .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeAvatarSubTab = btn.dataset.sub;
+    renderAvatarsGrid();
+  });
+});
 
 // Window load trigger
 window.addEventListener('load', () => {
