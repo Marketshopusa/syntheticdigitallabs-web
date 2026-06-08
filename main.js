@@ -171,6 +171,31 @@ let selectedRatio = '16-9';
 let selectedBg = 'dark';
 let activeSpeechUtterance = null;
 let isSpeakingPreview = false;
+let isBackendOnline = false;
+let backendApiConfigured = { elevenLabsConfigured: false, dIdConfigured: false };
+let activeAudioElement = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordedAudioFile = null;
+
+async function checkBackendHealth() {
+  try {
+    const res = await fetch('http://localhost:3000/api/health');
+    if (res.ok) {
+      const data = await res.json();
+      isBackendOnline = data.status === 'online';
+      backendApiConfigured.elevenLabsConfigured = data.elevenLabsConfigured;
+      backendApiConfigured.dIdConfigured = data.dIdConfigured;
+      console.log('Backend connected. Configured APIs:', backendApiConfigured);
+    } else {
+      isBackendOnline = false;
+    }
+  } catch (err) {
+    isBackendOnline = false;
+    console.warn('Backend is offline. Using client-side simulation mocks.', err);
+  }
+}
+checkBackendHealth();
 
 // --- UPDATE INTERFACE COUNTERS ---
 function updateCreditsDisplay() {
@@ -943,17 +968,47 @@ if (voiceUploadZone && voiceAudioInput) {
 if (btnRecordVoice) {
   btnRecordVoice.addEventListener('click', () => {
     if (!isVoiceRecording) {
-      isVoiceRecording = true;
-      btnRecordVoice.innerHTML = '<i class="fa-solid fa-square"></i> Detener';
-      if (recordIndicator) recordIndicator.style.display = 'flex';
-      if (voiceFileName) voiceFileName.textContent = 'Grabando muestra de voz...';
+      recordedChunks = [];
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
+            recordedAudioFile = new File([audioBlob], 'live_recording.wav', { type: 'audio/wav' });
+            if (voiceFileName) voiceFileName.textContent = 'Grabación en vivo: live_recording.wav';
+            voiceAudioFileUploaded = true;
+            checkCloneVoiceUnlock();
+          };
+          mediaRecorder.start();
+          isVoiceRecording = true;
+          btnRecordVoice.innerHTML = '<i class="fa-solid fa-square"></i> Detener';
+          if (recordIndicator) recordIndicator.style.display = 'flex';
+          if (voiceFileName) voiceFileName.textContent = 'Grabando muestra de voz real...';
+        })
+        .catch(err => {
+          console.warn('Microphone access denied or error. Falling back to simulated live recording.', err);
+          isVoiceRecording = true;
+          btnRecordVoice.innerHTML = '<i class="fa-solid fa-square"></i> Detener';
+          if (recordIndicator) recordIndicator.style.display = 'flex';
+          if (voiceFileName) voiceFileName.textContent = 'Grabando muestra de voz (Simulado)...';
+        });
     } else {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        mediaRecorder = null;
+      } else {
+        // Fallback simulated recording end
+        if (voiceFileName) voiceFileName.textContent = 'Muestra grabada en vivo (Simulada).wav';
+        voiceAudioFileUploaded = true;
+        checkCloneVoiceUnlock();
+      }
       isVoiceRecording = false;
       btnRecordVoice.innerHTML = '<i class="fa-solid fa-circle"></i> Grabar en vivo';
       if (recordIndicator) recordIndicator.style.display = 'none';
-      if (voiceFileName) voiceFileName.textContent = 'Muestra grabada en vivo.wav';
-      voiceAudioFileUploaded = true;
-      checkCloneVoiceUnlock();
     }
   });
 }
@@ -968,6 +1023,16 @@ function checkCloneVoiceUnlock() {
   }
 }
 
+function resetCloningFields() {
+  voiceNameInput.value = '';
+  if (voiceFileName) voiceFileName.textContent = '';
+  if (voiceConsentCheck) voiceConsentCheck.checked = false;
+  btnCloneVoice.disabled = true;
+  voiceAudioFileUploaded = false;
+  recordedAudioFile = null;
+  if (voiceAudioInput) voiceAudioInput.value = '';
+}
+
 if (btnCloneVoice) {
   btnCloneVoice.addEventListener('click', () => {
     const credits = getCredits();
@@ -979,33 +1044,112 @@ if (btnCloneVoice) {
     const name = voiceNameInput.value.trim();
     if (!name) return;
 
-    setCredits(credits - 50);
+    // Determine the audio file
+    let fileToClone = null;
+    if (voiceAudioInput && voiceAudioInput.files[0]) {
+      fileToClone = voiceAudioInput.files[0];
+    } else if (recordedAudioFile) {
+      fileToClone = recordedAudioFile;
+    }
 
-    const newVoice = {
-      id: 'v-' + Date.now(),
-      name: `${name} (Voz Clonada)`,
-      lang: 'Español (ES)',
-      gender: 'Personalizado',
-      tone: 'Clonado',
-      isPremium: true,
-      pitch: 0.75 + Math.random() * 0.5,
-      rate: 0.85 + Math.random() * 0.3
-    };
+    if (isBackendOnline && backendApiConfigured.elevenLabsConfigured && fileToClone) {
+      showToast('Clonando voz...', 'Enviando muestra de audio al servidor neuronal.', 'info');
+      btnCloneVoice.disabled = true;
 
-    const currentVoices = getLocal('sdl_voices') || [];
-    currentVoices.push(newVoice);
-    setLocal('sdl_voices', currentVoices);
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('file', fileToClone);
 
-    // Save cloned list dynamic display
-    renderClonedVoicesList();
-    renderVoicesLibrary();
+      fetch('http://localhost:3000/api/clone-voice', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw new Error(err.error || 'Cloning failed'); });
+        return res.json();
+      })
+      .then(data => {
+        const voiceId = data.voice_id;
+        
+        const newVoice = {
+          id: voiceId,
+          name: `${name} (Voz Clonada)`,
+          lang: 'Español (ES)',
+          gender: 'Personalizado',
+          tone: 'Clonado',
+          isPremium: true,
+          pitch: 1.0,
+          rate: 1.0
+        };
 
-    showToast('Voz Clonada con Éxito', `El timbre neuronal de "${name}" está listo.`, 'success');
-    voiceNameInput.value = '';
-    if (voiceFileName) voiceFileName.textContent = '';
-    if (voiceConsentCheck) voiceConsentCheck.checked = false;
-    btnCloneVoice.disabled = true;
-    voiceAudioFileUploaded = false;
+        const currentVoices = getLocal('sdl_voices') || [];
+        currentVoices.push(newVoice);
+        setLocal('sdl_voices', currentVoices);
+
+        // Deduct credits only after successful real voice cloning
+        setCredits(credits - 50);
+
+        renderClonedVoicesList();
+        renderVoicesLibrary();
+
+        showToast('Voz Clonada con Éxito', `El timbre neuronal de "${name}" está listo.`, 'success');
+        resetCloningFields();
+      })
+      .catch(err => {
+        console.warn('Real voice cloning failed. Falling back to high-fidelity mock clone.', err);
+        showToast('Modo Simulado', 'No se pudo clonar la voz real. Activando voz clonada simulada.', 'info');
+        
+        // Mock fallback inside catch
+        setCredits(credits - 50);
+
+        const mockVoiceId = 'v-' + Date.now();
+        const newVoice = {
+          id: mockVoiceId,
+          name: `${name} (Voz Clonada - Simulada)`,
+          lang: 'Español (ES)',
+          gender: 'Personalizado',
+          tone: 'Clonado',
+          isPremium: true,
+          pitch: 0.75 + Math.random() * 0.5,
+          rate: 0.85 + Math.random() * 0.3
+        };
+
+        const currentVoices = getLocal('sdl_voices') || [];
+        currentVoices.push(newVoice);
+        setLocal('sdl_voices', currentVoices);
+
+        renderClonedVoicesList();
+        renderVoicesLibrary();
+
+        showToast('Voz Clonada con Éxito', `El timbre neuronal de "${name}" está listo (Modo Simulado).`, 'success');
+        resetCloningFields();
+      });
+    } else {
+      // Offline mock cloning fallback
+      setCredits(credits - 50);
+
+      const mockVoiceId = 'v-' + Date.now();
+      const newVoice = {
+        id: mockVoiceId,
+        name: `${name} (Voz Clonada - Simulada)`,
+        lang: 'Español (ES)',
+        gender: 'Personalizado',
+        tone: 'Clonado',
+        isPremium: true,
+        pitch: 0.75 + Math.random() * 0.5,
+        rate: 0.85 + Math.random() * 0.3
+      };
+
+      const currentVoices = getLocal('sdl_voices') || [];
+      currentVoices.push(newVoice);
+      setLocal('sdl_voices', currentVoices);
+
+      renderClonedVoicesList();
+      renderVoicesLibrary();
+
+      showToast('Voz Clonada con Éxito', `El timbre neuronal de "${name}" está listo (Modo Simulado).`, 'success');
+      resetCloningFields();
+    }
   });
 }
 
@@ -1181,51 +1325,108 @@ if (btnPlayScriptSpeech) {
       return;
     }
 
-    if (!('speechSynthesis' in window)) {
-      showToast('No soportado', 'La síntesis de voz no es compatible con este navegador.', 'error');
-      return;
-    }
-
-    // Stop current
-    window.speechSynthesis.cancel();
+    // Stop current speech and audio
+    stopTTSPreview();
 
     const voices = getLocal('sdl_voices') || [];
     const activeVc = voices.find(v => v.id === selectedVoiceId) || DEFAULT_VOICES[0];
 
-    const utterance = new SpeechSynthesisUtterance(scriptText);
-    
-    if (activeVc.pitch !== undefined) utterance.pitch = activeVc.pitch;
-    if (activeVc.rate !== undefined) utterance.rate = activeVc.rate;
-
-    // Find matched system voice locale
-    const sysVoices = window.speechSynthesis.getVoices();
-    const match = getSystemVoiceForId(activeVc, sysVoices);
-    if (match) utterance.voice = match;
-
-    utterance.onstart = () => {
-      isSpeakingPreview = true;
-      if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'none';
-      if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'inline-flex';
+    // Try real ElevenLabs TTS if backend is online and configured
+    if (isBackendOnline && backendApiConfigured.elevenLabsConfigured) {
+      showToast('Sintetizando voz real...', 'Consultando locución con ElevenLabs.', 'info');
       
-      const canvasStage = document.getElementById('videoCanvasStage');
-      if (canvasStage) canvasStage.classList.add('speaking');
-      
-      if (canvasSubtitleOverlay) {
-        canvasSubtitleOverlay.innerHTML = `<span>"${scriptText.length > 60 ? scriptText.slice(0, 57) + '...' : scriptText}"</span>`;
-      }
-    };
+      fetch('http://localhost:3000/api/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: scriptText,
+          voiceId: activeVc.id
+        })
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw new Error(err.error || 'TTS failed'); });
+        return res.blob();
+      })
+      .then(blob => {
+        const audioUrl = URL.createObjectURL(blob);
+        const audio = new Audio(audioUrl);
+        activeAudioElement = audio;
 
-    utterance.onend = () => {
-      stopTTSPreview();
-    };
+        audio.onplay = () => {
+          isSpeakingPreview = true;
+          if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'none';
+          if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'inline-flex';
+          
+          const canvasStage = document.getElementById('videoCanvasStage');
+          if (canvasStage) canvasStage.classList.add('speaking');
+          
+          if (canvasSubtitleOverlay) {
+            canvasSubtitleOverlay.innerHTML = `<span>"${scriptText.length > 60 ? scriptText.slice(0, 57) + '...' : scriptText}"</span>`;
+          }
+        };
 
-    utterance.onerror = () => {
-      stopTTSPreview();
-    };
+        audio.onended = () => {
+          stopTTSPreview();
+        };
 
-    activeSpeechUtterance = utterance;
-    window.speechSynthesis.speak(utterance);
+        audio.onerror = () => {
+          stopTTSPreview();
+        };
+
+        audio.play();
+      })
+      .catch(err => {
+        console.warn('Real TTS failed. Falling back to local browser SpeechSynthesis.', err);
+        showToast('Modo Simulado', 'Sintetizador local activado como alternativa.', 'info');
+        runLocalSpeechSynthesis(scriptText, activeVc);
+      });
+    } else {
+      // Local SpeechSynthesis fallback
+      runLocalSpeechSynthesis(scriptText, activeVc);
+    }
   });
+}
+
+function runLocalSpeechSynthesis(scriptText, activeVc) {
+  if (!('speechSynthesis' in window)) {
+    showToast('No soportado', 'La síntesis de voz no es compatible con este navegador.', 'error');
+    return;
+  }
+
+  const utterance = new SpeechSynthesisUtterance(scriptText);
+  
+  if (activeVc.pitch !== undefined) utterance.pitch = activeVc.pitch;
+  if (activeVc.rate !== undefined) utterance.rate = activeVc.rate;
+
+  const sysVoices = window.speechSynthesis.getVoices();
+  const match = getSystemVoiceForId(activeVc, sysVoices);
+  if (match) utterance.voice = match;
+
+  utterance.onstart = () => {
+    isSpeakingPreview = true;
+    if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'none';
+    if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'inline-flex';
+    
+    const canvasStage = document.getElementById('videoCanvasStage');
+    if (canvasStage) canvasStage.classList.add('speaking');
+    
+    if (canvasSubtitleOverlay) {
+      canvasSubtitleOverlay.innerHTML = `<span>"${scriptText.length > 60 ? scriptText.slice(0, 57) + '...' : scriptText}"</span>`;
+    }
+  };
+
+  utterance.onend = () => {
+    stopTTSPreview();
+  };
+
+  utterance.onerror = () => {
+    stopTTSPreview();
+  };
+
+  activeSpeechUtterance = utterance;
+  window.speechSynthesis.speak(utterance);
 }
 
 if (btnStopScriptSpeech) {
@@ -1234,6 +1435,11 @@ if (btnStopScriptSpeech) {
 
 function stopTTSPreview() {
   window.speechSynthesis.cancel();
+  if (activeAudioElement) {
+    activeAudioElement.pause();
+    activeAudioElement.src = '';
+    activeAudioElement = null;
+  }
   isSpeakingPreview = false;
   
   if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'inline-flex';
@@ -1288,6 +1494,155 @@ if (btnAddScene) {
 
 // --- GENERAR VIDEO ACTION ---
 const btnGenVideo = document.getElementById('btnGenerateVideo');
+
+function runMockVideoGeneration(script, credits) {
+  const overlay = document.getElementById('globalModalOverlay');
+  const icon = document.getElementById('globalModalIcon');
+  const titleEl = document.getElementById('globalModalTitle');
+  const msgEl = document.getElementById('globalModalMessage');
+  const actionBtn = document.getElementById('globalModalActionBtn');
+
+  if (overlay) {
+    icon.className = 'modal-icon';
+    icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    titleEl.textContent = 'Renderizando Video (Simulado)';
+    msgEl.textContent = 'Maquetando el lienzo 3D y alineando voz neuronal con labios...';
+    actionBtn.style.display = 'none';
+    overlay.classList.add('active');
+
+    const steps = [
+      { text: 'Extrayendo guión de escena...', delay: 600 },
+      { text: 'Sintetizando locución de audio...', delay: 1300 },
+      { text: 'Alineando movimiento de labios del avatar...', delay: 2100 },
+      { text: 'Efectuando render de video Canvas...', delay: 2800 },
+      { text: 'Compilando archivo MP4 final...', delay: 3500 }
+    ];
+
+    steps.forEach(step => {
+      setTimeout(() => {
+        msgEl.textContent = step.text;
+      }, step.delay);
+    });
+
+    setTimeout(() => {
+      setCredits(credits - 20);
+      
+      const avatars = getLocal('sdl_avatars') || [];
+      const chosenAv = avatars.find(a => a.id === selectedAvatarId) || DEFAULT_AVATARS[0];
+      
+      const newProj = {
+        id: 'p-' + Date.now(),
+        name: `Video: ${script.slice(0, 25)}...`,
+        type: 'video',
+        date: new Date().toISOString().split('T')[0],
+        duration: `${slider ? slider.value : '5.0'}s`,
+        details: `${selectedRatio === '16-9' ? 'Horizontal (16:9)' : 'Vertical (9:16)'} • Avatar ${chosenAv.name}`,
+        avatarImg: chosenAv.img
+      };
+
+      const projs = getLocal('sdl_projects') || [];
+      projs.push(newProj);
+      setLocal('sdl_projects', projs);
+
+      icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+      titleEl.textContent = '¡Video Listo!';
+      msgEl.textContent = 'Tu video de avatar simulado ha finalizado la renderización y ha sido añadido a tu biblioteca.';
+      actionBtn.style.display = 'inline-block';
+      actionBtn.textContent = 'Ver en Biblioteca';
+
+      const libraryRedirect = () => {
+        overlay.classList.remove('active');
+        switchView('library');
+        renderLibrary();
+        actionBtn.removeEventListener('click', libraryRedirect);
+      };
+      actionBtn.addEventListener('click', libraryRedirect);
+
+      showToast('Video Generado', 'Tu video de avatar simulado se guardó correctamente.', 'success');
+      renderHomeWidgets();
+      updateDashboardStats();
+    }, 4200);
+  }
+}
+
+function completeRealVideoGeneration(videoUrl, script, credits) {
+  setCredits(credits - 20);
+
+  const avatars = getLocal('sdl_avatars') || [];
+  const chosenAv = avatars.find(a => a.id === selectedAvatarId) || DEFAULT_AVATARS[0];
+
+  const newProj = {
+    id: 'p-' + Date.now(),
+    name: `Video: ${script.slice(0, 25)}...`,
+    type: 'video',
+    date: new Date().toISOString().split('T')[0],
+    duration: `${slider ? slider.value : '5.0'}s`,
+    details: `${selectedRatio === '16-9' ? 'Horizontal (16:9)' : 'Vertical (9:16)'} • Avatar ${chosenAv.name}`,
+    avatarImg: chosenAv.img,
+    videoUrl: videoUrl // Real D-ID video output url!
+  };
+
+  const projs = getLocal('sdl_projects') || [];
+  projs.push(newProj);
+  setLocal('sdl_projects', projs);
+
+  const overlay = document.getElementById('globalModalOverlay');
+  const icon = document.getElementById('globalModalIcon');
+  const titleEl = document.getElementById('globalModalTitle');
+  const msgEl = document.getElementById('globalModalMessage');
+  const actionBtn = document.getElementById('globalModalActionBtn');
+
+  if (overlay) {
+    icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+    titleEl.textContent = '¡Video Listo!';
+    msgEl.textContent = 'Tu video de avatar ha finalizado la renderización real en HD y está listo para reproducir.';
+    actionBtn.style.display = 'inline-block';
+    actionBtn.textContent = 'Ver en Biblioteca';
+
+    const libraryRedirect = () => {
+      overlay.classList.remove('active');
+      switchView('library');
+      renderLibrary();
+      actionBtn.removeEventListener('click', libraryRedirect);
+    };
+    actionBtn.addEventListener('click', libraryRedirect);
+  }
+
+  showToast('Video Generado', 'Tu video real se ha renderizado y guardado con éxito.', 'success');
+  renderHomeWidgets();
+  updateDashboardStats();
+}
+
+function handleVideoGenError(err) {
+  console.error('Real video generation error:', err);
+  
+  const overlay = document.getElementById('globalModalOverlay');
+  const icon = document.getElementById('globalModalIcon');
+  const titleEl = document.getElementById('globalModalTitle');
+  const msgEl = document.getElementById('globalModalMessage');
+  const actionBtn = document.getElementById('globalModalActionBtn');
+
+  if (overlay) {
+    icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--accent-red)"></i>';
+    titleEl.textContent = 'Error de Renderizado';
+    msgEl.textContent = `Ocurrió un error en la conexión o procesamiento con D-ID: ${err.message || err}. ¿Deseas usar la simulación offline?`;
+    actionBtn.style.display = 'inline-block';
+    actionBtn.textContent = 'Usar Simulación';
+
+    const useSim = () => {
+      overlay.classList.remove('active');
+      actionBtn.removeEventListener('click', useSim);
+      
+      const script = document.getElementById('editorScriptTextarea').value.trim();
+      const credits = getCredits();
+      runMockVideoGeneration(script, credits);
+    };
+    actionBtn.addEventListener('click', useSim);
+  }
+
+  showToast('Error de Conexión', 'No se pudo completar el render real. Revisa la consola o activa la simulación.', 'error');
+}
+
 if (btnGenVideo) {
   btnGenVideo.addEventListener('click', () => {
     const script = document.getElementById('editorScriptTextarea').value.trim();
@@ -1305,73 +1660,79 @@ if (btnGenVideo) {
     // Stop speaking preview
     stopTTSPreview();
 
-    // Trigger process simulation modal
-    const overlay = document.getElementById('globalModalOverlay');
-    const icon = document.getElementById('globalModalIcon');
-    const titleEl = document.getElementById('globalModalTitle');
-    const msgEl = document.getElementById('globalModalMessage');
-    const actionBtn = document.getElementById('globalModalActionBtn');
+    if (isBackendOnline && backendApiConfigured.dIdConfigured) {
+      showToast('Iniciando render real...', 'Conectando con D-ID Talks API.', 'info');
+      
+      const overlay = document.getElementById('globalModalOverlay');
+      const icon = document.getElementById('globalModalIcon');
+      const titleEl = document.getElementById('globalModalTitle');
+      const msgEl = document.getElementById('globalModalMessage');
+      const actionBtn = document.getElementById('globalModalActionBtn');
 
-    if (overlay) {
-      icon.className = 'modal-icon';
-      icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-      titleEl.textContent = 'Renderizando Video';
-      msgEl.textContent = 'Maquetando el lienzo 3D y alineando voz neuronal con labios...';
-      actionBtn.style.display = 'none';
-      overlay.classList.add('active');
+      if (overlay) {
+        icon.className = 'modal-icon';
+        icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        titleEl.textContent = 'Renderizando Video Real';
+        msgEl.textContent = 'Enviando petición de generación labial a D-ID...';
+        actionBtn.style.display = 'none';
+        overlay.classList.add('active');
+      }
 
-      const steps = [
-        { text: 'Extrayendo guión de escena...', delay: 600 },
-        { text: 'Sintetizando locución de audio...', delay: 1300 },
-        { text: 'Alineando movimiento de labios del avatar...', delay: 2100 },
-        { text: 'Efectuando render de video Canvas...', delay: 2800 },
-        { text: 'Compilando archivo MP4 final...', delay: 3500 }
-      ];
+      fetch('http://localhost:3000/api/generate-video', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          avatarId: selectedAvatarId,
+          script: script
+        })
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw new Error(err.error || 'Server error'); });
+        return res.json();
+      })
+      .then(data => {
+        const talkId = data.id;
+        msgEl.textContent = 'Video creado en D-ID. Renderizando (ID: ' + talkId + ')...';
+        
+        let pollAttempts = 0;
+        const pollInterval = setInterval(() => {
+          pollAttempts++;
+          if (pollAttempts > 60) {
+            clearInterval(pollInterval);
+            handleVideoGenError(new Error('D-ID render timeout.'));
+            return;
+          }
 
-      steps.forEach(step => {
-        setTimeout(() => {
-          msgEl.textContent = step.text;
-        }, step.delay);
+          fetch(`http://localhost:3000/api/video-status/${talkId}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Failed to fetch video status');
+            return res.json();
+          })
+          .then(statusData => {
+            if (statusData.status === 'done') {
+              clearInterval(pollInterval);
+              completeRealVideoGeneration(statusData.videoUrl, script, credits);
+            } else if (statusData.status === 'error' || statusData.error) {
+              clearInterval(pollInterval);
+              throw new Error(statusData.error || 'D-ID rendering failed on server.');
+            } else {
+              msgEl.textContent = `Renderizando video en D-ID... Estado: ${statusData.status} (${pollAttempts * 2}s)`;
+            }
+          })
+          .catch(err => {
+            clearInterval(pollInterval);
+            handleVideoGenError(err);
+          });
+        }, 2000);
+      })
+      .catch(err => {
+        handleVideoGenError(err);
       });
-
-      // Complete render
-      setTimeout(() => {
-        setCredits(credits - 20);
-        
-        // Save to projects database
-        const avatars = getLocal('sdl_avatars') || [];
-        const chosenAv = avatars.find(a => a.id === selectedAvatarId) || DEFAULT_AVATARS[0];
-        
-        const newProj = {
-          id: 'p-' + Date.now(),
-          name: `Video: ${script.slice(0, 25)}...`,
-          type: 'video',
-          date: new Date().toISOString().split('T')[0],
-          duration: `${slider ? slider.value : '5.0'}s`,
-          details: `${selectedRatio === '16-9' ? 'Horizontal (16:9)' : 'Vertical (9:16)'} • Avatar ${chosenAv.name}`,
-          avatarImg: chosenAv.img
-        };
-
-        const projs = getLocal('sdl_projects') || [];
-        projs.push(newProj);
-        setLocal('sdl_projects', projs);
-
-        icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-        titleEl.textContent = '¡Video Listo!';
-        msgEl.textContent = 'Tu video de avatar ha finalizado la renderización en HD y ha sido añadido a tu biblioteca.';
-        actionBtn.style.display = 'inline-block';
-        actionBtn.textContent = 'Ver en Biblioteca';
-
-        actionBtn.addEventListener('click', () => {
-          overlay.classList.remove('active');
-          switchView('library');
-          renderLibrary();
-        });
-
-        showToast('Video Generado', 'Tu video de avatar se guardó correctamente.', 'success');
-        renderHomeWidgets();
-        updateDashboardStats();
-      }, 4200);
+    } else {
+      // Local simulated mock fallback
+      runMockVideoGeneration(script, credits);
     }
   });
 }
@@ -1409,7 +1770,8 @@ function renderLibrary() {
             <h4 class="proj-title">${v.name}</h4>
             <span class="proj-date">${v.date} • ${v.details}</span>
             <div class="proj-actions">
-              <button class="btn-primary-sm w-full btn-dl-mock" data-name="${v.name}"><i class="fa-solid fa-download"></i> Descargar</button>
+              <button class="btn-primary-sm w-full btn-dl-mock" data-name="${v.name}" data-url="${v.videoUrl || ''}"><i class="fa-solid fa-download"></i> Descargar</button>
+              ${v.videoUrl ? `<button class="btn-outline-sm btn-play-video" data-url="${v.videoUrl}"><i class="fa-solid fa-play"></i></button>` : ''}
               <button class="btn-outline-sm btn-delete-proj" data-id="${v.id}"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
@@ -1438,7 +1800,7 @@ function renderLibrary() {
             <h4 class="proj-title">${a.name}</h4>
             <span class="proj-date">${a.date} • ${a.details}</span>
             <div class="proj-actions">
-              <button class="btn-primary-sm w-full btn-play-audio-mock" data-name="${a.name}"><i class="fa-solid fa-play"></i> Escuchar</button>
+              <button class="btn-primary-sm w-full btn-play-audio-mock" data-name="${a.name}" data-url="${a.audioUrl || ''}"><i class="fa-solid fa-play"></i> Escuchar</button>
               <button class="btn-outline-sm btn-delete-proj" data-id="${a.id}"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
@@ -1630,16 +1992,67 @@ if (studioSupportForm) {
   });
 }
 
-// Mock Download button action
+// Video modal player helper
+function showVideoPlayerModal(url) {
+  const modalHTML = `
+    <div id="videoPlayerModalOverlay" class="global-modal-overlay active" style="z-index: 9999; display: flex; align-items: center; justify-content: center;">
+      <div class="global-modal-card" style="max-width: 640px; width: 90%; position: relative;">
+        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>Video Renderizado (D-ID Real)</h3>
+          <button id="closeVideoPlayerBtn" class="btn-outline-sm" style="padding: 4px 8px; border:none; background:transparent; font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" style="text-align:center;">
+          <video src="${url}" controls autoplay style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);"></video>
+        </div>
+      </div>
+    </div>
+  `;
+  const container = document.createElement('div');
+  container.id = 'videoPlayerModalContainer';
+  container.innerHTML = modalHTML;
+  document.body.appendChild(container);
+
+  document.getElementById('closeVideoPlayerBtn').addEventListener('click', () => {
+    document.getElementById('videoPlayerModalOverlay').classList.remove('active');
+    setTimeout(() => container.remove(), 300);
+  });
+}
+
+// Download/Play button action
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.btn-dl-mock');
   if (btn) {
-    showToast('Descarga iniciada', `Descargando archivo HD: "${btn.dataset.name}"`, 'success');
+    const url = btn.dataset.url;
+    if (url) {
+      window.open(url, '_blank');
+      showToast('Enlace Abierto', 'El video de D-ID se ha abierto en una nueva pestaña.', 'success');
+    } else {
+      showToast('Descarga iniciada', `Descargando archivo HD: "${btn.dataset.name}"`, 'success');
+    }
+  }
+
+  const playVidBtn = e.target.closest('.btn-play-video');
+  if (playVidBtn) {
+    const url = playVidBtn.dataset.url;
+    if (url) {
+      showVideoPlayerModal(url);
+    }
   }
 
   const playAudioBtn = e.target.closest('.btn-play-audio-mock');
   if (playAudioBtn) {
-    showToast('Reproduciendo audio', `Locución: "${playAudioBtn.dataset.name}"`, 'info');
+    const url = playAudioBtn.dataset.url;
+    if (url) {
+      if (activeAudioElement) {
+        activeAudioElement.pause();
+        activeAudioElement = null;
+      }
+      activeAudioElement = new Audio(url);
+      activeAudioElement.play();
+      showToast('Reproduciendo audio', `Locución real: "${playAudioBtn.dataset.name}"`, 'info');
+    } else {
+      showToast('Reproduciendo audio', `Locución: "${playAudioBtn.dataset.name}"`, 'info');
+    }
   }
 
   // Delete project trigger
