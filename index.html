@@ -3,1425 +3,933 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>
-    window.onerror = function(message, source, lineno, colno, error) {
-      const errInfo = encodeURIComponent(message + ' at ' + (source || 'unknown').split('/').pop() + ':' + lineno + ':' + colno);
-      fetch('/browser-error-log?msg=' + errInfo);
-      return false;
-    };
-    window.addEventListener('unhandledrejection', function(event) {
-      const errInfo = encodeURIComponent('Promise rejection: ' + event.reason);
-      fetch('/browser-error-log?msg=' + errInfo);
-    });
-  </script>
-  <title>Synthetic Digital Labs AI Studio | Avatares, Voces y Video con IA</title>
-  <meta name="description" content="Estudio de Inteligencia Artificial para crear avatares, clonar voces, generar videos, sintetizar audio y redactar guiones profesionales desde una sola plataforma.">
-  <meta name="keywords" content="inteligencia artificial, avatares ia, clonacion de voz, texto a voz, generacion de video, creador de guiones, synthetic digital labs">
-  <link rel="icon" type="image/png" href="assets/logo.png">
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
-  
-  <!-- FontAwesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+  <title>Studio SDL - AI Video Generation Studio</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.3">
+  <link rel="stylesheet" href="style.css?v=2.4">
 </head>
-<body class="light-theme">
+<body class="light-theme"> <!-- Default to Light Mode -->
 
-  <!-- Tech Grid Background & Glow Effects -->
-  <div class="tech-grid"></div>
-  <div class="glow-orb orb-1"></div>
-  <div class="glow-orb orb-2"></div>
-  <div class="glow-orb orb-3"></div>
-
-  <!-- ==========================================================================
-       PART 1: PUBLIC LANDING PAGE
-       ========================================================================== -->
-  <div id="public-landing">
-    <!-- Navbar -->
-    <header class="navbar" id="home">
-      <div class="nav-container">
-        <a href="#home" class="logo-area">
-          <img src="assets/logo.png" alt="Synthetic Digital Labs Logo" class="nav-logo">
-          <div class="logo-text">
-            <span class="brand-name">SYNTHETIC DIGITAL LABS</span>
-            <span class="brand-sub">AI STUDIO</span>
-          </div>
-        </a>
-        
-        <nav class="nav-links">
-          <a href="#inicio" class="active">Inicio</a>
-          <a href="#herramientas">Herramientas</a>
-          <a href="#beneficios">Beneficios</a>
-          <a href="#como-funciona">¿Cómo funciona?</a>
-          <a href="#planes">Planes</a>
-          <a href="#faq">Preguntas</a>
-          <a href="#contacto">Contacto</a>
-        </nav>
-
-        <div class="nav-extra">
-          <button class="btn-primary-sm btn-enter-studio">Entrar al AI Studio</button>
-          <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menú">
-            <i class="fa-solid fa-bars"></i>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Mobile Dropdown Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-      <a href="#inicio" class="mobile-link">Inicio</a>
-      <a href="#herramientas" class="mobile-link">Herramientas</a>
-      <a href="#beneficios" class="mobile-link">Beneficios</a>
-      <a href="#como-funciona" class="mobile-link">¿Cómo funciona?</a>
-      <a href="#planes" class="mobile-link">Planes</a>
-      <a href="#faq" class="mobile-link">Preguntas</a>
-      <a href="#contacto" class="mobile-link">Contacto</a>
-      <div class="mobile-extra">
-        <button class="btn-primary w-full btn-enter-studio">Entrar al AI Studio</button>
-      </div>
-    </div>
-
-    <main>
-      <!-- Jarvis Wake Word Guidance Banner -->
-      <div class="nova-guide-banner" id="novaGuideBanner">
-        <span class="guide-pulse-dot"></span>
-        <span class="guide-text">🎙️ Di <strong>"HOLA NOVA"</strong> o <strong>"HEY NOVA"</strong> y habla con nuestro agente IA tipo Jarvis</span>
-        <button class="guide-close-btn" id="closeGuideBanner" aria-label="Cerrar aviso">&times;</button>
-      </div>
-
-      <!-- Hero Section -->
-      <section id="inicio" class="hero-section">
-        <canvas id="neuralCanvas"></canvas>
-        <div class="container hero-grid">
-          <div class="hero-content">
-            <div class="badge-ai">
-              <span class="pulse-dot"></span>
-              Plataforma AI de Nueva Generación
-            </div>
-            <h1>Crea avatares, voces y videos con <span class="gradient-text">inteligencia artificial</span></h1>
-            <p class="hero-lead">
-              Un estudio digital para generar contenido profesional con avatares, voz, video, guiones y automatización desde una sola plataforma.
-            </p>
-            <div class="hero-actions">
-              <button class="btn-primary btn-enter-studio">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Entrar al AI Studio
-              </button>
-              <a href="#herramientas" class="btn-secondary">
-                Ver herramientas
-              </a>
-            </div>
-          </div>
-          
-          <div class="hero-visual">
-            <div class="mockup-wrapper animate-float">
-              <div class="glow-bg"></div>
-              <div class="mockup-frame">
-                <div class="mockup-header">
-                  <span class="dot red"></span>
-                  <span class="dot yellow"></span>
-                  <span class="dot green"></span>
-                  <span class="mockup-url">studio.syntheticdigitallab.com</span>
-                </div>
-                <div class="mockup-content">
-                  <div class="mockup-hero-demo">
-                    <img src="assets/avatar_sofia.png" alt="AI Avatar Demo" class="pulse-logo" style="border-radius: 50%; border: 2px solid var(--neon-cyan);">
-                    <div class="bar bar-lg"></div>
-                    <div class="bar bar-md"></div>
-                    <div class="bar bar-sm"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Herramientas Section -->
-      <section id="herramientas" class="section-padding bg-dark-tint">
-        <div class="container">
-          <div class="section-header text-center">
-            <span class="badge-studio">Estudio Creativo</span>
-            <h2 class="section-title">Herramientas <span class="gradient-text">Disponibles</span></h2>
-            <p class="section-subtitle">
-              Descubre los potentes módulos de inteligencia artificial creados para automatizar y escalar tu producción de contenido.
-            </p>
-          </div>
-
-          <div class="tools-grid">
-            <!-- Herramienta 1 -->
-            <div class="tool-card glass-card">
-              <div class="tool-icon">
-                <i class="fa-solid fa-user-astronaut"></i>
-              </div>
-              <h3>Crear Avatar</h3>
-              <p>Genera presentadores digitales personalizados subiendo una imagen o seleccionando estilos realistas, corporativos y educativos.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="avatars">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <!-- Herramienta 2 -->
-            <div class="tool-card glass-card">
-              <div class="tool-icon">
-                <i class="fa-solid fa-video"></i>
-              </div>
-              <h3>Editor de Video Canvas</h3>
-              <p>Crea videos a partir de texto en formatos vertical u horizontal. Diseña composiciones interactivas con avatares reales en segundos.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="editor">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <!-- Herramienta 3 -->
-            <div class="tool-card glass-card">
-              <div class="tool-icon">
-                <i class="fa-solid fa-microphone-lines"></i>
-              </div>
-              <h3>Clonar Voz</h3>
-              <p>Clona tu propia voz o la de tus presentadores con muestras de audio de forma segura para generar locuciones continuas.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="voices">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <!-- Herramienta 4 -->
-            <div class="tool-card glass-card">
-              <div class="tool-icon">
-                <i class="fa-solid fa-volume-high"></i>
-              </div>
-              <h3>Texto a Voz</h3>
-              <p>Sintetiza audio realista a partir de cualquier texto escrito con opciones de velocidad, tono e idioma instantáneo.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="voices">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <!-- Herramienta 5 -->
-            <div class="tool-card glass-card">
-              <div class="tool-icon">
-                <i class="fa-solid fa-file-signature"></i>
-              </div>
-              <h3>Generador de Guiones</h3>
-              <p>Escribe guiones para videos, anuncios y podcasts optimizados para conversiones con tonos profesionales o emocionales.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="editor">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <!-- Herramienta 6 -->
-            <div class="tool-card glass-card">
-              <div class="tool-icon">
-                <i class="fa-solid fa-language"></i>
-              </div>
-              <h3>Traductor de Voz</h3>
-              <p>Traduce grabaciones de voz manteniendo el timbre y estilo original del hablante a múltiples idiomas.</p>
-              <button class="tool-card-btn btn-go-tool" data-tool="editor">Probar módulo <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Beneficios Section -->
-      <section id="beneficios" class="section-padding">
-        <div class="container">
-          <div class="benefits-layout">
-            <div class="benefits-visual">
-              <div class="neural-center-box">
-                <i class="fa-solid fa-brain"></i>
-                <div class="orbit-node node-1"><i class="fa-solid fa-bolt"></i></div>
-                <div class="orbit-node node-2"><i class="fa-solid fa-video"></i></div>
-                <div class="orbit-node node-3"><i class="fa-solid fa-microphone"></i></div>
-                <div class="orbit-node node-4"><i class="fa-solid fa-server"></i></div>
-              </div>
-            </div>
-            
-            <div class="benefits-list">
-              <div class="section-header" style="margin-bottom: 20px;">
-                <span class="badge-studio">Beneficios Clave</span>
-                <h2 class="section-title">¿Por qué elegir <span class="gradient-text">AI Studio</span>?</h2>
-              </div>
-              
-              <div class="benefit-item">
-                <div class="benefit-icon"><i class="fa-solid fa-rocket"></i></div>
-                <div>
-                  <h4>Producción 10x Más Rápida</h4>
-                  <p>Olvídate de cámaras, micrófonos, estudios de grabación y costosos editores de video. Genera contenido escalable en minutos.</p>
-                </div>
-              </div>
-              
-              <div class="benefit-item">
-                <div class="benefit-icon"><i class="fa-solid fa-dollar-sign"></i></div>
-                <div>
-                  <h4>Reducción Drástica de Costos</h4>
-                  <p>Reduce hasta un 80% los presupuestos de creación y localización de contenido multimedia manteniendo la más alta calidad.</p>
-                </div>
-              </div>
-              
-              <div class="benefit-item">
-                <div class="benefit-icon"><i class="fa-solid fa-globe"></i></div>
-                <div>
-                  <h4>Alcance Global Multilingüe</h4>
-                  <p>Traduce y adapta tus videos y voces a más de 40 idiomas con acentos locales y preservación de identidad sonora.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Cómo funciona Section -->
-      <section id="como-funciona" class="section-padding bg-dark-tint">
-        <div class="container">
-          <div class="section-header text-center">
-            <span class="badge-studio">Proceso Simple</span>
-            <h2 class="section-title">¿Cómo <span class="gradient-text">Funciona</span>?</h2>
-            <p class="section-subtitle">Aprende a generar tu primer video con IA en tres sencillos pasos.</p>
-          </div>
-
-          <div class="steps-grid">
-            <div class="step-card glass-card">
-              <div class="step-num">01</div>
-              <h3>Elige tu Avatar y Voz</h3>
-              <p>Selecciona uno de nuestros avatares prediseñados o sube tu propia foto. Luego, elige la voz ideal de nuestro catálogo o clona la tuya.</p>
-            </div>
-            
-            <div class="step-card glass-card">
-              <div class="step-num">02</div>
-              <h3>Ingresa tu Guion</h3>
-              <p>Escribe tu mensaje o usa nuestro Generador de Guiones con IA para crear un texto optimizado para marketing o educación.</p>
-            </div>
-            
-            <div class="step-card glass-card">
-              <div class="step-num">03</div>
-              <h3>Genera y Descarga</h3>
-              <p>Presiona el botón de generar, nuestro motor sintetizará el video/audio con precisión labial y podrás descargarlo en Full HD.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Planes Section -->
-      <section id="planes" class="section-padding">
-        <div class="container">
-          <div class="section-header text-center">
-            <span class="badge-studio">Precios Transparentes</span>
-            <h2 class="section-title">Elige tu <span class="gradient-text">Plan</span></h2>
-            <p class="section-subtitle">Opciones flexibles que se adaptan al tamaño de tu negocio y a tus necesidades de producción.</p>
-          </div>
-
-          <div class="plans-grid">
-            <!-- Plan 1 -->
-            <div class="plan-card glass-card">
-              <h3>Demo Gratuito</h3>
-              <div class="plan-price">$0 <span>/ siempre libre</span></div>
-              <ul class="plan-features">
-                <li><i class="fa-solid fa-circle-check"></i> 10 Créditos mensuales</li>
-                <li><i class="fa-solid fa-circle-check"></i> 3 Avatares estándar</li>
-                <li><i class="fa-solid fa-circle-check"></i> Voces estándar</li>
-                <li><i class="fa-solid fa-circle-check"></i> Generación de Audio</li>
-                <li><i class="fa-solid fa-circle-xmark" style="color: var(--neon-red);"></i> Clonación de voz</li>
-              </ul>
-              <button class="btn-secondary btn-enter-studio">Comenzar gratis</button>
-            </div>
-            
-            <!-- Plan 2 -->
-            <div class="plan-card glass-card popular">
-              <div class="plan-badge">El más popular</div>
-              <h3>Creador Pro</h3>
-              <div class="plan-price">$29 <span>/ mes</span></div>
-              <ul class="plan-features">
-                <li><i class="fa-solid fa-circle-check"></i> 150 Créditos mensuales</li>
-                <li><i class="fa-solid fa-circle-check"></i> Avatares premium e ilimitados</li>
-                <li><i class="fa-solid fa-circle-check"></i> Voces ultra-realistas</li>
-                <li><i class="fa-solid fa-circle-check"></i> Clonación de 3 voces</li>
-                <li><i class="fa-solid fa-circle-check"></i> Videos en 1080p sin marca</li>
-              </ul>
-              <button class="btn-primary btn-enter-studio">Elegir Plan Pro</button>
-            </div>
-            
-            <!-- Plan 3 -->
-            <div class="plan-card glass-card">
-              <h3>Empresarial</h3>
-              <div class="plan-price">$99 <span>/ mes</span></div>
-              <ul class="plan-features">
-                <li><i class="fa-solid fa-circle-check"></i> Créditos ilimitados</li>
-                <li><i class="fa-solid fa-circle-check"></i> Avatares personalizados en 4K</li>
-                <li><i class="fa-solid fa-circle-check"></i> Clonación de voz ilimitada</li>
-                <li><i class="fa-solid fa-circle-check"></i> Integración API completa</li>
-                <li><i class="fa-solid fa-circle-check"></i> Soporte 24/7 dedicado</li>
-              </ul>
-              <button class="btn-secondary btn-enter-studio">Contactar ventas</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- FAQ Section -->
-      <section id="faq" class="section-padding bg-dark-tint">
-        <div class="container">
-          <div class="section-header text-center">
-            <span class="badge-studio">Preguntas frecuentes</span>
-            <h2 class="section-title">Resolvemos tus <span class="gradient-text">Dudas</span></h2>
-            <p class="section-subtitle">Preguntas comunes sobre el uso de avatares y generación de contenido con Inteligencia Artificial.</p>
-          </div>
-
-          <div class="faq-list">
-            <div class="faq-item">
-              <div class="faq-trigger">
-                <span>¿Cómo funciona la sincronización labial (lipsync) en los videos?</span>
-                <i class="fa-solid fa-chevron-down"></i>
-              </div>
-              <div class="faq-content">
-                <p>Nuestra inteligencia artificial analiza el guion escrito y la voz elegida, mapeando fonemas y expresiones faciales del avatar en tiempo real para generar un movimiento de labios y gesticulación totalmente sincronizados y naturales.</p>
-              </div>
-            </div>
-
-            <div class="faq-item">
-              <div class="faq-trigger">
-                <span>¿Tengo los derechos comerciales sobre el contenido generado?</span>
-                <i class="fa-solid fa-chevron-down"></i>
-              </div>
-              <div class="faq-content">
-                <p>Sí, en cualquiera de nuestros planes de pago (Pro y Empresarial) tienes la propiedad comercial absoluta de los videos, audios y avatares que compiles, libre de regalías.</p>
-              </div>
-            </div>
-
-            <div class="faq-item">
-              <div class="faq-trigger">
-                <span>¿Qué medidas de seguridad hay para la clonación de voz?</span>
-                <i class="fa-solid fa-chevron-down"></i>
-              </div>
-              <div class="faq-content">
-                <p>La seguridad es nuestra prioridad. Solo permitimos clonar voces de las cuales el usuario tenga autorización legal y consentimiento escrito. Requerimos una verificación activa de consentimiento en la plataforma antes de iniciar la clonación.</p>
-              </div>
-            </div>
-
-            <div class="faq-item">
-              <div class="faq-trigger">
-                <span>¿Cómo puedo integrar el estudio de IA con mis propios sistemas?</span>
-                <i class="fa-solid fa-chevron-down"></i>
-              </div>
-              <div class="faq-content">
-                <p>Ofrecemos integraciones mediante API rest en nuestro plan Empresarial. Puedes generar avatares, transcripciones, audios y videos de forma automática vinculándolo directamente con tu CRM, CMS o bases de datos.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Contacto Section -->
-      <section id="contacto" class="section-padding">
-        <div class="container">
-          <div class="contact-layout">
-            <div class="contact-info">
-              <span class="badge-studio">Contacto</span>
-              <h3>¿Tienes un proyecto <span class="gradient-text">Especial</span>?</h3>
-              <p>Ponte en contacto con nuestro equipo técnico para cotizar desarrollos personalizados, integraciones especiales o consultoría en Inteligencia Artificial.</p>
-              
-              <div class="contact-details">
-                <div class="contact-detail-item">
-                  <i class="fa-solid fa-envelope"></i>
-                  <span>infoweb@syntheticdigitallab.com</span>
-                </div>
-                <div class="contact-detail-item">
-                  <i class="fa-brands fa-whatsapp"></i>
-                  <span>+1 786-872-6865</span>
-                </div>
-                <div class="contact-detail-item">
-                  <i class="fa-solid fa-globe"></i>
-                  <span>syntheticdigitallab.com</span>
-                </div>
-              </div>
-
-              <div class="social-links">
-                <a href="https://instagram.com/syntheticdigitallab" target="_blank" class="social-btn" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                <a href="https://wa.me/17868726865" target="_blank" class="social-btn" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-              </div>
-            </div>
-
-            <div class="glass-card">
-              <div id="contactFormStatus" class="form-status-message"></div>
-              <form id="contactForm">
-                <div class="form-group">
-                  <label for="contactName"><i class="fa-solid fa-user"></i> Nombre Completo</label>
-                  <input type="text" id="contactName" class="form-input" placeholder="Ej. Juan Pérez" required>
-                </div>
-
-                <div class="form-group">
-                  <label for="contactEmail"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
-                  <input type="email" id="contactEmail" class="form-input" placeholder="juan@correo.com" required>
-                </div>
-
-                <div class="form-group">
-                  <label for="contactSubject"><i class="fa-solid fa-briefcase"></i> Tema / Servicio de interés</label>
-                  <select id="contactSubject" class="form-select">
-                    <option value="api-studio">API del AI Studio</option>
-                    <option value="plan-enterprise">Plan Enterprise</option>
-                    <option value="custom-avatar">Avatar Corporativo Exclusivo</option>
-                    <option value="other">Otro asunto</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="contactMessage"><i class="fa-solid fa-comment-dots"></i> Mensaje</label>
-                  <textarea id="contactMessage" class="form-textarea" placeholder="Describe los requisitos de tu empresa..." required></textarea>
-                </div>
-
-                <button type="submit" class="btn-primary w-full">Enviar Mensaje</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="main-footer">
-      <div class="container">
-        <div class="footer-grid">
-          <div class="footer-brand">
-            <a href="#home" class="logo-area">
-              <img src="assets/logo.png" alt="Synthetic Digital Labs Logo" class="nav-logo">
-              <div class="logo-text">
-                <span class="brand-name">SYNTHETIC DIGITAL LABS</span>
-                <span class="brand-sub">AI STUDIO</span>
-              </div>
-            </a>
-            <p>Liderando la innovación en la creación y automatización de contenidos multimedia mediante Inteligencia Artificial.</p>
-          </div>
-
-          <div class="footer-links">
-            <h4>Enlaces Rápidos</h4>
-            <ul>
-              <li><a href="#inicio">Inicio</a></li>
-              <li><a href="#herramientas">Herramientas</a></li>
-              <li><a href="#planes">Planes y Precios</a></li>
-              <li><a href="#contacto">Contacto</a></li>
-            </ul>
-          </div>
-
-          <div class="footer-credits">
-            <h4>Créditos y Legal</h4>
-            <p>La tecnología de clonación y locución en Synthetic Digital Labs cumple estrictas directrices de ética y consentimiento de voz. Queda prohibido el uso no autorizado de identidades sintéticas.</p>
-          </div>
-        </div>
-
-        <div class="footer-bottom">
-          <span>&copy; 2026 Synthetic Digital Labs. Todos los derechos reservados.</span>
-          <span>Desarrollado para la innovación empresarial.</span>
-        </div>
-      </div>
-    </footer>
-  </div>
-
-  <!-- ==========================================================================
-       PART 2: AI STUDIO WORKSPACE (AI WORKSPACE CLONE)
-       ========================================================================== -->
-  <div id="ai-studio-app" style="display: none;">
-    <!-- Sidebar Navigation (Studio Style) -->
-    <aside class="studio-sidebar" id="studioSidebar">
+  <div class="app-container">
+    
+    <!-- ==========================================
+         BARRA LATERAL DE NAVEGACIÓN (SIDEBAR)
+         ========================================== -->
+    <aside class="sidebar-navigation">
       <div class="sidebar-logo">
-        <img src="assets/logo.png" alt="SDL Brain Logo">
-        <div class="logo-text">
-          <span class="brand-name">SDL STUDIO</span>
-          <span class="brand-sub">AI MODE</span>
+        <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-purple); font-size:1.5rem;"></i>
+        <span>Studio SDL</span>
+      </div>
+
+      <!-- Crear Video Button -->
+      <div class="create-video-box">
+        <button class="btn-create-video" id="btnCreateVideoToggle">
+          <i class="fa-solid fa-plus"></i> Crear Video
+        </button>
+        <div class="create-video-dropdown" id="createVideoDropdown">
+          <div class="dropdown-item btn-shortcut" data-target="editor" data-aspect="16-9">
+            <i class="fa-solid fa-desktop"></i> Horizontal (16:9)
+          </div>
+          <div class="dropdown-item btn-shortcut" data-target="editor" data-aspect="9-16">
+            <i class="fa-solid fa-mobile-screen"></i> Vertical (9:16)
+          </div>
         </div>
       </div>
 
+      <!-- Menú Principal -->
       <nav class="sidebar-menu">
-        <div class="menu-item active" data-view="dashboard">
-          <i class="fa-solid fa-house"></i><span>Inicio</span>
-        </div>
-        <div class="menu-item" data-view="templates">
-          <i class="fa-solid fa-layer-group"></i><span>Plantillas</span>
-        </div>
-        <div class="menu-item" data-view="avatars">
-          <i class="fa-solid fa-user-tie"></i><span>Avatares</span>
-        </div>
-        <div class="menu-item" data-view="voices">
-          <i class="fa-solid fa-microphone"></i><span>Voces</span>
-        </div>
-        <div class="menu-item" data-view="editor">
-          <i class="fa-solid fa-video"></i><span>Editor Video</span>
-        </div>
-        <div class="menu-item" data-view="library">
-          <i class="fa-solid fa-folder-open"></i><span>Biblioteca</span>
-        </div>
-        <div class="menu-item" data-view="pricing">
-          <i class="fa-solid fa-tags"></i><span>Planes y Precios</span>
-        </div>
-        <div class="menu-item" data-view="policies">
-          <i class="fa-solid fa-shield-halved"></i><span>Políticas</span>
-        </div>
-        <div class="menu-item" data-view="resources">
-          <i class="fa-solid fa-circle-question"></i><span>Ayuda y Soporte</span>
-        </div>
-        <div class="menu-item" data-view="settings">
-          <i class="fa-solid fa-gear"></i><span>Ajustes</span>
-        </div>
+        <a class="nav-item active" data-view="dashboard">
+          <i class="fa-solid fa-house"></i> Inicio
+        </a>
+        <a class="nav-item" data-view="templates">
+          <i class="fa-solid fa-table-cells-large"></i> Plantillas
+        </a>
+        <a class="nav-item" data-view="avatars">
+          <i class="fa-solid fa-user-astronaut"></i> Avatares
+        </a>
+        <a class="nav-item" data-view="voices">
+          <i class="fa-solid fa-volume-high"></i> Voces
+        </a>
+        <a class="nav-item" data-view="library">
+          <i class="fa-solid fa-folder-open"></i> Biblioteca
+        </a>
+        <a class="nav-item" data-view="pricing">
+          <i class="fa-solid fa-credit-card"></i> Suscripción
+        </a>
+        <a class="nav-item" data-view="policies">
+          <i class="fa-solid fa-scale-balanced"></i> Políticas
+        </a>
+        <a class="nav-item" data-view="resources">
+          <i class="fa-solid fa-circle-question"></i> Soporte
+        </a>
+        <a class="nav-item" data-view="settings">
+          <i class="fa-solid fa-gear"></i> Ajustes
+        </a>
       </nav>
 
-      <!-- User Info Card -->
-      <div class="sidebar-user">
-        <img src="assets/avatar_sofia.png" alt="User Profile" class="user-avatar" id="sidebarAvatar">
-        <div class="user-info">
-          <span class="user-name" id="sidebarUsername">Usuario SDL</span>
-          <span class="user-tier" id="sidebarPlanBadge">Creador Pro</span>
+      <!-- Footer de Sidebar -->
+      <div class="sidebar-footer">
+        <div class="credits-widget">
+          <div class="cw-info">
+            <span>Créditos del Plan</span>
+            <span id="headerCreditsText">120 / 150</span>
+          </div>
+          <div class="cw-progress-bar">
+            <div class="cw-progress-fill" id="headerCreditsFill"></div>
+          </div>
         </div>
-        <i class="fa-solid fa-right-from-bracket btn-logout btn-exit-studio" title="Volver a la Web"></i>
+        
+        <button class="btn-upgrade-sidebar btn-shortcut" data-target="pricing">
+          <i class="fa-solid fa-crown"></i> Subir a Plan Pro
+        </button>
+
+        <div class="profile-row">
+          <div class="pr-avatar" id="sidebarAvatarInitial">U</div>
+          <div class="pr-info">
+            <span class="pr-name" id="sidebarUserName">Usuario SDL</span>
+            <span class="pr-role">Creador Pro</span>
+          </div>
+          <button id="themeToggleBtn" title="Cambiar Tema">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
       </div>
     </aside>
 
-    <!-- Studio Content Area -->
-    <div class="studio-workspace">
-      <!-- Horizontal Topbar Header -->
-      <header class="studio-header">
-        <div class="view-title-area">
-          <i class="fa-solid fa-bars mobile-sidebar-toggle" id="mobileSidebarToggle"></i>
-          <h2 class="view-title" id="studioViewTitle">Inicio</h2>
+    <!-- ==========================================
+         CONTENEDOR DE VISTAS (VIEWS CONTAINER)
+         ========================================== -->
+    <main class="view-container">
+
+      <!-- --- 1. INICIO (DASHBOARD) VIEW --- -->
+      <section class="studio-view active" id="view-dashboard">
+        <div class="welcome-banner-hg">
+          <div class="welcome-bg-glow"></div>
+          <div class="welcome-content">
+            <h1>Crea videos con avatares reales en segundos</h1>
+            <p>Escribe tu guion, clona tu voz o selecciona un presentador humano para empezar tu producción de alta fidelidad.</p>
+            <div class="quick-actions-row">
+              <button class="btn-primary btn-shortcut" data-target="editor" data-aspect="16-9">
+                <i class="fa-solid fa-desktop"></i> Video Horizontal (16:9)
+              </button>
+              <button class="btn-secondary btn-shortcut" data-target="editor" data-aspect="9-16">
+                <i class="fa-solid fa-mobile-screen"></i> Video Vertical (9:16)
+              </button>
+              <button class="btn-outline btn-shortcut" data-target="voices">
+                <i class="fa-solid fa-microphone"></i> Clonar tu Voz
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="header-actions">
-          <div class="credits-counter">
-            <span class="credits-label">Créditos Disponibles</span>
-            <div class="credits-progress-wrapper">
-              <div class="credits-bar">
-                <div class="credits-bar-fill" id="headerCreditsFill" style="width: 80%;"></div>
-              </div>
-              <span class="credits-text" id="headerCreditsText">120 / 150</span>
-            </div>
+
+        <div class="hg-stats-row">
+          <div class="stat-bubble">
+            <span class="sb-val" id="dashValAvatars">16</span>
+            <span class="sb-lbl">Presentadores Humanos</span>
           </div>
-          <button class="btn-theme-toggle" id="themeToggleBtn" title="Cambiar Tema" style="background: rgba(189, 0, 255, 0.1); border: 1px solid var(--neon-purple); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); font-size: 1.1rem; transition: all 0.3s ease; margin-right: 15px;">
-            <i class="fa-solid fa-moon"></i>
-          </button>
-          <button class="btn-secondary btn-back-web btn-exit-studio">
-            <i class="fa-solid fa-house"></i> Salir a la Web
-          </button>
+          <div class="stat-bubble">
+            <span class="sb-val" id="dashValVoices">6</span>
+            <span class="sb-lbl">Voces del Sistema</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="sb-val" id="dashValVideos">0</span>
+            <span class="sb-lbl">Videos Renderizados</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="sb-val" id="dashValProjects">0</span>
+            <span class="sb-lbl">Créditos Gastados</span>
+          </div>
         </div>
-      </header>
 
-      <!-- Active Content Container -->
-      <main class="studio-content-view">
-
-        <!-- 2.1 INICIO (HOME) VIEW PANEL -->
-        <section class="studio-view active" id="view-dashboard">
-          <!-- Welcome Premium Banner -->
-          <div class="welcome-banner-hg">
-            <div class="welcome-bg-glow"></div>
-            <div class="welcome-content">
-              <h1>Crea videos de IA profesionales en minutos</h1>
-              <p>Elige una plantilla, escribe tu guion o clona tu voz para empezar.</p>
-              <div class="quick-actions-row">
-                <button class="btn-primary btn-shortcut" data-target="editor" data-aspect="16-9">
-                  <i class="fa-solid fa-desktop"></i> Video Horizontal (16:9)
-                </button>
-                <button class="btn-secondary btn-shortcut" data-target="editor" data-aspect="9-16">
-                  <i class="fa-solid fa-mobile-screen"></i> Video Vertical (9:16)
-                </button>
-                <button class="btn-outline btn-shortcut" data-target="voices">
-                  <i class="fa-solid fa-microphone"></i> Clonar tu Voz
-                </button>
-              </div>
-            </div>
+        <div class="hg-home-section">
+          <div class="section-title-row">
+            <h3><i class="fa-solid fa-star gradient-text"></i> Plantillas recomendadas</h3>
+            <button class="btn-link btn-shortcut" data-target="templates">Ver todas <i class="fa-solid fa-arrow-right"></i></button>
           </div>
-
-          <!-- Quick Stats Grid -->
-          <div class="hg-stats-row">
-            <div class="stat-bubble">
-              <span class="sb-val" id="dashValAvatars">4</span>
-              <span class="sb-lbl">Avatares creados</span>
-            </div>
-            <div class="stat-bubble">
-              <span class="sb-val" id="dashValVoices">3</span>
-              <span class="sb-lbl">Voces guardadas</span>
-            </div>
-            <div class="stat-bubble">
-              <span class="sb-val" id="dashValVideos">12</span>
-              <span class="sb-lbl">Videos listos</span>
-            </div>
-            <div class="stat-bubble">
-              <span class="sb-val" id="dashValProjects">5</span>
-              <span class="sb-lbl">Borradores</span>
-            </div>
+          <div class="hg-templates-grid" id="dashTemplatesGrid">
+            <!-- Populated dynamically -->
           </div>
+        </div>
 
-          <!-- Featured Templates Section -->
-          <div class="hg-home-section">
-            <div class="section-title-row">
-              <h3><i class="fa-solid fa-star gradient-text"></i> Plantillas recomendadas</h3>
-              <button class="btn-link btn-shortcut" data-target="templates">Ver todas <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <div class="hg-templates-grid" id="dashTemplatesGrid">
-              <!-- Dynamically populated via JS -->
-            </div>
+        <div class="hg-home-section" style="margin-top: 40px;">
+          <div class="section-title-row">
+            <h3><i class="fa-solid fa-circle-user gradient-text"></i> Avatares populares</h3>
+            <button class="btn-link btn-shortcut" data-target="avatars">Ver todos <i class="fa-solid fa-arrow-right"></i></button>
           </div>
+          <div class="hg-avatars-grid" id="dashAvatarsGrid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </section>
 
-          <!-- Featured Avatars Section -->
-          <div class="hg-home-section" style="margin-top: 35px;">
-            <div class="section-title-row">
-              <h3><i class="fa-solid fa-circle-user gradient-text"></i> Avatares populares</h3>
-              <button class="btn-link btn-shortcut" data-target="avatars">Ver todos <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <div class="hg-avatars-grid" id="dashAvatarsGrid">
-              <!-- Dynamically populated via JS -->
-            </div>
-          </div>
-        </section>
+      <!-- --- 2. PLANTILLAS VIEW --- -->
+      <section class="studio-view" id="view-templates">
+        <div class="section-title-row" style="margin-bottom: 25px;">
+          <h2>Biblioteca de Plantillas de Video</h2>
+        </div>
+        <div class="hg-templates-grid" id="allTemplatesGrid">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
 
-        <!-- 2.2 PLANTILLAS (TEMPLATES) VIEW PANEL -->
-        <section class="studio-view" id="view-templates">
-          <div class="view-header-description">
-            <p>Selecciona una plantilla diseñada profesionalmente para cargar una composición con avatar y guion adaptados al instante.</p>
-          </div>
-          <div class="hg-templates-grid" id="templatesGrid">
-            <!-- Dynamically populated -->
-          </div>
-        </section>
+      <!-- --- 3. AVATARES VIEW --- -->
+      <section class="studio-view" id="view-avatars">
+        <div class="section-title-row" style="margin-bottom: 20px;">
+          <h2>Biblioteca de Avatares</h2>
+        </div>
 
-        <!-- 2.3 AVATARES VIEW PANEL -->
-        <section class="studio-view" id="view-avatars">
-          <div class="tabs-header-hg">
-            <button class="hg-tab-btn active" data-tab="studio">Studio Avatar</button>
-            <button class="hg-tab-btn" data-tab="instant">Instant Avatar (Webcam)</button>
-            <button class="hg-tab-btn" data-tab="photo">Photo Avatar</button>
-          </div>
+        <!-- Sub pestañas de Avatares -->
+        <div class="hg-tabs-header">
+          <button class="hg-tab-btn active" data-tab="avatar-panel-studio">Presentadores Pro</button>
+          <button class="hg-tab-btn" data-tab="avatar-panel-instant">Avatar Grabado (Webcam)</button>
+          <button class="hg-tab-btn" data-tab="avatar-panel-photo">Talking Photo</button>
+        </div>
 
-          <!-- Studio Avatar Panel -->
-          <div class="hg-tab-content active" id="avatar-panel-studio">
-            <!-- Sub tabs for avatar types (HeyGen style) -->
-            <div class="sub-tabs-hg" style="margin-top: 15px; margin-bottom: 20px; display: flex; gap: 10px;">
-              <button class="sub-tab-btn active" data-sub="all">Todos</button>
-              <button class="sub-tab-btn" data-sub="Avatar Lite">Avatar Lite</button>
-              <button class="sub-tab-btn" data-sub="Avatar Pro">Avatar Pro</button>
-              <button class="sub-tab-btn" data-sub="Talking Photo">Talking Photo</button>
-            </div>
-            <div class="hg-avatars-grid" id="studioAvatarsGrid">
-              <!-- Populated via JS -->
-            </div>
+        <!-- Panel 1: Studio Avatars -->
+        <div class="hg-tab-panel active" id="avatar-panel-studio">
+          <!-- Botones de categorías internas (HeyGen Clone) -->
+          <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+            <button class="btn-outline-sm btn-filter-av active" data-filter="all">Todos</button>
+            <button class="btn-outline-sm btn-filter-av" data-filter="Avatar Lite">Avatar Lite</button>
+            <button class="btn-outline-sm btn-filter-av" data-filter="Avatar Pro">Avatar Pro</button>
+            <button class="btn-outline-sm btn-filter-av" data-filter="Talking Photo">Talking Photo</button>
           </div>
+          <div class="hg-avatars-grid" id="allAvatarsGrid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
 
-          <!-- Instant Avatar Panel -->
-          <div class="hg-tab-content" id="avatar-panel-instant">
-            <!-- Initial Info screen -->
-            <div class="split-info-card glass-card" id="instantAvatarStartCard">
-              <div class="split-left">
-                <h3>Genera tu Avatar Instantáneo</h3>
-                <p>Graba un video de 2 minutos hablando frente a tu cámara y nuestra IA creará un clon digital de alta fidelidad con tu lenguaje corporal y sincronización labial perfectos.</p>
-                <div class="instant-step-list">
-                  <div class="ins-step"><span>1</span> Mira fijamente a la cámara en un entorno iluminado.</div>
-                  <div class="ins-step"><span>2</span> Habla de forma natural usando gestos pausados.</div>
-                  <div class="ins-step"><span>3</span> Sube el video y nuestro clónador se encargará del resto.</div>
+        <!-- Panel 2: Instant Avatar (Grabador Web) -->
+        <div class="hg-tab-panel" id="avatar-panel-instant">
+          <div class="voice-cloning-workspace">
+            <div class="cloning-left-card">
+              <h3>Grabar mi Clon Digital</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted)">Graba una muestra de 5 segundos mirando fijo a la cámara para generar tu avatar fotorrealista personalizado.</p>
+              
+              <!-- Webcam container visual mockup -->
+              <div id="webcamOverlay" style="position:relative; aspect-ratio:16/9; background:#000; border-radius:var(--border-radius-md); overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                <video id="webcamVideo" autoplay muted playsinline style="width:100%; height:100%; object-fit:cover; display:none; transform: scaleX(-1);"></video>
+                <div id="webcamPlaceholder" style="text-align:center; color:var(--text-muted)">
+                  <i class="fa-solid fa-video" style="font-size:3rem; margin-bottom:15px; color:var(--accent-purple)"></i>
+                  <p style="font-size:0.8rem">Presiona Iniciar Cámara para activar el visor</p>
                 </div>
-                <button class="btn-primary" id="btnStartInstantAvatar"><i class="fa-solid fa-video"></i> Comenzar Grabación</button>
-              </div>
-              <div class="split-right flex-center">
-                <div class="holographic-preview-circle">
-                  <div class="circle-pulse"></div>
-                  <i class="fa-solid fa-circle-user"></i>
+                <div id="recordingIndicator" style="position:absolute; top:15px; left:15px; background:rgba(239, 68, 68, 0.9); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:700; display:none; align-items:center; gap:6px;">
+                  <span style="width:8px; height:8px; background:#fff; border-radius:50%; display:inline-block; animation: bounceScale 0.6s infinite alternate;"></span> GRABANDO MUESTRA
+                </div>
+                <div id="webcamTimer" style="position:absolute; bottom:15px; right:15px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; display:none;">
+                  0:05
                 </div>
               </div>
+
+              <div style="display:flex; gap:10px;">
+                <button class="btn-secondary w-full" id="btnToggleWebcam"><i class="fa-solid fa-camera"></i> Activar Cámara</button>
+                <button class="btn-primary w-full" id="btnStartInstantAvatar" disabled><i class="fa-solid fa-circle-dot"></i> Iniciar Grabación</button>
+              </div>
             </div>
 
-            <!-- Simulated Webcam recording screen (hidden by default) -->
-            <div class="split-info-card glass-card" id="instantAvatarRecordingCard" style="display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 350px; text-align: center; gap: 20px;">
-              <h3 style="margin: 0; color: var(--neon-cyan);"><i class="fa-solid fa-circle fa-beat" style="color: var(--neon-red); font-size: 0.8rem; margin-right: 10px;"></i> Grabando Avatar Instantáneo</h3>
-              <div class="webcam-sim-frame" style="position: relative; width: 100%; max-width: 480px; height: 270px; background: #080517; border: 2px solid var(--neon-cyan); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow-cyan);">
-                <!-- Simulated face outline helper -->
-                <div class="face-outline-helper" style="position: absolute; width: 180px; height: 220px; border: 2px dashed rgba(0, 240, 255, 0.4); border-radius: 50%; box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);"></div>
-                
-                <!-- Simulated webcam static/noise or mock camera icon -->
-                <div class="camera-lens-sim" style="text-align: center; color: var(--neon-cyan); z-index: 2; padding: 20px;">
-                  <i class="fa-solid fa-video fa-fade" style="font-size: 3rem; margin-bottom: 15px; color: var(--neon-cyan);"></i>
-                  <h4 id="recordingStatusText" style="margin: 5px 0;">Inicializando cámara...</h4>
-                  <div class="progress-bar-sm" style="width: 200px; height: 5px; background: rgba(0, 240, 255, 0.15); border-radius: 3px; margin: 10px auto; overflow: hidden; position: relative;">
-                    <div id="recordingProgressFill" style="width: 0%; height: 100%; background: var(--neon-cyan); position: absolute; left: 0; top: 0;"></div>
-                  </div>
-                </div>
-
-                <!-- Red REC indicator -->
-                <div class="rec-badge" style="position: absolute; top: 15px; left: 15px; display: flex; align-items: center; gap: 8px; font-weight: bold; color: var(--neon-red); font-size: 0.8rem; text-shadow: 0 0 5px rgba(255, 0, 85, 0.5);">
-                  <span class="pulse-dot" style="background-color: var(--neon-red); width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
-                  <span>REC</span>
-                </div>
-
-                <!-- Recording Timer -->
-                <div id="recordingTimerVal" style="position: absolute; bottom: 15px; right: 15px; font-family: monospace; font-size: 1rem; color: #fff; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-light);">0:00</div>
+            <div class="cloning-right-card">
+              <h3>¿Cómo funciona?</h3>
+              <ul style="font-size:0.8rem; line-height:1.6; display:flex; flex-direction:column; gap:15px; list-style:none;">
+                <li><i class="fa-solid fa-circle-check" style="color:var(--accent-green)"></i> <strong>Iluminación:</strong> Asegúrate de que tu rostro esté bien iluminado y de frente a la cámara.</li>
+                <li><i class="fa-solid fa-circle-check" style="color:var(--accent-green)"></i> <strong>Resolución:</strong> Permite el acceso a tu cámara web HD con la máxima resolución admitida.</li>
+                <li><i class="fa-solid fa-circle-check" style="color:var(--accent-green)"></i> <strong>Consentimiento:</strong> Al grabar tu rostro, confirmas ser el propietario legal de este clon digital.</li>
+              </ul>
+              
+              <div class="ethics-consent-box" style="margin-top:auto;">
+                <label class="ethics-checkbox-row">
+                  <input type="checkbox" id="instantAvatarEthicsCheck">
+                  <span>Declaro de forma jurada que poseo los derechos y el consentimiento ético para clonar este rostro con fines lícitos.</span>
+                </label>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Photo Avatar Panel -->
-          <div class="hg-tab-content" id="avatar-panel-photo">
-            <div class="split-info-card glass-card">
-              <div class="split-left">
-                <h3>Crea Avatar desde una Foto</h3>
-                <p>Sube una foto de retrato clara e ilumina el rostro. Nuestra tecnología animará la boca y los ojos sincronizándolos con cualquier guion escrito.</p>
-                
-                <form id="avatarCreationForm" class="photo-upload-form">
-                  <div class="form-group">
-                    <label><i class="fa-solid fa-upload"></i> Subir Imagen de Rostro</label>
-                    <div class="upload-zone" id="avatarUploadZone">
-                      <i class="fa-solid fa-cloud-arrow-up"></i>
-                      <span>Arrastra tu archivo aquí o haz clic para buscar</span>
-                      <span class="upload-file-name" id="avatarFileName"></span>
-                      <input type="file" id="avatarImageInput" accept="image/*">
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="avatarNameInput"><i class="fa-solid fa-signature"></i> Nombre del Avatar</label>
-                    <input type="text" id="avatarNameInput" class="form-input" placeholder="Ej. Mi Avatar Foto" required>
-                  </div>
-
-                  <button type="submit" class="btn-primary" id="createAvatarBtn">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Crear Presentador Inteligente
-                  </button>
-                </form>
+        <!-- Panel 3: Talking Photo -->
+        <div class="hg-tab-panel" id="avatar-panel-photo">
+          <div class="voice-cloning-workspace">
+            <div class="cloning-left-card">
+              <h3>Crear Avatar de Foto</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted)">Carga una foto de retrato clara para animarla con nuestras voces artificiales mediante sincronización labial.</p>
+              
+              <div class="voice-upload-zone" id="photoUploadZone">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <strong>Arrastra tu foto aquí o haz clic para subir</strong>
+                <span style="font-size:0.7rem">Soporta JPG, PNG de hasta 5MB (Rostro centrado)</span>
+                <input type="file" id="photoFileInput" accept="image/*" style="display:none">
               </div>
-              <div class="split-right flex-center">
-                <div class="avatar-preview-box">
-                  <img src="assets/avatar_sofia.png" alt="Avatar Preview" id="avatarPreviewImg">
-                  <span class="ap-badge"><i class="fa-solid fa-eye"></i> Previsualización</span>
+              <div id="photoFileName" style="font-size:0.8rem; text-align:center; font-weight:600;"></div>
+
+              <div class="inspector-form-group">
+                <label for="photoAvatarName">Nombre del Personaje</label>
+                <input type="text" id="photoAvatarName" class="inspector-input" placeholder="Ej. Mi Avatar de Foto">
+              </div>
+
+              <button class="btn-primary w-full" id="btnCreatePhotoAvatar" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Crear Avatar</button>
+            </div>
+
+            <div class="cloning-right-card" style="justify-content:center; align-items:center;">
+              <div id="photoPreviewBox" style="width:200px; height:200px; border-radius:var(--border-radius-md); border:1px solid var(--border-color); background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <span style="font-size:0.8rem; color:var(--text-muted)">Previsualización</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- 4. VOCES VIEW --- -->
+      <section class="studio-view" id="view-voices">
+        <div class="section-title-row" style="margin-bottom: 20px;">
+          <h2>Biblioteca de Voces</h2>
+        </div>
+
+        <div class="hg-tabs-header">
+          <button class="hg-tab-btn active" data-tab="voices-panel-list">Catálogo de Voces</button>
+          <button class="hg-tab-btn" data-tab="voices-panel-clone">Clonación de Voz Neuronal</button>
+        </div>
+
+        <!-- Subpanel 1: Catálogo de Voces -->
+        <div class="hg-tab-panel active" id="voices-panel-list">
+          <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button class="btn-outline-sm btn-filter-voice active" data-filter="all">Todas</button>
+            <button class="btn-outline-sm btn-filter-voice" data-filter="Masculino">Masculinas</button>
+            <button class="btn-outline-sm btn-filter-voice" data-filter="Femenino">Femeninas</button>
+          </div>
+          <div class="voices-grid-hg" id="voicesLibraryGrid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Subpanel 2: Clonación de Voz -->
+        <div class="hg-tab-panel" id="voices-panel-clone">
+          <div class="voice-cloning-workspace">
+            <div class="cloning-left-card">
+              <h3>Subir Grabación de Voz</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted)">Sube un archivo de audio limpio de 10 a 30 segundos de la persona cuya voz deseas replicar.</p>
+              
+              <div class="voice-upload-zone" id="voiceUploadZone">
+                <i class="fa-solid fa-file-audio"></i>
+                <strong>Arrastra tu audio aquí o haz clic para buscar</strong>
+                <span style="font-size:0.7rem">Soporta WAV, MP3 o M4A</span>
+                <input type="file" id="voiceAudioInput" accept="audio/*" style="display:none">
+              </div>
+              <div id="voiceFileName" style="font-size:0.8rem; text-align:center; font-weight:600; color:var(--accent-purple);"></div>
+
+              <div style="text-align:center; margin:10px 0;">O también</div>
+
+              <button class="btn-secondary w-full" id="btnRecordVoice"><i class="fa-solid fa-microphone"></i> Grabar en vivo</button>
+              <div id="recordIndicator" style="display:none; justify-content:center; align-items:center; gap:8px; font-size:0.8rem; font-weight:600; color:var(--accent-red)">
+                <i class="fa-solid fa-circle fa-beat"></i> Grabando... Habla claro al micrófono.
+              </div>
+
+              <div class="inspector-form-group" style="margin-top:10px;">
+                <label for="voiceNameInput">Nombre de la Voz</label>
+                <input type="text" id="voiceNameInput" class="inspector-input" placeholder="Ej. Voz de Alejandro">
+              </div>
+            </div>
+
+            <div class="cloning-right-card">
+              <h3>Declaración Ética</h3>
+              <div class="ethics-consent-box">
+                <p><strong>Uso Ético de Voces por IA:</strong> Al utilizar esta herramienta de clonación neuronal, garantizas haber obtenido el consentimiento verbal y escrito del propietario de la voz.</p>
+                <p style="margin-top:10px;">Queda estrictamente prohibido generar clonaciones con fines de suplantación de identidad, estafas telefónicas, deepfakes de políticos o cualquier actividad ilícita.</p>
+              </div>
+
+              <label class="ethics-checkbox-row" style="margin-top:20px;">
+                <input type="checkbox" id="voiceConsentCheck">
+                <span>Doy mi consentimiento ético y confirmo que poseo los derechos de uso de esta voz de forma lícita.</span>
+              </label>
+
+              <button class="btn-primary w-full" id="btnCloneVoice" style="margin-top:auto" disabled>
+                <i class="fa-solid fa-dna"></i> Clonar Voz (Consume 50 Créditos)
+              </button>
+
+              <div style="margin-top: 20px;">
+                <h4 style="font-size: 0.8rem; margin-bottom: 10px;">Mis Voces Clonadas</h4>
+                <div id="clonedVoicesList" style="display:flex; flex-wrap:wrap; gap:8px;">
+                  <!-- Dynamic badge tags -->
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- 2.4 VOCES VIEW PANEL -->
-        <section class="studio-view" id="view-voices">
-          <!-- Voice Cloner Box -->
-          <div class="voice-cloner-container glass-card">
-            <div class="cloner-header">
-              <h3><i class="fa-solid fa-microphone-lines gradient-text"></i> Clonador de Voz Instantáneo</h3>
-              <span class="badge-premium"><i class="fa-solid fa-crown"></i> Premium</span>
+      <!-- ==========================================
+           5. EDITOR DE VIDEO TRIPLE COLUMNA (ESTUDIO)
+           ========================================== -->
+      <section class="studio-view" id="view-editor">
+        <!-- Header del Editor -->
+        <header class="editor-header">
+          <div class="eh-left">
+            <button class="btn-back-home btn-shortcut" data-target="dashboard" title="Regresar al Inicio">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span class="editor-title" id="editorProjectTitle">Nuevo Video de Proyecto</span>
+          </div>
+          <div class="eh-right">
+            <!-- Ratio Toggle buttons -->
+            <div style="display:flex; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); overflow:hidden;">
+              <button class="btn-outline-sm active" id="btnRatio169" style="border:none; border-radius:0;"><i class="fa-solid fa-desktop"></i> 16:9</button>
+              <button class="btn-outline-sm" id="btnRatio916" style="border:none; border-radius:0;"><i class="fa-solid fa-mobile-screen"></i> 9:16</button>
             </div>
-            <p>Clona cualquier timbre de voz subiendo un audio de 10 segundos o grabando directamente. Podrás escribir cualquier texto y sonará con ese tono de voz.</p>
             
-            <div class="cloner-grid">
-              <div class="cloner-inputs">
-                <div class="form-group">
-                  <label><i class="fa-solid fa-upload"></i> Subir archivo de audio (WAV, MP3)</label>
-                  <div class="upload-zone" id="voiceUploadZone">
-                    <i class="fa-solid fa-file-audio"></i>
-                    <span>Sube una grabación limpia sin ruido de fondo</span>
-                    <span class="upload-file-name" id="voiceFileName"></span>
-                    <input type="file" id="voiceAudioInput" accept="audio/*">
+            <button class="btn-secondary" id="btnPlayFullTimelinePreview">
+              <i class="fa-solid fa-play"></i> Vista Previa
+            </button>
+            <button class="btn-primary" id="btnGenerateVideo">
+              <i class="fa-solid fa-circle-check"></i> Generar Video
+            </button>
+          </div>
+        </header>
+
+        <!-- Cuerpo del Editor -->
+        <div class="editor-body-box">
+          
+          <!-- Columna 1: Muelle de herramientas vertical -->
+          <div class="editor-tools-dock">
+            <button class="dock-item active" data-panel="templates">
+              <i class="fa-solid fa-table-cells-large"></i>
+              <span>Diseño</span>
+            </button>
+            <button class="dock-item" data-panel="avatars">
+              <i class="fa-solid fa-user-astronaut"></i>
+              <span>Avatar</span>
+            </button>
+            <button class="dock-item" data-panel="text">
+              <i class="fa-solid fa-font"></i>
+              <span>Texto</span>
+            </button>
+            <button class="dock-item" data-panel="assets">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Recursos</span>
+            </button>
+          </div>
+
+          <!-- Columna 2: Cajón Desplegable (Drawer) -->
+          <div class="editor-drawer-panel" id="editorDrawerPanel">
+            <div class="drawer-header">
+              <h4 id="drawerPanelTitle">Plantillas de Video</h4>
+              <button class="btn-close-drawer" id="btnCloseEditorDrawer">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div class="drawer-body">
+              <!-- Panel de Plantillas -->
+              <div class="drawer-section active" id="drawer-section-templates">
+                <div class="drawer-avatars-grid" id="editorDrawerTemplatesGrid" style="grid-template-columns:1fr; gap:10px;">
+                  <!-- Dynamic template previews -->
+                </div>
+              </div>
+
+              <!-- Panel de Avatares -->
+              <div class="drawer-section" id="drawer-section-avatars">
+                <div class="drawer-avatars-grid" id="editorDrawerAvatarsGrid">
+                  <!-- Dynamic avatar cards -->
+                </div>
+              </div>
+
+              <!-- Panel de Texto -->
+              <div class="drawer-section" id="drawer-section-text">
+                <div class="text-drawer-list">
+                  <button class="btn-add-text-preset" data-size="title" style="font-size:1.3rem;">Agregar Título</button>
+                  <button class="btn-add-text-preset" data-size="subtitle" style="font-size:1rem;">Agregar Subtítulo</button>
+                  <button class="btn-add-text-preset" data-size="body" style="font-size:0.85rem; font-weight:400;">Agregar Cuerpo de Texto</button>
+                </div>
+              </div>
+
+              <!-- Panel de Recursos (Assets) -->
+              <div class="drawer-section" id="drawer-section-assets">
+                <div class="voice-cloning-workspace" style="grid-template-columns:1fr; gap:15px;">
+                  <div class="voice-upload-zone" id="editorAssetUploadZone" style="padding:15px;">
+                    <i class="fa-solid fa-upload"></i>
+                    <strong style="font-size:0.75rem">Subir archivos</strong>
+                    <span style="font-size:0.6rem">Soporta imágenes, logos y audios</span>
+                    <input type="file" id="editorAssetFileInput" style="display:none" accept="image/*,audio/*">
+                  </div>
+                  <div id="editorAssetFileName" style="font-size:0.75rem; text-align:center; font-weight:600;"></div>
+                  <div style="font-size:0.75rem; font-weight:600;">Mis Recursos Cargados</div>
+                  <div id="editorUserAssetsList" style="display:flex; flex-direction:column; gap:8px;">
+                    <!-- List of items -->
                   </div>
                 </div>
-
-                <div class="voice-record-row">
-                  <button type="button" class="btn-outline" id="btnRecordVoice">
-                    <i class="fa-solid fa-circle"></i> Grabar en vivo
-                  </button>
-                  <span class="record-indicator" id="recordIndicator" style="display: none;">
-                    <span class="rec-dot"></span> Grabando... <span class="rec-timer">0:00</span>
-                  </span>
-                </div>
-
-                <div class="form-group" style="margin-top: 15px;">
-                  <label for="voiceNameInput"><i class="fa-solid fa-tag"></i> Nombre de la Voz</label>
-                  <input type="text" id="voiceNameInput" class="form-input" placeholder="Ej. Mi Voz Natural" required>
-                </div>
-              </div>
-
-              <div class="cloner-legal">
-                <div class="consent-box">
-                  <h4>Declaración Jurada y Autorización Legal</h4>
-                  <p>Declaro formalmente que poseo todos los derechos legales y el consentimiento expreso de la persona propietaria de esta voz para su clonación y uso sintético en esta plataforma, eximiendo a Synthetic Digital Labs de cualquier responsabilidad derivada.</p>
-                  <label class="consent-checkbox-label">
-                    <input type="checkbox" id="voiceConsentCheck">
-                    <span class="custom-checkbox"></span>
-                    <span class="checkbox-text">Acepto los términos éticos y comerciales</span>
-                  </label>
-                </div>
-                <button class="btn-primary w-full" id="btnCloneVoice" disabled>
-                  <i class="fa-solid fa-microchip"></i> Clonar Voz Ahora (Resta 50 créditos)
-                </button>
-              </div>
-            </div>
-
-            <!-- List of Cloned Voices -->
-            <div class="cloned-list-section" style="margin-top: 25px;">
-              <h4>Tus Voces Clonadas</h4>
-              <div class="voices-list-mini" id="clonedVoicesList">
-                <!-- Populated dynamically -->
               </div>
             </div>
           </div>
 
-          <!-- Public Voice Library Section -->
-          <div class="public-voices-section" style="margin-top: 35px;">
-            <div class="section-title-row">
-              <h3><i class="fa-solid fa-list gradient-text"></i> Biblioteca de Voces Públicas</h3>
-              <!-- Search & Filters -->
-              <div class="voices-filters">
-                <input type="text" id="voiceSearchInput" class="form-input-sm" placeholder="Buscar voz...">
-                <select id="voiceGenderFilter" class="form-select-sm">
-                  <option value="all">Todos los géneros</option>
-                  <option value="Femenino">Femenino</option>
-                  <option value="Masculino">Masculino</option>
-                </select>
-                <select id="voiceLangFilter" class="form-select-sm">
-                  <option value="all">Todos los idiomas</option>
-                  <option value="Español">Español</option>
-                  <option value="Inglés">Inglés</option>
-                </select>
+          <!-- Columna 3: Espacio central de trabajo (Lienzo Central Canvas) -->
+          <div class="editor-canvas-workspace">
+            <div class="canvas-container" id="editorCanvasContainer">
+              
+              <!-- El lienzo del video (Capas drag & resize) -->
+              <div class="video-canvas-stage ratio-16-9" id="videoCanvasStage">
+                
+                <!-- Capa del Avatar -->
+                <div class="canvas-layer layer-avatar selected" id="layerAvatar">
+                  <img src="assets/avatar_sofia.png" id="canvasAvatarImg" alt="Avatar Layer">
+                  <div class="resize-handle rh-nw"></div>
+                  <div class="resize-handle rh-ne"></div>
+                  <div class="resize-handle rh-se"></div>
+                  <div class="resize-handle rh-sw"></div>
+                </div>
+
+                <!-- Capa de Texto (Opcional, inyectada dinámicamente) -->
+                <div class="canvas-layer layer-text" id="layerText" style="display:none;">
+                  <input type="text" id="canvasTextInput" value="Escribe tu título aquí">
+                  <div class="resize-handle rh-nw"></div>
+                  <div class="resize-handle rh-ne"></div>
+                  <div class="resize-handle rh-se"></div>
+                  <div class="resize-handle rh-sw"></div>
+                </div>
+
+                <!-- Capa de Subtítulos dinámicos de audio -->
+                <div class="canvas-subtitle-overlay" id="canvasSubtitleOverlay">
+                  <span>Haz clic en reproducir guion para ver el avatar hablar</span>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Timeline inferior multiescena -->
+            <div class="editor-timeline-panel">
+              <div class="timeline-controls">
+                <button class="btn-play-all" id="btnPlayAllTimeline" title="Reproducir todo el video">
+                  <i class="fa-solid fa-play"></i>
+                </button>
+                <span style="font-size:0.6rem; font-weight:600;">Reproducir</span>
+              </div>
+              <div class="timeline-scenes-list" id="timelineScenesList">
+                <!-- Scenes list slides populates here -->
+              </div>
+              <div class="btn-add-scene-card" id="btnAddTimelineScene">
+                <i class="fa-solid fa-plus"></i>
+                <span>Añadir Escena</span>
               </div>
             </div>
 
-            <div class="hg-voices-grid" id="publicVoicesGrid">
-              <!-- Populated dynamically with play icons + animation wave elements -->
-            </div>
           </div>
-        </section>
 
-        <!-- 2.5 EDITOR DE VIDEO (CANVAS WORKSPACE) -->
-        <section class="studio-view" id="view-editor">
-          <div class="editor-canvas-layout">
-            <!-- Left Preset Column -->
-            <div class="editor-left-panel">
-              <div class="panel-section">
-                <h4><i class="fa-solid fa-circle-user"></i> Presentador</h4>
-                <div class="mini-grid-presets" id="miniAvatarsGrid">
-                  <!-- Avatars lists for quick click selection -->
-                </div>
-              </div>
-
-              <div class="panel-section" style="margin-top: 20px;">
-                <h4><i class="fa-solid fa-microphone"></i> Voz del Video</h4>
-                <div class="mini-list-presets" id="miniVoicesGrid">
-                  <!-- Voices lists for quick click selection -->
-                </div>
-              </div>
-
-              <div class="panel-section" style="margin-top: 20px;">
-                <h4><i class="fa-solid fa-palette"></i> Fondo del Lienzo</h4>
-                <div class="bg-selector-grid">
-                  <button class="bg-btn active" data-bg="dark" style="background: #050215; border: 1px solid var(--neon-cyan);"></button>
-                  <button class="bg-btn" data-bg="gradient-blue" style="background: linear-gradient(135deg, #020010, #001f3f);"></button>
-                  <button class="bg-btn" data-bg="gradient-purple" style="background: linear-gradient(135deg, #030012, #1f003f);"></button>
-                  <button class="bg-btn" data-bg="green-screen" style="background: #00ff00;"></button>
-                </div>
-              </div>
+          <!-- Columna 4: Panel Derecho Inspector de Propiedades -->
+          <div class="editor-inspector-panel">
+            <div class="inspector-header">
+              <h3 id="inspectorPanelTitle">Ajustes del Avatar</h3>
             </div>
+            
+            <div class="inspector-body" id="inspectorBodyAvatar">
+              <!-- Selector de Voz -->
+              <div class="inspector-form-group">
+                <label for="editorVoiceSelect">Voz del Actor</label>
+                <select id="editorVoiceSelect" class="inspector-select">
+                  <!-- Dynamic voices -->
+                </select>
+              </div>
 
-            <!-- Central Canvas Column -->
-            <div class="editor-center-panel">
-              <div class="canvas-header-toolbar">
-                <div class="ratio-switchers">
-                  <button class="ratio-btn active" id="btnRatio169" title="Horizontal 16:9">
-                    <i class="fa-solid fa-desktop"></i> Horizontal (16:9)
-                  </button>
-                  <button class="ratio-btn" id="btnRatio916" title="Vertical 9:16">
-                    <i class="fa-solid fa-mobile-screen"></i> Vertical (9:16)
-                  </button>
+              <!-- Velocidad y Tono -->
+              <div class="inspector-form-group">
+                <label>Velocidad de Lectura</label>
+                <div class="slider-group">
+                  <input type="range" id="editorVoiceRate" min="0.5" max="1.5" step="0.05" value="1.0">
+                  <span id="valVoiceRate">1.0x</span>
                 </div>
-                <button class="btn-primary" id="btnGenerateVideo">
-                  <i class="fa-solid fa-circle-check"></i> Generar Video
+              </div>
+
+              <!-- Editor de Guión -->
+              <div class="inspector-form-group">
+                <label for="editorScriptTextarea">Guión de la Escena</label>
+                <textarea id="editorScriptTextarea" class="inspector-textarea" placeholder="Escribe lo que el avatar presentador debe decir en esta escena..."></textarea>
+              </div>
+
+              <!-- Escucha de Audio -->
+              <div class="script-audio-control-row">
+                <button class="btn-play-speech" id="btnPlayScriptSpeech">
+                  <i class="fa-solid fa-volume-high"></i> Escuchar Guión
+                </button>
+                <button class="btn-stop-speech" id="btnStopScriptSpeech">
+                  <i class="fa-solid fa-square"></i> Detener
                 </button>
               </div>
 
-              <!-- Main Interactive Canvas Stage -->
-              <div class="canvas-outer-wrapper">
-                <div class="video-canvas-stage ratio-16-9" id="videoCanvasStage">
-                  <div class="canvas-glow"></div>
-                  <!-- Selected Avatar Graphic -->
-                  <img src="assets/avatar_sofia.png" alt="Canvas Avatar" id="canvasAvatarImg" class="canvas-avatar">
-                  
-                  <!-- Subtitles overlay on canvas -->
-                  <div class="canvas-subtitle-overlay" id="canvasSubtitleOverlay">
-                    <span>Haz clic en reproducir guion para ver el avatar hablar</span>
-                  </div>
+              <!-- Generador de Guión con IA -->
+              <div style="border-top:1px solid var(--border-color); padding-top:15px; margin-top:5px;">
+                <h4 style="font-size:0.75rem; font-weight:600; margin-bottom:12px; color:var(--text-muted);">Redactor de Guiones por IA</h4>
+                <div class="inspector-form-group" style="margin-bottom:8px;">
+                  <input type="text" id="aiTopicInput" class="inspector-input" placeholder="Tema del video (Ej. Ventas de Software)">
                 </div>
-              </div>
-
-              <!-- Bottom Timeline representation -->
-              <div class="timeline-container glass-card">
-                <div class="timeline-header">
-                  <span>Escenas del Video</span>
-                  <button class="btn-secondary-sm" id="btnAddScene"><i class="fa-solid fa-plus"></i> Añadir Escena</button>
-                </div>
-                <div class="timeline-row">
-                  <div class="timeline-scene-card active">
-                    <span class="ts-index">Escena 1</span>
-                    <span class="ts-duration" id="timelineDurationLabel">5.0s</span>
-                  </div>
-                  <div class="timeline-scene-add">
-                    <i class="fa-solid fa-plus"></i>
-                  </div>
-                </div>
-                <div class="timeline-slider-row">
-                  <label for="sceneDurationSlider">Duración de Escena: </label>
-                  <input type="range" id="sceneDurationSlider" min="2" max="15" value="5" step="0.5">
-                </div>
-              </div>
-            </div>
-
-            <!-- Right Configuration Column -->
-            <div class="editor-right-panel">
-              <!-- AI Script Generator prompt inside the panel -->
-              <div class="right-panel-box glass-card">
-                <h4><i class="fa-solid fa-wand-magic-sparkles"></i> Redactor de Guión IA</h4>
-                <div class="form-group-sm">
-                  <input type="text" id="editorScriptTopic" class="form-input-sm" placeholder="Tema (ej. Vender Curso Python)">
-                </div>
-                <div class="form-row-sm">
-                  <select id="editorScriptType" class="form-select-sm">
-                    <option value="publicidad">Anuncio</option>
-                    <option value="tutorial">Tutorial</option>
-                    <option value="presentacion">Presentación</option>
-                  </select>
-                  <select id="editorScriptTone" class="form-select-sm">
-                    <option value="profesional">Profesional</option>
-                    <option value="persuasivo">Persuasivo</option>
-                    <option value="casual">Casual</option>
+                <div class="inspector-form-group" style="margin-bottom:12px;">
+                  <select id="aiToneSelect" class="inspector-select">
+                    <option value="profesional">Tono Profesional</option>
+                    <option value="persuasivo">Tono Persuasivo/Ventas</option>
+                    <option value="informativo">Tono Informativo</option>
+                    <option value="entusiasta">Tono Entusiasta</option>
                   </select>
                 </div>
                 <button type="button" class="btn-primary-sm w-full" id="btnGenerateEditorScript">Redactar Guión</button>
               </div>
-
-              <!-- Script Area -->
-              <div class="right-panel-box glass-card" style="margin-top: 15px; flex-grow: 1; display: flex; flex-direction: column;">
-                <h4><i class="fa-solid fa-file-signature"></i> Guión de Video</h4>
-                <textarea id="editorScriptTextarea" class="form-textarea-editor" placeholder="Escribe el texto que dirá el presentador del video..." style="flex-grow: 1; resize: none; margin-bottom: 12px;">¡Hola! Bienvenidos a Synthetic Digital Labs. Hoy les mostraré cómo crear avatares y clonar voces de forma profesional.</textarea>
-                
-                <div class="script-footer-controls">
-                  <div class="voice-selection-tag">
-                    <i class="fa-solid fa-volume-high"></i>
-                    <div class="v-tag-info">
-                      <span id="selectedVoiceNameDisplay">Elena Voz</span>
-                      <span id="selectedVoiceLangDisplay">Español</span>
-                    </div>
-                  </div>
-
-                  <div class="play-script-row">
-                    <button type="button" class="btn-outline-sm" id="btnPlayScriptSpeech" title="Escuchar audio del guion">
-                      <i class="fa-solid fa-play"></i> Escuchar Guion
-                    </button>
-                    <button type="button" class="btn-outline-sm" id="btnStopScriptSpeech" title="Detener audio" style="display: none;">
-                      <i class="fa-solid fa-stop"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Fast Translation Row -->
-                <div class="translate-script-row" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 12px;">
-                  <select id="editorTranslateLang" class="form-select-sm">
-                    <option value="en">Traducir a Inglés</option>
-                    <option value="es">Traducir a Español</option>
-                    <option value="pt">Traducir a Portugués</option>
-                  </select>
-                  <button type="button" class="btn-secondary-sm" id="btnTranslateEditorScript">Traducir</button>
-                </div>
-              </div>
             </div>
-          </div>
-        </section>
 
-        <!-- 2.6 BIBLIOTECA (LIBRARY) VIEW PANEL -->
-        <section class="studio-view" id="view-library">
-          <div class="tabs-header-hg">
-            <button class="hg-tab-btn active" data-tab="lib-videos">Videos Generados</button>
-            <button class="hg-tab-btn" data-tab="lib-audios">Locuciones (TTS)</button>
-            <button class="hg-tab-btn" data-tab="lib-cloned">Voces Clonadas</button>
-            <button class="hg-tab-btn" data-tab="lib-avatars">Avatares creados</button>
-            <button class="hg-tab-btn" data-tab="lib-scripts">Guiones guardados</button>
-          </div>
-
-          <!-- Video grid -->
-          <div class="hg-tab-content active" id="lib-videos-panel">
-            <div class="hg-library-grid" id="libraryVideosGrid">
-              <!-- Loaded via JS -->
-            </div>
-          </div>
-
-          <!-- Audio grid -->
-          <div class="hg-tab-content" id="lib-audios-panel">
-            <div class="hg-library-grid" id="libraryAudiosGrid">
-              <!-- Loaded via JS -->
-            </div>
-          </div>
-
-          <!-- Cloned Voices grid -->
-          <div class="hg-tab-content" id="lib-cloned-panel">
-            <div class="hg-library-grid" id="libraryClonedGrid">
-              <!-- Loaded via JS -->
-            </div>
-          </div>
-
-          <!-- Custom Avatars grid -->
-          <div class="hg-tab-content" id="lib-avatars-panel">
-            <div class="hg-library-grid" id="libraryAvatarsGrid">
-              <!-- Loaded via JS -->
-            </div>
-          </div>
-
-          <!-- Saved Scripts grid -->
-          <div class="hg-tab-content" id="lib-scripts-panel">
-            <div class="hg-library-grid" id="libraryScriptsGrid">
-              <!-- Loaded via JS -->
-            </div>
-          </div>
-        </section>
-
-        <!-- 2.7 CONFIGURACIÓN (SETTINGS) VIEW PANEL -->
-        <section class="studio-view" id="view-settings">
-          <div class="split-info-card glass-card">
-            <div class="split-left">
-              <h3>Ajustes de Perfil</h3>
-              <form id="settingsForm">
-                <div class="form-group">
-                  <label for="settingsUsername"><i class="fa-solid fa-user"></i> Nombre de Usuario</label>
-                  <input type="text" id="settingsUsername" class="form-input" value="Usuario SDL">
+            <!-- Inspector alternativo: Propiedades de Escena (Lienzo/Fondos) -->
+            <div class="inspector-body" id="inspectorBodyScene" style="display:none;">
+              <div class="inspector-form-group">
+                <label>Fondo de la Escena</label>
+                <div class="bg-preset-grid">
+                  <button class="bg-btn bg-dark active" data-bg="dark"></button>
+                  <button class="bg-btn bg-blue" data-bg="gradient-blue"></button>
+                  <button class="bg-btn bg-purple" data-bg="gradient-purple"></button>
+                  <button class="bg-btn bg-green" data-bg="green-screen"></button>
                 </div>
-                <div class="form-group">
-                  <label for="settingsEmail"><i class="fa-solid fa-envelope"></i> Correo de contacto</label>
-                  <input type="email" id="settingsEmail" class="form-input" value="usuario@syntheticdigitallab.com" readonly>
-                </div>
-                <div class="form-group">
-                  <label><i class="fa-solid fa-credit-card"></i> Suscripción Activa</label>
-                  <input type="text" class="form-input" value="Creador Pro ($29 / mes)" readonly style="color: var(--neon-cyan); font-weight: bold;">
-                </div>
-                <button type="submit" class="btn-primary">Guardar Cambios</button>
-              </form>
-            </div>
-            
-            <div class="split-right">
-              <h3>Créditos y Consumos</h3>
-              <div class="settings-credits-box">
-                <div class="scb-row">
-                  <span>Plan Asignado:</span>
-                  <strong>150 créditos</strong>
-                </div>
-                <div class="scb-row">
-                  <span>Consumidos:</span>
-                  <strong style="color: var(--neon-purple);">30 créditos</strong>
-                </div>
-                <div class="scb-row">
-                  <span>Disponibles:</span>
-                  <strong style="color: var(--neon-cyan);" id="settingsCreditsVal">120 créditos</strong>
-                </div>
-                <button class="btn-secondary w-full" id="btnResetCredits" style="margin-top: 15px;">
-                  <i class="fa-solid fa-arrows-rotate"></i> Recargar Créditos (Simulado)
-                </button>
-              </div>
-
-              <div class="developer-settings-box" style="margin-top: 20px;">
-                <h3><i class="fa-solid fa-code"></i> Claves API</h3>
-                <p>Usa esta clave para conectar el motor de avatares con tu CMS externo.</p>
-                <div class="api-key-row">
-                  <input type="password" id="apiKeyVal" class="form-input" value="sdl_live_9a7c3b28d09e1f5a8b7c6d4" readonly style="font-family: monospace;">
-                  <button class="btn-outline-sm" id="btnToggleApiKey"><i class="fa-solid fa-eye"></i></button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2.8 PLANES Y PRECIOS (PRICING & BILLING) VIEW PANEL -->
-        <section class="studio-view" id="view-pricing">
-          <div class="view-header-description">
-            <p>Gestiona tu plan de suscripción, consulta tu historial de facturación y adquiere créditos adicionales para generar videos y clonar voces.</p>
-          </div>
-          
-          <div class="pricing-workspace-layout">
-            <!-- Plans Grid -->
-            <div class="plans-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 35px;">
-              <!-- Plan 1 -->
-              <div class="plan-card glass-card" style="padding: 20px; border-radius: 12px; border: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 12px;">
-                <h3>Demo Gratuito</h3>
-                <div class="plan-price" style="font-size: 1.8rem; font-weight: bold;">$0 <span style="font-size: 0.9rem; color: var(--text-muted);">/ siempre libre</span></div>
-                <ul class="plan-features" style="list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 8px;">
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> 10 Créditos mensuales</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> 3 Avatares estándar</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Voces estándar</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Generación de Audio</li>
-                </ul>
-                <button class="btn-secondary w-full" style="margin-top: auto;" disabled>Plan Actual</button>
               </div>
               
-              <!-- Plan 2 -->
-              <div class="plan-card glass-card popular" style="padding: 20px; border-radius: 12px; border: 2px solid var(--neon-purple); position: relative; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-glow-purple);">
-                <div class="plan-badge" style="position: absolute; top: -12px; right: 15px; background: var(--gradient-magenta); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">Plan Activo</div>
-                <h3>Creador Pro</h3>
-                <div class="plan-price" style="font-size: 1.8rem; font-weight: bold;">$29 <span style="font-size: 0.9rem; color: var(--text-muted);">/ mes</span></div>
-                <ul class="plan-features" style="list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 8px;">
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> 150 Créditos mensuales</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> Avatares premium e ilimitados</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> Voces ultra-realistas</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> Clonación de 3 voces</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-purple); margin-right: 8px;"></i> Videos en 1080p sin marca</li>
-                </ul>
-                <button class="btn-primary w-full" style="margin-top: auto;" id="btnManageSubscription">Gestionar Plan</button>
-              </div>
-              
-              <!-- Plan 3 -->
-              <div class="plan-card glass-card" style="padding: 20px; border-radius: 12px; border: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 12px;">
-                <h3>Empresarial</h3>
-                <div class="plan-price" style="font-size: 1.8rem; font-weight: bold;">$99 <span style="font-size: 0.9rem; color: var(--text-muted);">/ mes</span></div>
-                <ul class="plan-features" style="list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 8px;">
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Créditos ilimitados</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Avatares personalizados en 4K</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Clonación de voz ilimitada</li>
-                  <li><i class="fa-solid fa-circle-check" style="color: var(--neon-cyan); margin-right: 8px;"></i> Integración API completa</li>
-                </ul>
-                <button class="btn-secondary w-full" style="margin-top: auto;" id="btnUpgradeEnterprise">Mejorar a Enterprise</button>
+              <div class="inspector-form-group" style="margin-top:10px;">
+                <label for="sceneDurationSlider">Duración de la Escena</label>
+                <div class="slider-group">
+                  <input type="range" id="sceneDurationSlider" min="2" max="15" step="1" value="5">
+                  <span id="valSceneDuration">5.0s</span>
+                </div>
               </div>
             </div>
 
-            <!-- Billing Dashboard and Checkout Form -->
-            <div class="split-info-card glass-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 25px; border-radius: 12px; border: 1px solid var(--border-light);">
-              <div class="split-left" style="display: flex; flex-direction: column; gap: 12px;">
-                <h3><i class="fa-solid fa-credit-card gradient-text"></i> Método de Pago</h3>
-                <p>Configura o actualiza tu tarjeta de crédito para la renovación automática mensual.</p>
-                
-                <form id="paymentForm" class="payment-form-sim" style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
-                  <div class="form-group">
-                    <label for="cardName" style="display: block; margin-bottom: 5px; font-weight: 500;"><i class="fa-solid fa-user"></i> Nombre en la Tarjeta</label>
-                    <input type="text" id="cardName" class="form-input" placeholder="Ej. Juan Pérez" value="Usuario SDL" style="width: 100%;" required>
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="cardNumber" style="display: block; margin-bottom: 5px; font-weight: 500;"><i class="fa-solid fa-credit-card"></i> Número de Tarjeta</label>
-                    <input type="text" id="cardNumber" class="form-input" placeholder="•••• •••• •••• 4242" value="•••• •••• •••• 5678" style="width: 100%;" required>
-                  </div>
-                  
-                  <div class="form-row" style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex: 1;">
-                      <label for="cardExpiry" style="display: block; margin-bottom: 5px; font-weight: 500;"><i class="fa-solid fa-calendar"></i> Vencimiento</label>
-                      <input type="text" id="cardExpiry" class="form-input" placeholder="MM/AA" value="12/29" style="width: 100%;" required>
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                      <label for="cardCvv" style="display: block; margin-bottom: 5px; font-weight: 500;"><i class="fa-solid fa-lock"></i> CVV</label>
-                      <input type="password" id="cardCvv" class="form-input" placeholder="•••" value="•••" style="width: 100%;" required>
-                    </div>
-                  </div>
-                  
-                  <button type="submit" class="btn-primary w-full" id="btnSavePayment" style="margin-top: 10px;"><i class="fa-solid fa-floppy-disk"></i> Guardar Tarjeta de Crédito</button>
-                </form>
-              </div>
-              
-              <div class="split-right" style="display: flex; flex-direction: column; gap: 12px;">
-                <h3>Historial de Facturas</h3>
-                <div class="table-responsive" style="margin-top: 15px;">
-                  <table class="billing-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-                    <thead>
-                      <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-muted);">
-                        <th style="padding: 10px 0;">Factura</th>
-                        <th style="padding: 10px 0;">Fecha</th>
-                        <th style="padding: 10px 0;">Concepto</th>
-                        <th style="padding: 10px 0;">Total</th>
-                        <th style="padding: 10px 0;">Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr style="border-bottom: 1px solid var(--border-light);">
-                        <td style="padding: 12px 0;">INV-004</td>
-                        <td style="padding: 12px 0;">05/06/2026</td>
-                        <td style="padding: 12px 0;">Suscripción Creador Pro</td>
-                        <td style="padding: 12px 0;">$29.00 USD</td>
-                        <td style="padding: 12px 0; color: var(--neon-cyan); font-weight: bold;">Pagado</td>
-                      </tr>
-                      <tr style="border-bottom: 1px solid var(--border-light);">
-                        <td style="padding: 12px 0;">INV-003</td>
-                        <td style="padding: 12px 0;">05/05/2026</td>
-                        <td style="padding: 12px 0;">Suscripción Creador Pro</td>
-                        <td style="padding: 12px 0;">$29.00 USD</td>
-                        <td style="padding: 12px 0; color: var(--neon-cyan); font-weight: bold;">Pagado</td>
-                      </tr>
-                      <tr style="border-bottom: 1px solid var(--border-light);">
-                        <td style="padding: 12px 0;">INV-002</td>
-                        <td style="padding: 12px 0;">05/04/2026</td>
-                        <td style="padding: 12px 0;">Suscripción Creador Pro</td>
-                        <td style="padding: 12px 0;">$29.00 USD</td>
-                        <td style="padding: 12px 0; color: var(--neon-cyan); font-weight: bold;">Pagado</td>
-                      </tr>
-                    </tbody>
-                  </table>
+            <!-- Inspector alternativo: Propiedades del Texto -->
+            <div class="inspector-body" id="inspectorBodyText" style="display:none;">
+              <div class="inspector-form-group">
+                <label for="textFontSize">Tamaño de Fuente</label>
+                <div class="slider-group">
+                  <input type="range" id="textFontSize" min="12" max="64" step="2" value="28">
+                  <span id="valFontSize">28px</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
 
-        <!-- 2.9 POLÍTICAS LEGALES (POLICIES) VIEW PANEL -->
-        <section class="studio-view" id="view-policies">
-          <div class="view-header-description">
-            <p>Consulta nuestro marco regulatorio, las políticas de seguridad, las normas éticas de clonación de voz y las garantías de reembolso.</p>
-          </div>
-          
-          <div class="policies-container" style="display: flex; flex-direction: column; gap: 20px;">
-            <!-- Tab controllers for policies -->
-            <div class="tabs-header-hg">
-              <button class="hg-tab-btn active" data-tab="pol-privacy">Privacidad de Datos</button>
-              <button class="hg-tab-btn" data-tab="pol-refund">Políticas de Reembolso</button>
-              <button class="hg-tab-btn" data-tab="pol-ethics">Seguridad y Ética</button>
-            </div>
-            
-            <!-- Privacy Panel -->
-            <div class="hg-tab-content active" id="pol-privacy-panel">
-              <div class="glass-card" style="padding: 25px; line-height: 1.6; border-radius: 12px; border: 1px solid var(--border-light);">
-                <h3><i class="fa-solid fa-user-shield gradient-text"></i> Política de Privacidad de Synthetic Digital Labs</h3>
-                <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">Última actualización: 8 de Junio de 2026</p>
-                <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 15px 0;">
-                
-                <h4 style="margin-top: 15px; font-weight: bold;">1. Recopilación de Datos</h4>
-                <p style="color: var(--text-main); font-size: 0.95rem;">Recopilamos imágenes de rostros cargadas por el usuario para la creación de Photo Avatars, muestras de audio y grabaciones de voz para el módulo de clonación. Toda esta información se almacena localmente y de manera encriptada en nuestros servidores para el uso exclusivo del perfil creador.</p>
-                
-                <h4 style="margin-top: 15px; font-weight: bold;">2. Seguridad y Cifrado</h4>
-                <p style="color: var(--text-main); font-size: 0.95rem;">Utilizamos protocolos SSL/TLS estándar para la transmisión segura de archivos de audio y video. Los datos biométricos y de locución están protegidos mediante cifrado AES-256 de extremo a extremo, evitando accesos no autorizados.</p>
-                
-                <h4 style="margin-top: 15px; font-weight: bold;">3. Derechos del Usuario</h4>
-                <p style="color: var(--text-main); font-size: 0.95rem;">En estricto cumplimiento con las normativas internacionales de protección de datos (GDPR y CCPA), tienes derecho a ver, descargar y eliminar de forma definitiva cualquier avatar o voz clonada de tu biblioteca en cualquier momento.</p>
+              <div class="inspector-form-group">
+                <label for="textFontFamily">Estilo de Letra</label>
+                <select id="textFontFamily" class="inspector-select">
+                  <option value="'Inter', sans-serif">Inter (Sans-Serif)</option>
+                  <option value="'Outfit', sans-serif">Outfit (Modern Display)</option>
+                  <option value="Georgia, serif">Georgia (Elegante)</option>
+                  <option value="'Courier New', monospace">Courier (Código)</option>
+                </select>
               </div>
-            </div>
-            
-            <!-- Refund Panel -->
-            <div class="hg-tab-content" id="pol-refund-panel">
-              <div class="glass-card" style="padding: 25px; line-height: 1.6; border-radius: 12px; border: 1px solid var(--border-light);">
-                <h3><i class="fa-solid fa-hand-holding-dollar gradient-text"></i> Política de Reembolso y Garantía</h3>
-                <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">Última actualización: 8 de Junio de 2026</p>
-                <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 15px 0;">
-                
-                <h4 style="margin-top: 15px; font-weight: bold;">Garantía de Devolución de 14 Días</h4>
-                <p style="color: var(--text-main); font-size: 0.95rem;">En Synthetic Digital Labs queremos que estés completamente satisfecho con la calidad de nuestros avatares y voces sintéticas. Si por alguna razón la plataforma no cumple tus expectativas, puedes solicitar un reembolso total del importe del plan dentro de los primeros 14 días posteriores a la suscripción.</p>
-                
-                <h4 style="margin-top: 15px; font-weight: bold;">Condiciones del Reembolso:</h4>
-                <ul style="padding-left: 20px; color: var(--text-main); font-size: 0.95rem; margin: 10px 0; display: flex; flex-direction: column; gap: 5px;">
-                  <li>Haber consumido menos de 30 créditos del saldo total asignado en el plan.</li>
-                  <li>No haber realizado clonaciones neuronales de voz en el perfil durante el periodo de prueba.</li>
-                  <li>Enviar la solicitud formal a nuestro equipo a través del formulario de soporte técnico o al correo <strong>infoweb@syntheticdigitallab.com</strong>.</li>
-                </ul>
-                
-                <p style="margin-top: 15px; color: var(--text-main); font-size: 0.95rem;">Una vez aprobada la solicitud, el importe se reintegrará automáticamente en tu tarjeta de crédito o método de pago original en un plazo de 3 a 5 días hábiles.</p>
-              </div>
-            </div>
-            
-            <!-- Ethics Panel -->
-            <div class="hg-tab-content" id="pol-ethics-panel">
-              <div class="glass-card" style="padding: 25px; line-height: 1.6; border-radius: 12px; border: 1px solid var(--border-light);">
-                <h3><i class="fa-solid fa-scale-balanced gradient-text"></i> Declaración Ética y Directrices de Seguridad</h3>
-                <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">Última actualización: 8 de Junio de 2026</p>
-                <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 15px 0;">
-                
-                <h4 style="margin-top: 15px; font-weight: bold;">1. Uso Ético de la Inteligencia Artificial</h4>
-                <p style="color: var(--text-main); font-size: 0.95rem;">Nuestra plataforma está diseñada exclusivamente para la producción creativa de contenido educativo, marketing corporativo y entretenimiento. Queda terminantemente prohibida la generación de videos o clonación de voces que involucren suplantación de identidad sin autorización expresa de terceros, contenido difamatorio, noticias falsas o acoso.</p>
-                
-                <h4 style="margin-top: 15px; font-weight: bold;">2. Consentimiento de Voz Obligatorio</h4>
-                <p style="color: var(--text-main); font-size: 0.95rem;">Antes de clonar una voz, el usuario debe marcar la Declaración Jurada confirmando que posee los derechos legales de la voz sintetizada. El sistema registrará la dirección IP y la hora de aceptación del consentimiento como control de seguridad digital.</p>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <!-- 2.10 AYUDA Y RECURSOS (HELP & RESOURCES) VIEW PANEL -->
-        <section class="studio-view" id="view-resources">
-          <div class="view-header-description">
-            <p>Accede a guías interactivas, tutoriales paso a paso y contacta a soporte técnico para resolver cualquier problema.</p>
+              <div class="inspector-form-group">
+                <label for="textColorPicker">Color del Texto</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="color" id="textColorPicker" value="#ffffff" style="width:40px; height:34px; border:1px solid var(--border-color); border-radius:4px; padding:0; background:transparent;">
+                  <input type="text" id="textColorVal" class="inspector-input" value="#ffffff" readonly style="flex-grow:1;">
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn-outline-sm w-full" id="btnMoveTextFront"><i class="fa-solid fa-layer-group"></i> Traer al frente</button>
+                <button class="btn-outline-sm w-full" id="btnDeleteTextLayer" style="border-color:var(--accent-red); color:var(--accent-red);"><i class="fa-solid fa-trash"></i> Eliminar</button>
+              </div>
+            </div>
+
           </div>
-          
-          <div class="resources-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
-            <!-- Tutorials Card -->
-            <div class="glass-card" style="padding: 25px; border-radius: 12px; border: 1px solid var(--border-light);">
-              <h3><i class="fa-solid fa-circle-play gradient-text"></i> Video Tutoriales Rápidos</h3>
-              <p style="margin-bottom: 15px; color: var(--text-muted);">Aprende a dominar las funciones de SDL Studio en pocos minutos.</p>
-              
-              <div class="tutorial-list" style="display: flex; flex-direction: column; gap: 15px;">
-                <div class="tutorial-item-card" style="display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-light);">
-                  <div class="tut-thumb" style="width: 80px; height: 50px; background: #080517; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--neon-purple); border: 1px solid var(--border-light); cursor: pointer;"><i class="fa-solid fa-play"></i></div>
-                  <div class="tut-info">
-                    <h5 style="margin: 0; font-size: 0.9rem;">Cómo generar tu primer video con IA</h5>
-                    <span style="font-size: 0.75rem; color: var(--text-muted);">Duración: 2m 15s</span>
-                  </div>
+
+        </div>
+      </section>
+
+      <!-- --- 6. BIBLIOTECA VIEW --- -->
+      <section class="studio-view" id="view-library">
+        <div class="section-title-row" style="margin-bottom: 20px;">
+          <h2>Mi Biblioteca</h2>
+        </div>
+
+        <div class="hg-tabs-header">
+          <button class="hg-tab-btn active" data-tab="lib-videos-panel">Videos Creados</button>
+          <button class="hg-tab-btn" data-tab="lib-audios-panel">Audios de Voz</button>
+          <button class="hg-tab-btn" data-tab="lib-cloned-panel">Mis Voces Clonadas</button>
+          <button class="hg-tab-btn" data-tab="lib-avatars-panel">Mis Avatares</button>
+          <button class="hg-tab-btn" data-tab="lib-scripts-panel">Guiones Borradores</button>
+        </div>
+
+        <div class="hg-tab-panel active" id="lib-videos-panel">
+          <div class="hg-templates-grid" id="libraryVideosGrid">
+            <!-- Dynamic projects -->
+          </div>
+        </div>
+
+        <div class="hg-tab-panel" id="lib-audios-panel">
+          <div class="hg-templates-grid" id="libraryAudiosGrid">
+            <!-- Dynamic projects -->
+          </div>
+        </div>
+
+        <div class="hg-tab-panel" id="lib-cloned-panel">
+          <div class="hg-templates-grid" id="libraryClonedGrid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+            <!-- Dynamic items -->
+          </div>
+        </div>
+
+        <div class="hg-tab-panel" id="lib-avatars-panel">
+          <div class="hg-avatars-grid" id="libraryAvatarsGrid">
+            <!-- Dynamic items -->
+          </div>
+        </div>
+
+        <div class="hg-tab-panel" id="lib-scripts-panel">
+          <div class="hg-templates-grid" id="libraryScriptsGrid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+            <!-- Dynamic items -->
+          </div>
+        </div>
+      </section>
+
+      <!-- --- 7. SUSCRIPCIÓN VIEW --- -->
+      <section class="studio-view" id="view-pricing">
+        <div class="welcome-banner-hg" style="margin-bottom:30px;">
+          <div class="welcome-bg-glow" style="background: radial-gradient(circle, var(--accent-gold-glow) 0%, transparent 70%);"></div>
+          <div class="welcome-content" style="max-width: 800px;">
+            <h2 style="font-family:var(--font-display); font-size:1.8rem; font-weight:700; margin-bottom:10px;">Elige el plan ideal para escalar tu contenido</h2>
+            <p>Obtén créditos de video mensuales, voces ultrarrealistas y avatares premium HD personalizados.</p>
+          </div>
+        </div>
+
+        <div class="pricing-grid">
+          <!-- Plan 1 -->
+          <div class="pricing-card">
+            <span class="pc-name">Plan Gratuito</span>
+            <p class="pc-desc">Para probar avatares e interactividad del sistema.</p>
+            <div class="pc-price-row">
+              <span class="pc-price">$0</span>
+              <span class="pc-period">/ mensual</span>
+            </div>
+            <ul class="pc-features">
+              <li><i class="fa-solid fa-check"></i> 1 Crédito mensual gratis</li>
+              <li><i class="fa-solid fa-check"></i> Acceso a 4 Avatares Lite</li>
+              <li><i class="fa-solid fa-check"></i> Síntesis básica del navegador</li>
+            </ul>
+            <button class="btn-select-plan" disabled>Plan Activo</button>
+          </div>
+
+          <!-- Plan 2 -->
+          <div class="pricing-card premium">
+            <span class="pc-badge">MÁS POPULAR</span>
+            <span class="pc-name">Creador Pro</span>
+            <p class="pc-desc">Ideal para creadores y pequeñas empresas.</p>
+            <div class="pc-price-row">
+              <span class="pc-price">$29</span>
+              <span class="pc-period">/ mensual</span>
+            </div>
+            <ul class="pc-features">
+              <li><i class="fa-solid fa-check"></i> 15 Créditos mensuales</li>
+              <li><i class="fa-solid fa-check"></i> 16 Avatares Premium Pro</li>
+              <li><i class="fa-solid fa-check"></i> Clonación de voz ElevenLabs</li>
+              <li><i class="fa-solid fa-check"></i> Soporte prioritario</li>
+            </ul>
+            <button class="btn-select-plan" id="btnSelectCreatorPlan">Actualizar Plan</button>
+          </div>
+
+          <!-- Plan 3 -->
+          <div class="pricing-card">
+            <span class="pc-name">Business</span>
+            <p class="pc-desc">Para marketing a gran escala y agencias.</p>
+            <div class="pc-price-row">
+              <span class="pc-price">$89</span>
+              <span class="pc-period">/ mensual</span>
+            </div>
+            <ul class="pc-features">
+              <li><i class="fa-solid fa-check"></i> 50 Créditos mensuales</li>
+              <li><i class="fa-solid fa-check"></i> Todos los avatares e Instant Avatars</li>
+              <li><i class="fa-solid fa-check"></i> API D-ID integrada sin límites</li>
+              <li><i class="fa-solid fa-check"></i> Gestor de cuenta dedicado</li>
+            </ul>
+            <button class="btn-select-plan" id="btnSelectBusinessPlan">Comprar Plan</button>
+          </div>
+        </div>
+
+        <!-- Módulo de Checkout y Facturación simulado -->
+        <div class="voice-cloning-workspace" style="margin-top:40px;">
+          <div class="cloning-left-card">
+            <h3>Facturación y Tarjeta</h3>
+            <div class="inspector-form-group">
+              <label for="cardNumInput">Número de Tarjeta</label>
+              <input type="text" id="cardNumInput" class="inspector-input" placeholder="4000 1234 5678 9010" value="•••• •••• •••• 4580">
+            </div>
+            <div style="display:flex; gap:12px;">
+              <div class="inspector-form-group" style="flex-grow:1;">
+                <label for="cardExpInput">Expiración</label>
+                <input type="text" id="cardExpInput" class="inspector-input" placeholder="MM/AA" value="12/29">
+              </div>
+              <div class="inspector-form-group" style="flex-grow:1;">
+                <label for="cardCvcInput">CVV</label>
+                <input type="password" id="cardCvcInput" class="inspector-input" placeholder="123" value="•••">
+              </div>
+            </div>
+            <button class="btn-primary w-full" id="btnSaveCardDetails">Guardar Tarjeta</button>
+          </div>
+          <div class="cloning-right-card">
+            <h3>Historial de Facturas</h3>
+            <table style="width:100%; border-collapse:collapse; font-size:0.8rem; text-align:left;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted); font-weight:600;">
+                  <th style="padding:10px 5px;">Fecha</th>
+                  <th style="padding:10px 5px;">Concepto</th>
+                  <th style="padding:10px 5px;">Monto</th>
+                  <th style="padding:10px 5px;">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="invoiceTableBody">
+                <tr style="border-bottom:1px solid var(--border-color);">
+                  <td style="padding:10px 5px;">2026-06-01</td>
+                  <td style="padding:10px 5px;">Suscripción Plan Creador Pro</td>
+                  <td style="padding:10px 5px;">$29.00 USD</td>
+                  <td style="padding:10px 5px; color:var(--accent-green); font-weight:600;">Pagado</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-color);">
+                  <td style="padding:10px 5px;">2026-05-01</td>
+                  <td style="padding:10px 5px;">Suscripción Plan Creador Pro</td>
+                  <td style="padding:10px 5px;">$29.00 USD</td>
+                  <td style="padding:10px 5px; color:var(--accent-green); font-weight:600;">Pagado</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- 8. POLÍTICAS DE PRIVACIDAD / REEMBOLSO VIEW --- -->
+      <section class="studio-view" id="view-policies">
+        <div class="section-title-row" style="margin-bottom: 20px;">
+          <h2>Políticas Legales y Ética</h2>
+        </div>
+
+        <div class="hg-tabs-header">
+          <button class="hg-tab-btn active" data-tab="policy-privacy">Privacidad de Datos</button>
+          <button class="hg-tab-btn" data-tab="policy-refund">Políticas de Reembolso</button>
+          <button class="hg-tab-btn" data-tab="policy-ethics">Seguridad y Ética de IA</button>
+        </div>
+
+        <!-- Privacidad -->
+        <div class="hg-tab-panel active" id="policy-privacy">
+          <div class="cloning-left-card" style="width:100%;">
+            <h3>Declaración de Privacidad de Datos</h3>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted);">
+              En Studio SDL respetamos rigurosamente tu privacidad. Las grabaciones de voz enviadas a través del panel de clonación neuronal de ElevenLabs y las fotos cargadas para el Talking Photo de D-ID se transmiten de forma cifrada mediante protocolos seguros SSL.
+            </p>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted); margin-top:10px;">
+              No almacenamos de forma permanente tus archivos de audio ni los compartimos con terceros para el entrenamiento de modelos globales. Tus biométricos de clonación permanecen privados y bajo tu propiedad intelectual exclusiva.
+            </p>
+          </div>
+        </div>
+
+        <!-- Reembolso -->
+        <div class="hg-tab-panel" id="policy-refund">
+          <div class="cloning-left-card" style="width:100%;">
+            <h3>Políticas de Reembolso del Servicio</h3>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted);">
+              Ofrecemos una garantía de satisfacción y reembolso de 14 días. Si compraste un Plan Creador Pro o Business y no has gastado más de 2 créditos de video, puedes solicitar la devolución completa de tu dinero enviando un ticket al equipo de soporte.
+            </p>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted); margin-top:10px;">
+              Los créditos consumidos de forma real en APIs de renderizado externo (ElevenLabs/D-ID) son deducidos del saldo de reembolso proporcionalmente.
+            </p>
+          </div>
+        </div>
+
+        <!-- Ética -->
+        <div class="hg-tab-panel" id="policy-ethics">
+          <div class="cloning-left-card" style="width:100%;">
+            <h3>Pautas Éticas contra los Deepfakes</h3>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted);">
+              El uso inapropiado de tecnologías de generación de contenido sintético es una violación de nuestros Términos de Servicio. Queda prohibida la creación de presentadores falsos que utilicen imágenes de políticos, celebridades o cualquier persona que no haya otorgado su consentimiento explícito por escrito.
+            </p>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted); margin-top:10px;">
+              Monitoreamos de forma activa las palabras clave de los guiones redactados e invalidamos aquellas cuentas que propaguen noticias falsas (Fake News) o acoso digital.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- 9. AYUDA Y SOPORTE VIEW --- -->
+      <section class="studio-view" id="view-resources">
+        <div class="section-title-row" style="margin-bottom: 25px;">
+          <h2>Ayuda y Soporte Técnico</h2>
+        </div>
+
+        <div class="voice-cloning-workspace">
+          <div class="cloning-left-card">
+            <h3>Videotutoriales Rápidos</h3>
+            <div style="display:flex; flex-direction:column; gap:15px;">
+              <div style="display:flex; gap:12px; align-items:center;">
+                <i class="fa-solid fa-play-circle" style="font-size:2rem; color:var(--accent-purple);"></i>
+                <div>
+                  <strong style="font-size:0.85rem;">Cómo crear tu primer video de Avatar</strong>
+                  <p style="font-size:0.7rem; color:var(--text-muted);">Aprende a usar la línea de tiempo, arrastrar elementos y sincronizar el guión en 2 minutos.</p>
                 </div>
-                <div class="tutorial-item-card" style="display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-light);">
-                  <div class="tut-thumb" style="width: 80px; height: 50px; background: #080517; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--neon-cyan); border: 1px solid var(--border-light); cursor: pointer;"><i class="fa-solid fa-play"></i></div>
-                  <div class="tut-info">
-                    <h5 style="margin: 0; font-size: 0.9rem;">Guía avanzada para clonar voces con IA</h5>
-                    <span style="font-size: 0.75rem; color: var(--text-muted);">Duración: 4m 05s</span>
-                  </div>
+              </div>
+              <div style="display:flex; gap:12px; align-items:center;">
+                <i class="fa-solid fa-play-circle" style="font-size:2rem; color:var(--accent-purple);"></i>
+                <div>
+                  <strong style="font-size:0.85rem;">Clonando tu Voz de forma Óptima</strong>
+                  <p style="font-size:0.7rem; color:var(--text-muted);">Directrices de ecualización y eliminación de ruido de fondo para ElevenLabs.</p>
                 </div>
-                <div class="tutorial-item-card" style="display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-light);">
-                  <div class="tut-thumb" style="width: 80px; height: 50px; background: #080517; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--neon-purple); border: 1px solid var(--border-light); cursor: pointer;"><i class="fa-solid fa-play"></i></div>
-                  <div class="tut-info">
-                    <h5 style="margin: 0; font-size: 0.9rem;">Creación de avatares desde una foto real</h5>
-                    <span style="font-size: 0.75rem; color: var(--text-muted);">Duración: 3m 20s</span>
-                  </div>
-                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cloning-right-card">
+            <h3>Enviar Ticket de Soporte</h3>
+            <div class="inspector-form-group">
+              <label for="ticketSubject">Asunto del Mensaje</label>
+              <input type="text" id="ticketSubject" class="inspector-input" placeholder="Ej. Error de carga de archivo WAV">
+            </div>
+            <div class="inspector-form-group">
+              <label for="ticketMessage">Mensaje de Consulta</label>
+              <textarea id="ticketMessage" class="inspector-textarea" placeholder="Describe a detalle el problema técnico..."></textarea>
+            </div>
+            <button class="btn-primary w-full" id="btnSubmitSupportTicket"><i class="fa-solid fa-paper-plane"></i> Enviar Ticket</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- 10. AJUSTES (SETTINGS) VIEW --- -->
+      <section class="studio-view" id="view-settings">
+        <div class="section-title-row" style="margin-bottom: 25px;">
+          <h2>Configuración de la Cuenta</h2>
+        </div>
+
+        <div class="voice-cloning-workspace" style="grid-template-columns: 1fr;">
+          <div class="cloning-left-card">
+            <h3>Perfil de Usuario</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+              <div class="inspector-form-group">
+                <label for="settingsNameInput">Nombre Completo</label>
+                <input type="text" id="settingsNameInput" class="inspector-input" value="Usuario SDL">
+              </div>
+              <div class="inspector-form-group">
+                <label for="settingsEmailInput">Correo Electrónico</label>
+                <input type="email" id="settingsEmailInput" class="inspector-input" value="usuario@syntheticdigitallab.com">
               </div>
             </div>
             
-            <!-- Support Card -->
-            <div class="glass-card" style="padding: 25px; border-radius: 12px; border: 1px solid var(--border-light);">
-              <h3><i class="fa-solid fa-headset gradient-text"></i> Soporte Técnico Directo</h3>
-              <p style="margin-bottom: 15px; color: var(--text-muted);">¿Tienes alguna pregunta o necesitas ayuda especializada? Envíanos un mensaje directo.</p>
-              
-              <form id="studioSupportForm" style="display: flex; flex-direction: column; gap: 12px;">
-                <div class="form-group-sm">
-                  <label for="supportMsgTopic" style="display: block; margin-bottom: 5px; font-weight: 500;">Asunto</label>
-                  <select id="supportMsgTopic" class="form-select-sm" style="width: 100%;">
-                    <option value="credits">Problema con mis Créditos</option>
-                    <option value="rendering">Fallo al procesar un video</option>
-                    <option value="voice">Problema de Clonación de Voz</option>
-                    <option value="billing">Dudas con mi Factura</option>
-                  </select>
-                </div>
-                <div class="form-group-sm">
-                  <label for="supportMsgText" style="display: block; margin-bottom: 5px; font-weight: 500;">Detalles del problema</label>
-                  <textarea id="supportMsgText" class="form-textarea" placeholder="Describe lo que sucede..." style="width: 100%; height: 80px; resize: none;" required></textarea>
-                </div>
-                <button type="submit" class="btn-primary-sm w-full" style="margin-top: 5px;"><i class="fa-solid fa-paper-plane"></i> Enviar Mensaje de Soporte</button>
-              </form>
+            <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.85rem;">Saldo de Crédito Actual: <strong id="settingsCreditsVal" style="color:var(--accent-purple);">120 créditos</strong></span>
+              <button class="btn-primary" id="btnSaveProfileSettings"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
             </div>
           </div>
-        </section>
-      </main>
-    </div>
+        </div>
+      </section>
+
+    </main>
   </div>
 
-  <!-- Global Modal Overlay -->
-  <div class="studio-modal-overlay" id="globalModalOverlay">
-    <div class="studio-modal-box">
-      <i class="fa-solid fa-xmark modal-close-btn" id="globalModalCloseBtn"></i>
-      <div class="modal-icon" id="globalModalIcon"><i class="fa-solid fa-check"></i></div>
-      <h3 id="globalModalTitle">Operación Completada</h3>
-      <p id="globalModalMessage">El proceso de generación se ha realizado correctamente.</p>
-      <button class="btn-primary" id="globalModalActionBtn">Entendido</button>
-    </div>
-  </div>
-
-  <!-- Global Toast container -->
-  <div class="toast-container" id="toastContainer">
-    <!-- Toast notifications dynamically added here -->
-  </div>
-
-  <!-- ==========================================================================
-       GLOBAL VIRTUAL VOICE AGENT "NOVA" (Siri/Jarvis Style)
-       ========================================================================== -->
-  <!-- Nova Voice Assistant -->
-  <div id="novaAgent" class="nova-siri-container hidden" aria-live="polite">
-    <div class="nova-avatar-wrapper">
-      <img src="assets/avatar_nova.png" alt="Nova Robot Avatar" class="nova-robot-char">
-      <div class="nova-voice-waves">
-        <span class="wave-bar"></span>
-        <span class="wave-bar"></span>
-        <span class="wave-bar"></span>
-        <span class="wave-bar"></span>
-        <span class="wave-bar"></span>
+  <!-- ==========================================
+       MODAL DE RENDERIZACIÓN GLOBAL (LOADER)
+       ========================================== -->
+  <div class="global-modal-overlay" id="globalModalOverlay">
+    <div class="global-modal-card">
+      <div class="modal-icon" id="globalModalIcon">
+        <i class="fa-solid fa-spinner fa-spin"></i>
       </div>
-    </div>
-    <div class="nova-speech-bubble" id="novaBubble">
-      <span class="nova-bubble-text" id="novaBubbleText">¿En qué puedo ayudarte?</span>
-    </div>
-  </div>
-
-  <!-- Initial site consent for cookies + microphone -->
-  <div id="novaConsentPanel" class="nova-consent-panel" role="dialog" aria-modal="true" aria-labelledby="novaConsentTitle">
-    <div class="nova-consent-card">
-      <span class="nova-consent-orbit"></span>
-      <div class="nova-consent-copy">
-        <span class="nova-consent-eyebrow">Asistente IA disponible</span>
-        <h2 id="novaConsentTitle">Activa Nova al entrar</h2>
-        <p>Autoriza cookies y micrófono para hablar con Nova diciendo <strong>"Hey Nova"</strong>.</p>
-      </div>
-      <button id="novaConsentAccept" class="nova-consent-accept" type="button">
-        Aceptar cookies y micrófono
-      </button>
-      <span id="novaConsentStatus" class="nova-consent-status">Se abrirá el permiso del navegador.</span>
+      <h3 id="globalModalTitle">Procesando</h3>
+      <p id="globalModalMessage">Espere por favor, maquetando escena...</p>
+      <button class="btn-primary" id="globalModalActionBtn" style="display:none; width:100%;">Aceptar</button>
     </div>
   </div>
 
-  <!-- Scripts -->
-  <script src="main.js?v=2.3"></script>
+  <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JavaScript Modules -->
+  <script src="main.js?v=2.4" type="module"></script>
 </body>
 </html>

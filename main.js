@@ -1,5 +1,5 @@
 // ==========================================================================
-// SYNTHETIC DIGITAL LABS AI STUDIO - CORE JAVASCRIPT
+// STUDIO SDL AI - CORE JAVASCRIPT (HEYGEN CLONE 100% DESDE CERO)
 // ==========================================================================
 
 // --- DEFAULT STATE / DATABASE ---
@@ -44,45 +44,22 @@ const DEFAULT_PROJECTS = [
   { id: 'p-3', name: 'Guión Campaña Marketing', type: 'guion', date: '2026-06-05', duration: '60s', details: 'Persuasivo • Español', avatarImg: 'assets/logo.png' }
 ];
 
-// --- IN-MEMORY FALLBACK DATABASE ---
-const memoryStorage = {};
-const storageAvailable = (() => {
-  try {
-    localStorage.setItem('__storage_test__', 'test');
-    localStorage.removeItem('__storage_test__');
-    return true;
-  } catch (e) {
-    return false;
-  }
-})();
-
+// --- INITIALIZE STORAGE ---
 function safeGetItem(key, fallback = null) {
-  if (storageAvailable) {
-    try {
-      return localStorage.getItem(key) || fallback;
-    } catch (e) {
-      return memoryStorage[key] || fallback;
-    }
-  } else {
-    return memoryStorage[key] || fallback;
+  try {
+    return localStorage.getItem(key) || fallback;
+  } catch (e) {
+    return fallback;
   }
 }
-
 function safeSetItem(key, val) {
-  if (storageAvailable) {
-    try {
-      localStorage.setItem(key, val);
-    } catch (e) {
-      memoryStorage[key] = val;
-    }
-  } else {
-    memoryStorage[key] = val;
-  }
+  try {
+    localStorage.setItem(key, val);
+  } catch (e) {}
 }
 
-// --- INITIALIZE DATABASE ---
 function initLocalStorage() {
-  const currentDbVersion = 'v2.3';
+  const currentDbVersion = 'v2.4';
   const storedDbVersion = safeGetItem('sdl_db_version');
 
   if (storedDbVersion !== currentDbVersion) {
@@ -92,69 +69,27 @@ function initLocalStorage() {
     safeSetItem('sdl_credits', '120');
     safeSetItem('sdl_db_version', currentDbVersion);
   } else {
-    const avatars = safeGetItem('sdl_avatars');
-    if (!avatars) {
-      safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
-    } else {
-      try {
-        const parsed = JSON.parse(avatars);
-        if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id')) {
-          safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
-        }
-      } catch (e) {
-        safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
-      }
-    }
-
-    const voices = safeGetItem('sdl_voices');
-    if (!voices) {
-      safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
-    } else {
-      try {
-        const parsed = JSON.parse(voices);
-        if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id') || !parsed[0].hasOwnProperty('lang')) {
-          safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
-        }
-      } catch (e) {
-        safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
-      }
-    }
-
-    const projects = safeGetItem('sdl_projects');
-    if (!projects) {
-      safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
-    } else {
-      try {
-        const parsed = JSON.parse(projects);
-        if (!Array.isArray(parsed) || parsed.length === 0 || !parsed[0] || !parsed[0].hasOwnProperty('id')) {
-          safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
-        }
-      } catch (e) {
-        safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
-      }
-    }
+    if (!safeGetItem('sdl_avatars')) safeSetItem('sdl_avatars', JSON.stringify(DEFAULT_AVATARS));
+    if (!safeGetItem('sdl_voices')) safeSetItem('sdl_voices', JSON.stringify(DEFAULT_VOICES));
+    if (!safeGetItem('sdl_projects')) safeSetItem('sdl_projects', JSON.stringify(DEFAULT_PROJECTS));
   }
-
   if (!safeGetItem('sdl_credits')) safeSetItem('sdl_credits', '120');
   if (!safeGetItem('sdl_username')) safeSetItem('sdl_username', 'Usuario SDL');
   if (!safeGetItem('sdl_email')) safeSetItem('sdl_email', 'usuario@syntheticdigitallab.com');
 }
 initLocalStorage();
 
-// --- STATE HELPERS ---
 function getLocal(key) {
   try {
     const val = safeGetItem(key);
     if (!val) return [];
-    const parsed = JSON.parse(val);
-    return Array.isArray(parsed) ? parsed : [];
+    return JSON.parse(val) || [];
   } catch (e) {
-    console.error(`Error parsing key "${key}":`, e);
     return [];
   }
 }
-function setLocal(key, value) {
-  safeSetItem(key, JSON.stringify(value));
+function setLocal(key, val) {
+  safeSetItem(key, JSON.stringify(val));
 }
 function getCredits() {
   return parseInt(safeGetItem('sdl_credits')) || 120;
@@ -164,43 +99,97 @@ function setCredits(val) {
   updateCreditsDisplay();
 }
 
-// --- GLOBAL VARIABLES FOR EDITOR STATE ---
-let selectedAvatarId = 'av-sofia-biz';
-let selectedVoiceId = 'v-sofia';
+// --- GLOBAL STATE ---
+let activeView = 'dashboard';
 let selectedRatio = '16-9';
-let selectedBg = 'dark';
-let activeSpeechUtterance = null;
-let isSpeakingPreview = false;
 let isBackendOnline = false;
 let backendApiConfigured = { elevenLabsConfigured: false, dIdConfigured: false };
 let activeAudioElement = null;
+let activeSpeechUtterance = null;
+let isSpeakingPreview = false;
+
+// Webcam states
+let webcamStream = null;
+let instantAvatarRecorder = null;
+let webcamChunks = [];
+
+// Voice cloning states
 let mediaRecorder = null;
 let recordedChunks = [];
 let recordedAudioFile = null;
 
-async function checkBackendHealth() {
-  try {
-    const res = await fetch('http://localhost:3000/api/health');
-    if (res.ok) {
-      const data = await res.json();
-      isBackendOnline = data.status === 'online';
-      backendApiConfigured.elevenLabsConfigured = data.elevenLabsConfigured;
-      backendApiConfigured.dIdConfigured = data.dIdConfigured;
-      console.log('Backend connected. Configured APIs:', backendApiConfigured);
+// Multi-Scene Editor State
+let scenes = [
+  {
+    id: 's-' + Date.now(),
+    avatarId: 'av-sofia-biz',
+    voiceId: 'v-sofia',
+    script: 'Escribe tu guión aquí para esta escena.',
+    bg: 'dark',
+    duration: 5,
+    avatarPos: { top: 50, left: 50, width: 150, height: 150 },
+    textPos: { top: 15, left: 10, width: 300, height: 50, text: 'Mi Título de Escena', fontSize: 28, fontStyle: "'Inter', sans-serif", color: '#ffffff', display: 'none' }
+  }
+];
+let currentSceneIndex = 0;
+let activeSelectedLayer = 'avatar'; // 'avatar' or 'text' or null
+
+// --- TOAST NOTIFICATIONS ---
+function showToast(title, desc, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast-notification ${type} active`;
+  
+  let iconClass = 'fa-circle-check';
+  if (type === 'error') iconClass = 'fa-circle-exclamation';
+  if (type === 'info') iconClass = 'fa-circle-info';
+
+  toast.innerHTML = `
+    <i class="fa-solid ${iconClass}"></i>
+    <div class="toast-details">
+      <span class="toast-title">${title}</span>
+      <span class="toast-desc">${desc}</span>
+    </div>
+  `;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.remove('active');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+function showModal(title, msg, showConfirmButton = false, onConfirm = null) {
+  const overlay = document.getElementById('globalModalOverlay');
+  const titleEl = document.getElementById('globalModalTitle');
+  const msgEl = document.getElementById('globalModalMessage');
+  const actionBtn = document.getElementById('globalModalActionBtn');
+
+  if (overlay) {
+    titleEl.textContent = title;
+    msgEl.textContent = msg;
+    if (showConfirmButton) {
+      actionBtn.style.display = 'block';
+      actionBtn.textContent = 'Confirmar';
+      
+      const clickHandler = () => {
+        if (onConfirm) onConfirm();
+        overlay.classList.remove('active');
+        actionBtn.removeEventListener('click', clickHandler);
+      };
+      actionBtn.addEventListener('click', clickHandler);
     } else {
-      isBackendOnline = false;
+      actionBtn.style.display = 'none';
     }
-  } catch (err) {
-    isBackendOnline = false;
-    console.warn('Backend is offline. Using client-side simulation mocks.', err);
+    overlay.classList.add('active');
   }
 }
-checkBackendHealth();
 
-// --- UPDATE INTERFACE COUNTERS ---
 function updateCreditsDisplay() {
   const credits = getCredits();
-  const fillPct = (credits / 150) * 100;
+  const fillPct = Math.min(100, (credits / 150) * 100);
   
   const fillEl = document.getElementById('headerCreditsFill');
   const textEl = document.getElementById('headerCreditsText');
@@ -211,745 +200,611 @@ function updateCreditsDisplay() {
   if (settingsText) settingsText.textContent = `${credits} créditos`;
 }
 
-// --- TOAST NOTIFICATIONS & MODALS ---
-function showToast(title, desc, type = 'success') {
-  const container = document.getElementById('toastContainer');
-  if (!container) return;
-
-  const toast = document.createElement('div');
-  toast.className = `toast-notification ${type}`;
-  
-  let iconClass = 'fa-circle-check';
-  if (type === 'error') iconClass = 'fa-circle-exclamation';
-  if (type === 'info') iconClass = 'fa-circle-info';
-
-  toast.innerHTML = `
-    <i class="fa-solid ${iconClass} toast-icon"></i>
-    <div class="toast-info">
-      <span class="toast-title">${title}</span>
-      <span class="toast-desc">${desc}</span>
-    </div>
-    <i class="fa-solid fa-xmark toast-close"></i>
-  `;
-
-  container.appendChild(toast);
-  setTimeout(() => toast.classList.add('active'), 50);
-
-  const timer = setTimeout(() => slideOutAndRemove(toast), 4000);
-
-  toast.querySelector('.toast-close').addEventListener('click', () => {
-    clearTimeout(timer);
-    slideOutAndRemove(toast);
-  });
-}
-
-function slideOutAndRemove(el) {
-  el.classList.remove('active');
-  setTimeout(() => el.remove(), 400);
-}
-
-function showModal(title, message, isSuccess = true, callback = null) {
-  const overlay = document.getElementById('globalModalOverlay');
-  const icon = document.getElementById('globalModalIcon');
-  const titleEl = document.getElementById('globalModalTitle');
-  const msgEl = document.getElementById('globalModalMessage');
-  const actionBtn = document.getElementById('globalModalActionBtn');
-
-  if (!overlay) return;
-
-  titleEl.textContent = title;
-  msgEl.textContent = message;
-  
-  if (isSuccess) {
-    icon.className = 'modal-icon';
-    icon.innerHTML = '<i class="fa-solid fa-check"></i>';
-    actionBtn.className = 'btn-primary';
-  } else {
-    icon.className = 'modal-icon error';
-    icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-    actionBtn.className = 'btn-danger';
-  }
-
-  overlay.classList.add('active');
-
-  const closeHandler = () => {
-    overlay.classList.remove('active');
-    actionBtn.removeEventListener('click', closeHandler);
-    if (callback) callback();
-  };
-
-  actionBtn.addEventListener('click', closeHandler);
-}
-
-const globalModalCloseBtn = document.getElementById('globalModalCloseBtn');
-if (globalModalCloseBtn) {
-  globalModalCloseBtn.addEventListener('click', () => {
-    document.getElementById('globalModalOverlay').classList.remove('active');
-  });
-}
-
-// --- PART 1: PUBLIC LANDING PAGE INTERACTION ---
-
-// Neural Grid Canvas Animation
-const canvas = document.getElementById('neuralCanvas');
-if (canvas) {
-  const ctx = canvas.getContext('2d');
-  let points = [];
-  const maxPoints = 50;
-
-  function resizeCanvas() {
-    canvas.width = canvas.parentElement.offsetWidth;
-    canvas.height = canvas.parentElement.offsetHeight;
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  for (let i = 0; i < maxPoints; i++) {
-    points.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5
-    });
-  }
-
-  function animateNeural() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.04)';
-    ctx.fillStyle = 'rgba(189, 0, 255, 0.1)';
-
-    points.forEach((p, idx) => {
-      p.x += p.vx;
-      p.y += p.vy;
-
-      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-      ctx.fill();
-
-      for (let j = idx + 1; j < points.length; j++) {
-        const p2 = points[j];
-        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-        if (dist < 100) {
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
-        }
-      }
-    });
-
-    requestAnimationFrame(animateNeural);
-  }
-  animateNeural();
-}
-
-// Budget Calculator
-function calculateBudget() {
-  const calcWeb = document.getElementById('calcWeb');
-  const calcApp = document.getElementById('calcApp');
-  const calcLogo = document.getElementById('calcLogo');
-  const calcMarketing = document.getElementById('calcMarketing');
-  const calcHosting = document.getElementById('calcHosting');
-
-  let price = 0;
-  let days = 0;
-
-  if (calcWeb && calcWeb.checked) { price += 150; days = Math.max(days, 1); }
-  if (calcApp && calcApp.checked) { price += 500; days = Math.max(days, 14); }
-  if (calcLogo && calcLogo.checked) { price += 80; days = Math.max(days, 2); }
-  if (calcMarketing && calcMarketing.checked) { price += 70; days = Math.max(days, 3); }
-  if (calcHosting && calcHosting.checked) { price += 50; days = Math.max(days, 1); }
-
-  const priceEl = document.getElementById('calcTotalPrice');
-  const timeEl = document.getElementById('calcTotalTime');
-
-  if (priceEl) priceEl.textContent = `$${price} USD`;
-  if (timeEl) timeEl.textContent = days === 1 ? '24 Horas' : `${days} Días`;
-}
-
-document.querySelectorAll('.calc-checkbox-group input').forEach(box => {
-  box.addEventListener('change', calculateBudget);
-});
-calculateBudget();
-
-const calcRequestBtn = document.getElementById('calcRequestBtn');
-if (calcRequestBtn) {
-  calcRequestBtn.addEventListener('click', () => {
-    showToast('Presupuesto solicitado', 'Hemos pre-cargado tus opciones en el formulario de contacto.', 'info');
-    const contactSection = document.getElementById('contacto');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+// --- HEALTH CHECK ON START ---
+async function checkBackendHealth() {
+  try {
+    const res = await fetch('http://localhost:3000/api/health');
+    if (res.ok) {
+      const data = await res.json();
+      isBackendOnline = data.status === 'online';
+      backendApiConfigured.elevenLabsConfigured = data.elevenLabsConfigured;
+      backendApiConfigured.dIdConfigured = data.dIdConfigured;
+      console.log('Backend proxy connected. Configured APIs:', backendApiConfigured);
+    } else {
+      isBackendOnline = false;
     }
-  });
-}
-
-// Mobile Menu toggler
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const mobileMenu = document.getElementById('mobileMenu');
-if (mobileMenuBtn && mobileMenu) {
-  mobileMenuBtn.addEventListener('click', () => {
-    mobileMenu.classList.toggle('active');
-  });
-}
-document.querySelectorAll('.mobile-link').forEach(link => {
-  link.addEventListener('click', () => {
-    if (mobileMenu) mobileMenu.classList.remove('active');
-  });
-});
-
-// FAQ Accordion
-document.querySelectorAll('.faq-trigger').forEach(trigger => {
-  trigger.addEventListener('click', () => {
-    const parent = trigger.parentElement;
-    parent.classList.toggle('active');
-  });
-});
-
-// Contact Form Submit
-const contactForm = document.getElementById('contactForm');
-const contactFormStatus = document.getElementById('contactFormStatus');
-if (contactForm) {
-  contactForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    contactForm.reset();
-    showModal('Mensaje Enviado', 'Gracias por escribirnos. Uno de nuestros consultores de IA se pondrá en contacto contigo en breve.', true);
-  });
-}
-
-
-// --- PART 2: AI STUDIO (HEYGEN WORKSPACE CLONE) ---
-
-const publicLanding = document.getElementById('public-landing');
-const studioApp = document.getElementById('ai-studio-app');
-const menuItems = document.querySelectorAll('.menu-item');
-const studioViews = document.querySelectorAll('.studio-view');
-const viewTitle = document.getElementById('studioViewTitle');
-
-// Navigation triggers
-function enterStudio(targetView = 'dashboard') {
-  if (publicLanding) publicLanding.style.display = 'none';
-  if (studioApp) {
-    studioApp.style.display = 'flex';
-    studioApp.classList.add('active');
+  } catch (err) {
+    isBackendOnline = false;
+    console.warn('Backend is offline. Using client-side simulation mocks.', err);
   }
-  window.scrollTo({ top: 0, behavior: 'instant' });
-  switchView(targetView);
+}
+checkBackendHealth();
+
+// --- THEME MANAGEMENT ---
+function initTheme() {
+  const savedTheme = safeGetItem('theme') || 'light';
+  document.body.className = savedTheme === 'dark' ? 'dark-theme' : 'light-theme';
   
-  // Implicitly load databases
-  updateCreditsDisplay();
-  renderHomeWidgets();
-  renderTemplatesGrid();
-  renderAvatarsGrid();
-  renderVoicesLibrary();
-  renderLibrary();
-  
-  showToast('¡Bienvenido al AI Studio!', 'Espacio de trabajo listo', 'info');
+  const themeToggle = document.getElementById('themeToggleBtn');
+  if (themeToggle) {
+    themeToggle.innerHTML = savedTheme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+  }
 }
 
-function exitStudio() {
-  if (studioApp) studioApp.classList.remove('active');
-  if (studioApp) studioApp.style.display = 'none';
-  if (publicLanding) publicLanding.style.display = 'block';
-  window.scrollTo({ top: 0, behavior: 'instant' });
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const isDark = document.body.classList.contains('dark-theme');
+    const newTheme = isDark ? 'light' : 'dark';
+    document.body.className = newTheme === 'dark' ? 'dark-theme' : 'light-theme';
+    safeSetItem('theme', newTheme);
+    themeToggleBtn.innerHTML = newTheme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    showToast('Tema Cambiado', `Se ha activado el Modo ${newTheme === 'dark' ? 'Oscuro' : 'Claro'}`, 'info');
+  });
 }
 
-function switchView(viewName) {
-  menuItems.forEach(item => {
-    if (item.dataset.view === viewName) item.classList.add('active');
+// --- VIEW NAVIGATION ENGINE ---
+function switchView(targetView) {
+  activeView = targetView;
+  
+  // Close speaking and previews
+  stopTTSPreview();
+
+  // Hide all views, display target
+  document.querySelectorAll('.studio-view').forEach(view => {
+    view.classList.remove('active');
+  });
+  
+  const activePanel = document.getElementById(`view-${targetView}`);
+  if (activePanel) activePanel.classList.add('active');
+
+  // Update navigation items active state
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.dataset.view === targetView) item.classList.add('active');
     else item.classList.remove('active');
   });
 
-  studioViews.forEach(view => {
-    if (view.id === `view-${viewName}`) view.classList.add('active');
-    else view.classList.remove('active');
-  });
-
-  const formattedTitle = viewName.charAt(0).toUpperCase() + viewName.slice(1);
-  if (viewTitle) {
-    if (viewName === 'dashboard') viewTitle.textContent = 'Inicio';
-    else if (viewName === 'voices') viewTitle.textContent = 'Biblioteca de Voces';
-    else if (viewName === 'editor') viewTitle.textContent = 'Editor de Video Canvas';
-    else if (viewName === 'library') viewTitle.textContent = 'Biblioteca y Proyectos';
-    else if (viewName === 'pricing') viewTitle.textContent = 'Planes y Precios';
-    else if (viewName === 'policies') viewTitle.textContent = 'Políticas Legales';
-    else if (viewName === 'resources') viewTitle.textContent = 'Ayuda y Recursos';
-    else viewTitle.textContent = formattedTitle;
+  // Toggle editor body sizing and layout logic
+  if (targetView === 'editor') {
+    document.querySelector('.sidebar-navigation').style.display = 'none';
+    syncEditorPresets();
+  } else {
+    document.querySelector('.sidebar-navigation').style.display = 'flex';
   }
+
+  // Trigger render functions
+  if (targetView === 'dashboard') renderHomeWidgets();
+  if (targetView === 'templates') renderTemplatesLibrary();
+  if (targetView === 'avatars') renderAvatarsGrid();
+  if (targetView === 'voices') renderVoicesLibrary();
+  if (targetView === 'library') renderLibrary();
+
+  // Close create video dropdown
+  const dropdown = document.getElementById('createVideoDropdown');
+  if (dropdown) dropdown.classList.remove('active');
 }
 
-// Navigation event bindings
-document.querySelectorAll('.btn-enter-studio').forEach(btn => {
-  btn.addEventListener('click', () => enterStudio('dashboard'));
-});
-document.querySelectorAll('.btn-exit-studio').forEach(btn => {
-  btn.addEventListener('click', exitStudio);
-});
-menuItems.forEach(item => {
+// Bind navigation sidebar
+document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     switchView(item.dataset.view);
-    const sidebar = document.getElementById('studioSidebar');
-    if (sidebar) sidebar.classList.remove('open');
   });
 });
 
-// Mobile toggle Sidebar
-const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
-const studioSidebar = document.getElementById('studioSidebar');
-if (mobileSidebarToggle && studioSidebar) {
-  mobileSidebarToggle.addEventListener('click', () => {
-    studioSidebar.classList.toggle('open');
-  });
-}
-
-// Public tools section CTA buttons
-document.querySelectorAll('.btn-go-tool').forEach(btn => {
-  btn.addEventListener('click', () => {
-    enterStudio(btn.dataset.tool);
-  });
-});
-
-// Shortcut button helper
+// Shortcut buttons
 document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.btn-shortcut');
-  if (btn) {
-    const target = btn.dataset.target;
-    switchView(target);
-    
-    // Check if aspect ratio is specified (for quick horizontal/vertical start)
-    if (btn.dataset.aspect) {
-      setRatio(btn.dataset.aspect);
+  const shortcut = e.target.closest('.btn-shortcut');
+  if (shortcut) {
+    const target = shortcut.dataset.target;
+    if (target === 'editor') {
+      const aspect = shortcut.dataset.aspect || '16-9';
+      setRatio(aspect);
+      // Initialize a clean default scene
+      scenes = [
+        {
+          id: 's-' + Date.now(),
+          avatarId: 'av-sofia-biz',
+          voiceId: 'v-sofia',
+          script: 'Hola, bienvenidos a este nuevo video generado con Inteligencia Artificial.',
+          bg: 'dark',
+          duration: 5,
+          avatarPos: { top: 50, left: 50, width: 150, height: 150 },
+          textPos: { top: 15, left: 10, width: 300, height: 50, text: 'Mi Título de Escena', fontSize: 28, fontStyle: "'Inter', sans-serif", color: '#ffffff', display: 'none' }
+        }
+      ];
+      currentSceneIndex = 0;
+      activeSelectedLayer = 'avatar';
     }
+    switchView(target);
   }
 });
 
-// --- RENDER: HOME WIDGETS ---
-function renderHomeWidgets() {
-  const templatesGrid = document.getElementById('dashTemplatesGrid');
-  const avatarsGrid = document.getElementById('dashAvatarsGrid');
-  const avatars = getLocal('sdl_avatars') || [];
+// Create video toggle button dropdown
+const btnCreateVideoToggle = document.getElementById('btnCreateVideoToggle');
+if (btnCreateVideoToggle) {
+  btnCreateVideoToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dropdown = document.getElementById('createVideoDropdown');
+    if (dropdown) dropdown.classList.toggle('active');
+  });
+}
+document.addEventListener('click', () => {
+  const dropdown = document.getElementById('createVideoDropdown');
+  if (dropdown) dropdown.classList.remove('active');
+});
 
-  // 1. Featured templates
-  if (templatesGrid) {
-    templatesGrid.innerHTML = '';
-    DEFAULT_TEMPLATES.forEach(temp => {
+// --- HOME WIDGETS RENDERING ---
+function renderHomeWidgets() {
+  const dashTemplates = document.getElementById('dashTemplatesGrid');
+  const dashAvatars = document.getElementById('dashAvatarsGrid');
+
+  if (dashTemplates) {
+    dashTemplates.innerHTML = '';
+    DEFAULT_TEMPLATES.slice(0, 3).forEach(temp => {
       const card = document.createElement('div');
       card.className = 'template-card';
       card.innerHTML = `
-        <div class="temp-thumb-wrapper">
-          <img src="${temp.id === 'temp-corp' ? 'thumbs/temp_corp.png' : (temp.id === 'temp-sales' ? 'thumbs/temp_sales.png' : (temp.id === 'temp-edu' ? 'thumbs/temp_edu.png' : 'thumbs/temp_news.png'))}" alt="${temp.name}">
-          <span class="temp-aspect-badge">${temp.aspect}</span>
-          <div class="temp-play-hover"><i class="fa-solid fa-circle-play"></i></div>
+        <div class="proj-thumb-box">
+          <i class="fa-solid fa-wand-magic-sparkles proj-media-icon"></i>
+          <span class="proj-duration">${temp.aspect}</span>
         </div>
-        <div class="temp-info">
-          <h4>${temp.name}</h4>
-          <span>${temp.tag}</span>
+        <div class="proj-info">
+          <h4 class="proj-title">${temp.name}</h4>
+          <span class="proj-date">${temp.tag}</span>
+          <button class="btn-primary-sm btn-load-temp" data-id="${temp.id}">Usar Plantilla</button>
         </div>
       `;
-      card.addEventListener('click', () => loadTemplate(temp));
-      templatesGrid.appendChild(card);
+      dashTemplates.appendChild(card);
     });
   }
 
-  // 2. Featured avatars
-  if (avatarsGrid) {
-    avatarsGrid.innerHTML = '';
+  if (dashAvatars) {
+    dashAvatars.innerHTML = '';
+    const avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
     avatars.slice(0, 4).forEach(av => {
       const card = document.createElement('div');
       card.className = 'avatar-card';
       card.innerHTML = `
         <div class="av-thumb-wrapper">
           <img src="${av.img}" alt="${av.name}">
-          <span class="av-lang-badge">${av.lang}</span>
-          <div class="av-play-hover"><i class="fa-solid fa-play"></i></div>
         </div>
         <div class="av-info-bar">
           <h4>${av.name}</h4>
           <span>${av.style}</span>
         </div>
       `;
-      card.addEventListener('click', () => selectAvatarForEditor(av.id));
-      avatarsGrid.appendChild(card);
+      card.addEventListener('click', () => {
+        // Load clean editor with this avatar
+        scenes[0].avatarId = av.id;
+        switchView('editor');
+      });
+      dashAvatars.appendChild(card);
     });
   }
 }
 
-// --- RENDER: TEMPLATES GRID ---
-function renderTemplatesGrid() {
-  const grid = document.getElementById('templatesGrid');
+// --- TEMPLATES LIBRARY ---
+function renderTemplatesLibrary() {
+  const grid = document.getElementById('allTemplatesGrid');
   if (!grid) return;
-
+  
   grid.innerHTML = '';
   DEFAULT_TEMPLATES.forEach(temp => {
     const card = document.createElement('div');
     card.className = 'template-card';
     card.innerHTML = `
-      <div class="temp-thumb-wrapper">
-        <img src="${temp.id === 'temp-corp' ? 'thumbs/temp_corp.png' : (temp.id === 'temp-sales' ? 'thumbs/temp_sales.png' : (temp.id === 'temp-edu' ? 'thumbs/temp_edu.png' : 'thumbs/temp_news.png'))}" alt="${temp.name}">
-        <span class="temp-aspect-badge">${temp.aspect}</span>
-        <div class="temp-play-hover"><i class="fa-solid fa-circle-play"></i></div>
+      <div class="proj-thumb-box">
+        <i class="fa-solid fa-wand-magic-sparkles proj-media-icon"></i>
+        <span class="proj-duration">${temp.aspect}</span>
       </div>
-      <div class="temp-info">
-        <h4>${temp.name}</h4>
-        <span>${temp.tag}</span>
+      <div class="proj-info">
+        <h4 class="proj-title">${temp.name}</h4>
+        <span class="proj-date">${temp.tag}</span>
+        <button class="btn-primary-sm btn-load-temp" data-id="${temp.id}">Usar Plantilla</button>
       </div>
     `;
-    card.addEventListener('click', () => loadTemplate(temp));
     grid.appendChild(card);
   });
 }
 
-function loadTemplate(temp) {
-  selectedAvatarId = temp.avatar;
-  selectedVoiceId = temp.voice;
-  setRatio(temp.aspect);
-  
-  // Fill script
-  const textarea = document.getElementById('editorScriptTextarea');
-  if (textarea) textarea.value = temp.script;
+// Load template click handler
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-load-temp');
+  if (btn) {
+    const tempId = btn.dataset.id;
+    const temp = DEFAULT_TEMPLATES.find(t => t.id === tempId);
+    if (temp) {
+      setRatio(temp.aspect);
+      scenes = [
+        {
+          id: 's-' + Date.now(),
+          avatarId: temp.avatar,
+          voiceId: temp.voice,
+          script: temp.script,
+          bg: 'dark',
+          duration: 6,
+          avatarPos: { top: 50, left: 50, width: 150, height: 150 },
+          textPos: { top: 15, left: 10, width: 300, height: 50, text: temp.name, fontSize: 26, fontStyle: "'Inter', sans-serif", color: '#ffffff', display: 'block' }
+        }
+      ];
+      currentSceneIndex = 0;
+      activeSelectedLayer = 'avatar';
+      switchView('editor');
+      showToast('Plantilla Cargada', `Se cargó "${temp.name}" en el lienzo.`, 'success');
+    }
+  }
+});
 
-  switchView('editor');
-  syncEditorPresets();
-  showToast('Plantilla Cargada', `"${temp.name}" cargada en el lienzo.`, 'success');
-}
-
-let activeAvatarSubTab = 'all';
-
-// --- RENDER: AVATARS GRID ---
+// --- AVATARS LIBRARY & WEB RECORDING ---
+let selectedAvatarFilter = 'all';
 function renderAvatarsGrid() {
-  const grid = document.getElementById('studioAvatarsGrid');
+  const grid = document.getElementById('allAvatarsGrid');
   if (!grid) return;
 
-  let avatars = getLocal('sdl_avatars') || [];
   grid.innerHTML = '';
+  const avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+  
+  const filtered = avatars.filter(av => {
+    if (selectedAvatarFilter === 'all') return true;
+    return av.category === selectedAvatarFilter;
+  });
 
-  // Filter based on active sub-tab (Avatar Lite, Avatar Pro, Talking Photo)
-  if (activeAvatarSubTab !== 'all') {
-    avatars = avatars.filter(av => av.category === activeAvatarSubTab);
-  }
-
-  avatars.forEach(av => {
+  filtered.forEach(av => {
     const card = document.createElement('div');
     card.className = 'avatar-card';
     card.innerHTML = `
       <div class="av-thumb-wrapper">
         <img src="${av.img}" alt="${av.name}">
-        <span class="av-lang-badge">${av.lang}</span>
-        <div class="av-play-hover"><i class="fa-solid fa-play"></i></div>
       </div>
       <div class="av-info-bar">
         <h4>${av.name}</h4>
         <span>${av.style}</span>
       </div>
     `;
-    card.addEventListener('click', () => selectAvatarForEditor(av.id));
+    card.addEventListener('click', () => {
+      scenes[0].avatarId = av.id;
+      switchView('editor');
+    });
     grid.appendChild(card);
   });
 }
 
-function selectAvatarForEditor(id) {
-  selectedAvatarId = id;
-  switchView('editor');
-  syncEditorPresets();
-  showToast('Avatar Seleccionado', 'Cargado en el lienzo de trabajo.', 'info');
-}
-
-// --- PHOTO AVATAR GENERATION ---
-const avatarUploadZone = document.getElementById('avatarUploadZone');
-const avatarImageInput = document.getElementById('avatarImageInput');
-const avatarFileName = document.getElementById('avatarFileName');
-const avatarNameInput = document.getElementById('avatarNameInput');
-const avatarPreviewImg = document.getElementById('avatarPreviewImg');
-
-let loadedAvatarFileUrl = 'assets/avatar_sofia.png';
-
-if (avatarUploadZone && avatarImageInput) {
-  avatarUploadZone.addEventListener('click', () => avatarImageInput.click());
-  avatarImageInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (avatarFileName) avatarFileName.textContent = file.name;
-      loadedAvatarFileUrl = URL.createObjectURL(file);
-      if (avatarPreviewImg) avatarPreviewImg.src = loadedAvatarFileUrl;
-    }
-  });
-}
-
-const photoForm = document.getElementById('avatarCreationForm');
-if (photoForm) {
-  photoForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const credits = getCredits();
-    if (credits < 10) {
-      showModal('Créditos Insuficientes', 'Requiere al menos 10 créditos para crear un avatar fotográfico.', false);
-      return;
-    }
-
-    const name = avatarNameInput.value.trim();
-    if (!name) return;
-
-    // Deduct and save
-    setCredits(credits - 10);
-    const newAvatar = {
-      id: 'av-' + Date.now(),
-      name,
-      style: 'Foto de Retrato',
-      lang: 'Español (ES)',
-      img: loadedAvatarFileUrl,
-      desc: 'Avatar animado a partir de fotografía.'
-    };
-
-    const list = getLocal('sdl_avatars') || [];
-    list.push(newAvatar);
-    setLocal('sdl_avatars', list);
-
-    showToast('Avatar Animado Listo', `"${name}" se ha añadido a la biblioteca.`, 'success');
+// Avatar filters binding
+document.querySelectorAll('.btn-filter-av').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-filter-av').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedAvatarFilter = btn.dataset.filter;
     renderAvatarsGrid();
-    renderHomeWidgets();
-    photoForm.reset();
-    if (avatarFileName) avatarFileName.textContent = '';
+  });
+});
+
+// Instant Avatar Webcam mockup/real flow
+const btnToggleWebcam = document.getElementById('btnToggleWebcam');
+const btnStartInstantAvatar = document.getElementById('btnStartInstantAvatar');
+const webcamVideo = document.getElementById('webcamVideo');
+const webcamPlaceholder = document.getElementById('webcamPlaceholder');
+const instantAvatarEthicsCheck = document.getElementById('instantAvatarEthicsCheck');
+
+if (instantAvatarEthicsCheck) {
+  instantAvatarEthicsCheck.addEventListener('change', () => {
+    if (webcamStream) {
+      btnStartInstantAvatar.disabled = !instantAvatarEthicsCheck.checked;
+    }
   });
 }
 
-// --- INSTANT AVATAR WEBCAM SIMULATOR ---
-const btnStartInstantAvatar = document.getElementById('btnStartInstantAvatar');
-const instantAvatarStartCard = document.getElementById('instantAvatarStartCard');
-const instantAvatarRecordingCard = document.getElementById('instantAvatarRecordingCard');
-const recordingStatusText = document.getElementById('recordingStatusText');
-const recordingProgressFill = document.getElementById('recordingProgressFill');
-const recordingTimerVal = document.getElementById('recordingTimerVal');
+if (btnToggleWebcam) {
+  btnToggleWebcam.addEventListener('click', () => {
+    if (!webcamStream) {
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(stream => {
+          webcamStream = stream;
+          webcamVideo.srcObject = stream;
+          webcamVideo.style.display = 'block';
+          webcamPlaceholder.style.display = 'none';
+          btnToggleWebcam.innerHTML = '<i class="fa-solid fa-video-slash"></i> Desactivar Cámara';
+          btnStartInstantAvatar.disabled = !instantAvatarEthicsCheck.checked;
+          showToast('Cámara Activa', 'Permisos concedidos con éxito.', 'success');
+        })
+        .catch(err => {
+          console.warn('Webcam permission denied or error:', err);
+          showToast('Acceso Denegado', 'No se pudo acceder a tu cámara o micrófono.', 'error');
+        });
+    } else {
+      stopWebcamStream();
+    }
+  });
+}
+
+function stopWebcamStream() {
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(track => track.stop());
+    webcamStream = null;
+  }
+  webcamVideo.style.display = 'none';
+  webcamVideo.srcObject = null;
+  webcamPlaceholder.style.display = 'flex';
+  btnToggleWebcam.innerHTML = '<i class="fa-solid fa-camera"></i> Activar Cámara';
+  btnStartInstantAvatar.disabled = true;
+}
 
 if (btnStartInstantAvatar) {
   btnStartInstantAvatar.addEventListener('click', () => {
     const credits = getCredits();
-    if (credits < 30) {
-      showModal('Créditos Insuficientes', 'Requiere al menos 30 créditos para generar un avatar instantáneo con cámara web.', false);
+    if (credits < 40) {
+      showModal('Créditos Insuficientes', 'Requieres al menos 40 créditos para grabar un Instant Avatar.', false);
       return;
     }
 
-    if (instantAvatarStartCard && instantAvatarRecordingCard) {
-      instantAvatarStartCard.style.display = 'none';
-      instantAvatarRecordingCard.style.display = 'flex';
-      
-      let sec = 0;
-      let progress = 0;
-      if (recordingStatusText) recordingStatusText.textContent = 'Inicializando cámara y audio...';
-      if (recordingProgressFill) {
-        recordingProgressFill.style.width = '0%';
-        recordingProgressFill.style.background = 'var(--neon-cyan)';
-      }
-      if (recordingTimerVal) recordingTimerVal.textContent = '0:00';
+    const recIndicator = document.getElementById('recordingIndicator');
+    const timerEl = document.getElementById('webcamTimer');
+    
+    if (recIndicator) recIndicator.style.display = 'flex';
+    if (timerEl) timerEl.style.display = 'block';
+    btnStartInstantAvatar.disabled = true;
+    btnToggleWebcam.disabled = true;
 
-      // Phase 1: connecting camera (1.5 seconds)
-      setTimeout(() => {
-        if (recordingStatusText) recordingStatusText.textContent = 'Grabando presentador... Hable de forma natural.';
+    // Start recording audio/video chunks
+    webcamChunks = [];
+    if (webcamStream) {
+      instantAvatarRecorder = new MediaRecorder(webcamStream);
+      instantAvatarRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) webcamChunks.push(e.data);
+      };
+      instantAvatarRecorder.start();
+    }
+
+    let seconds = 5;
+    timerEl.textContent = `0:0${seconds}`;
+    
+    const countInterval = setInterval(() => {
+      seconds--;
+      timerEl.textContent = `0:0${seconds}`;
+      if (seconds <= 0) {
+        clearInterval(countInterval);
         
-        const interval = setInterval(() => {
-          sec += 1;
-          progress = (sec / 5) * 100;
-          
-          if (recordingProgressFill) recordingProgressFill.style.width = `${progress}%`;
-          if (recordingTimerVal) recordingTimerVal.textContent = `0:0${sec}`;
-          
-          if (sec >= 5) {
-            clearInterval(interval);
-            
-            // Phase 2: Processing avatar (2 seconds)
-            if (recordingStatusText) recordingStatusText.textContent = 'Procesando gesticulaciones corporales...';
-            if (recordingProgressFill) {
-              recordingProgressFill.style.width = '100%';
-              recordingProgressFill.style.background = 'var(--neon-purple)';
-            }
-            
-            setTimeout(() => {
-              // Deduct credits and save
-              setCredits(credits - 30);
-              
-              const newAvatar = {
-                id: 'av-' + Date.now(),
-                name: 'Mi Avatar Grabado (Webcam)',
-                style: 'Instant Avatar',
-                lang: 'Español (ES)',
-                img: 'assets/avatar_sofia.png',
-                desc: 'Clon digital generado a partir de webcam.'
-              };
+        // Stop recording
+        if (instantAvatarRecorder && instantAvatarRecorder.state !== 'inactive') {
+          instantAvatarRecorder.stop();
+        }
 
-              const list = getLocal('sdl_avatars') || [];
-              list.push(newAvatar);
-              setLocal('sdl_avatars', list);
+        if (recIndicator) recIndicator.style.display = 'none';
+        if (timerEl) timerEl.style.display = 'none';
+        btnToggleWebcam.disabled = false;
+        
+        stopWebcamStream();
 
-              showToast('Avatar Generado', '"Mi Avatar Grabado" listo en biblioteca.', 'success');
-              
-              // Reset UI views
-              instantAvatarStartCard.style.display = 'flex';
-              instantAvatarRecordingCard.style.display = 'none';
-              
-              // Refresh views
-              renderAvatarsGrid();
-              renderHomeWidgets();
-              
-              // Take back to the dashboard or update lists
-              updateDashboardStats();
-            }, 2000);
-          }
-        }, 1000);
-      }, 1500);
+        // Process mockup
+        showModal('Procesando Clon Digital', 'Sintetizando malla facial 3D y alineando características...', false);
+        
+        setTimeout(() => {
+          // Add custom avatar
+          const newAv = {
+            id: 'av-' + Date.now(),
+            name: 'Mi Avatar Grabado (Webcam)',
+            category: 'Avatar Pro',
+            style: 'Avatar Pro',
+            lang: 'Español (ES)',
+            img: 'assets/avatar_nova.png', // Fallback template avatar representation
+            desc: 'Clon facial grabado por webcam en tiempo real.'
+          };
+
+          const current = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+          current.push(newAv);
+          setLocal('sdl_avatars', current);
+
+          setCredits(credits - 40);
+          
+          document.getElementById('globalModalOverlay').classList.remove('active');
+          showToast('Clon Creado', 'Tu Instant Avatar ya está disponible en la lista de presentadores.', 'success');
+          
+          // Switch to list tab
+          document.querySelector('[data-tab="avatar-panel-studio"]').click();
+          renderAvatarsGrid();
+        }, 3000);
+      }
+    }, 1000);
+  });
+}
+
+// Talking Photo upload and submit flow
+const photoUploadZone = document.getElementById('photoUploadZone');
+const photoFileInput = document.getElementById('photoFileInput');
+const photoFileName = document.getElementById('photoFileName');
+const photoAvatarName = document.getElementById('photoAvatarName');
+const btnCreatePhotoAvatar = document.getElementById('btnCreatePhotoAvatar');
+const photoPreviewBox = document.getElementById('photoPreviewBox');
+let uploadedPhotoBase64 = null;
+
+if (photoUploadZone && photoFileInput) {
+  photoUploadZone.addEventListener('click', () => photoFileInput.click());
+  photoFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      photoFileName.textContent = file.name;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        uploadedPhotoBase64 = event.target.result;
+        photoPreviewBox.innerHTML = `<img src="${uploadedPhotoBase64}" style="width:100%; height:100%; object-fit:cover;">`;
+        checkPhotoCreateUnlock();
+      };
+      reader.readAsDataURL(file);
     }
   });
 }
 
-// --- RENDER: VOICES & PREVIEW SAMPLES ---
-let playingAudioVoiceId = null;
+if (photoAvatarName) {
+  photoAvatarName.addEventListener('input', checkPhotoCreateUnlock);
+}
 
+function checkPhotoCreateUnlock() {
+  if (btnCreatePhotoAvatar) {
+    btnCreatePhotoAvatar.disabled = !(uploadedPhotoBase64 && photoAvatarName.value.trim());
+  }
+}
+
+if (btnCreatePhotoAvatar) {
+  btnCreatePhotoAvatar.addEventListener('click', () => {
+    const credits = getCredits();
+    if (credits < 30) {
+      showModal('Créditos Insuficientes', 'Crear un Talking Photo consume 30 créditos.', false);
+      return;
+    }
+
+    const name = photoAvatarName.value.trim();
+    if (!name || !uploadedPhotoBase64) return;
+
+    showModal('Animando Fotografía', 'Generando puntos clave de animación gesticular...', false);
+    
+    setTimeout(() => {
+      const newAv = {
+        id: 'av-' + Date.now(),
+        name: `${name} (Foto Animada)`,
+        category: 'Talking Photo',
+        style: 'Talking Photo',
+        lang: 'Español (ES)',
+        img: uploadedPhotoBase64,
+        desc: 'Retrato fotográfico animado mediante inteligencia artificial.'
+      };
+
+      const current = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+      current.push(newAv);
+      setLocal('sdl_avatars', current);
+
+      setCredits(credits - 30);
+
+      document.getElementById('globalModalOverlay').classList.remove('active');
+      showToast('Foto Animada con Éxito', `"${name}" se añadió a tu biblioteca de avatares.`, 'success');
+      
+      // Cleanup
+      photoAvatarName.value = '';
+      uploadedPhotoBase64 = null;
+      photoFileName.textContent = '';
+      photoPreviewBox.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted)">Previsualización</span>';
+      btnCreatePhotoAvatar.disabled = true;
+
+      // Redirect
+      document.querySelector('[data-tab="avatar-panel-studio"]').click();
+      renderAvatarsGrid();
+    }, 2500);
+  });
+}
+
+// --- VOICE LIBRARY ---
+let selectedVoiceFilter = 'all';
 function renderVoicesLibrary() {
-  const grid = document.getElementById('publicVoicesGrid');
+  const grid = document.getElementById('voicesLibraryGrid');
   if (!grid) return;
 
-  const voices = getLocal('sdl_voices') || [];
   grid.innerHTML = '';
+  const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
 
-  voices.forEach(voice => {
+  const filtered = voices.filter(v => {
+    if (selectedVoiceFilter === 'all') return true;
+    return v.gender === selectedVoiceFilter;
+  });
+
+  filtered.forEach(v => {
     const card = document.createElement('div');
     card.className = 'voice-card';
     card.innerHTML = `
-      <div class="voice-card-left">
-        <button class="voice-play-btn" data-voice-id="${voice.id}" title="Escuchar muestra">
-          <i class="fa-solid fa-play"></i>
-        </button>
-        <div class="voice-meta">
-          <div class="voice-meta-header">
-            <span class="voice-name">${voice.name}</span>
-            <span class="voice-flag">${(voice.lang || '').includes('ES') || (voice.lang || '').includes('Español') ? '🇪🇸' : '🇺🇸'}</span>
-            ${voice.isPremium ? '<span class="badge-premium" style="font-size:0.55rem; padding:1px 5px;">Pro</span>' : ''}
-          </div>
-          <div class="voice-tags-row">
-            <span class="voice-tag">${voice.gender}</span>
-            <span class="voice-tag">${voice.tone}</span>
-          </div>
-        </div>
-        <div class="voice-waves-anim" style="display:none;">
-          <span class="voice-wave-bar"></span>
-          <span class="voice-wave-bar"></span>
-          <span class="voice-wave-bar"></span>
-          <span class="voice-wave-bar"></span>
-          <span class="voice-wave-bar"></span>
-        </div>
+      <div class="vc-info">
+        <span class="vc-name">${v.name}</span>
+        <span class="vc-meta">${v.lang} • ${v.gender} • ${v.tone}</span>
       </div>
-      <button class="btn-primary-sm btn-select-voice" data-voice-id="${voice.id}">Seleccionar</button>
+      <button class="btn-play-voice-preview" data-id="${v.id}"><i class="fa-solid fa-volume-high"></i></button>
     `;
-
-    // Play button preview logic
-    const playBtn = card.querySelector('.voice-play-btn');
-    const waveAnim = card.querySelector('.voice-waves-anim');
-    playBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleVoicePreview(voice, playBtn, waveAnim);
-    });
-
-    // Select button logic
-    card.querySelector('.btn-select-voice').addEventListener('click', () => {
-      selectedVoiceId = voice.id;
-      switchView('editor');
-      syncEditorPresets();
-      showToast('Voz Cargada', `Se usará la voz de ${voice.name} para las locuciones.`, 'info');
-    });
-
     grid.appendChild(card);
   });
 }
 
-function toggleVoicePreview(voice, button, waveAnim) {
-  if (playingAudioVoiceId === voice.id) {
-    // Stop
-    window.speechSynthesis.cancel();
-    button.classList.remove('playing');
-    button.innerHTML = '<i class="fa-solid fa-play"></i>';
-    waveAnim.style.display = 'none';
-    playingAudioVoiceId = null;
-  } else {
-    // Stop any current
-    window.speechSynthesis.cancel();
-    document.querySelectorAll('.voice-play-btn.playing').forEach(btn => {
-      btn.classList.remove('playing');
-      btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+// Voice filter binding
+document.querySelectorAll('.btn-filter-voice').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-filter-voice').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedVoiceFilter = btn.dataset.filter;
+    renderVoicesLibrary();
+  });
+});
+
+// Play voice preview click
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-play-voice-preview');
+  if (btn) {
+    const voiceId = btn.dataset.id;
+    const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+    const voice = voices.find(v => v.id === voiceId);
+    if (voice) {
+      playVoicePreviewAudio(voice);
+    }
+  }
+});
+
+function playVoicePreviewAudio(voice) {
+  stopTTSPreview();
+
+  const previewText = `Hola, mi nombre es ${voice.name.split(' ')[0]}. Estoy listo para interpretar tus guiones.`;
+
+  if (isBackendOnline && backendApiConfigured.elevenLabsConfigured) {
+    fetch('http://localhost:3000/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: previewText, voiceId: voice.id })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('API failed');
+      return res.blob();
+    })
+    .then(blob => {
+      activeAudioElement = new Audio(URL.createObjectURL(blob));
+      activeAudioElement.play();
+    })
+    .catch(() => {
+      playLocalSpeechPreview(previewText, voice);
     });
-    document.querySelectorAll('.voice-waves-anim').forEach(w => w.style.display = 'none');
-
-    // Start
-    playingAudioVoiceId = voice.id;
-    button.classList.add('playing');
-    button.innerHTML = '<i class="fa-solid fa-pause"></i>';
-    waveAnim.style.display = 'flex';
-
-    const textSample = (voice.lang || '').includes('ES') || (voice.lang || '').includes('Español')
-      ? `Hola, soy ${voice.name.split(' ')[0]}. Esta es una demostración en alta fidelidad de mi clon digital en español.`
-      : `Hello, I'm ${voice.name.split(' ')[0]}. This is an ultra realistic preview of my synthetic voice clone.`;
-
-    const utterance = new SpeechSynthesisUtterance(textSample);
-    
-    if (voice.pitch !== undefined) utterance.pitch = voice.pitch;
-    if (voice.rate !== undefined) utterance.rate = voice.rate;
-
-    // Match locale voice
-    const sysVoices = window.speechSynthesis.getVoices();
-    const match = getSystemVoiceForId(voice, sysVoices);
-    if (match) utterance.voice = match;
-
-    utterance.onend = () => {
-      button.classList.remove('playing');
-      button.innerHTML = '<i class="fa-solid fa-play"></i>';
-      waveAnim.style.display = 'none';
-      playingAudioVoiceId = null;
-    };
-
-    window.speechSynthesis.speak(utterance);
+  } else {
+    playLocalSpeechPreview(previewText, voice);
   }
 }
 
-// Voice search filter triggers
-const voiceSearchInput = document.getElementById('voiceSearchInput');
-const voiceGenderFilter = document.getElementById('voiceGenderFilter');
-const voiceLangFilter = document.getElementById('voiceLangFilter');
+function playLocalSpeechPreview(text, voice) {
+  if (!('speechSynthesis' in window)) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  if (voice.pitch !== undefined) utterance.pitch = voice.pitch;
+  if (voice.rate !== undefined) utterance.rate = voice.rate;
+  
+  const match = getSystemVoiceForId(voice, window.speechSynthesis.getVoices());
+  if (match) utterance.voice = match;
 
-function filterVoicesList() {
-  const query = voiceSearchInput ? voiceSearchInput.value.toLowerCase().trim() : '';
-  const gender = voiceGenderFilter ? voiceGenderFilter.value : 'all';
-  const lang = voiceLangFilter ? voiceLangFilter.value : 'all';
-
-  const cards = document.querySelectorAll('#publicVoicesGrid .voice-card');
-  cards.forEach(card => {
-    const name = card.querySelector('.voice-name').textContent.toLowerCase();
-    const genderTag = card.querySelectorAll('.voice-tag')[0].textContent;
-    const langTag = card.querySelector('.voice-flag').textContent === '🇪🇸' ? 'Español' : 'Inglés';
-
-    const matchQuery = name.includes(query);
-    const matchGender = gender === 'all' || gender === genderTag;
-    const matchLang = lang === 'all' || lang.includes(langTag);
-
-    if (matchQuery && matchGender && matchLang) {
-      card.style.display = 'flex';
-    } else {
-      card.style.display = 'none';
-    }
-  });
+  window.speechSynthesis.speak(utterance);
 }
 
-if (voiceSearchInput) voiceSearchInput.addEventListener('input', filterVoicesList);
-if (voiceGenderFilter) voiceGenderFilter.addEventListener('change', filterVoicesList);
-if (voiceLangFilter) voiceLangFilter.addEventListener('change', filterVoicesList);
+function getSystemVoiceForId(vc, sysVoices) {
+  const isFemale = vc.gender === 'Femenino';
+  const isEnglish = vc.lang.includes('Inglés');
+  
+  let match = sysVoices.find(v => {
+    const nameLower = v.name.toLowerCase();
+    const matchesLang = isEnglish ? (v.lang.startsWith('en') || nameLower.includes('english')) : (v.lang.startsWith('es') || nameLower.includes('spanish'));
+    const matchesGender = isFemale ? (nameLower.includes('google') || nameLower.includes('helena') || nameLower.includes('zira') || nameLower.includes('samantha') || nameLower.includes('sabina')) : (!nameLower.includes('helena') && !nameLower.includes('zira') && !nameLower.includes('samantha') && !nameLower.includes('sabina'));
+    return matchesLang && matchesGender;
+  });
 
-// --- VOICE CLONING SIMULATOR ---
-const voiceUploadZone = document.getElementById('voiceUploadZone');
+  return match || sysVoices[0];
+}
+
+// --- VOICE CLONING (REAL & SIMULATED) ---
 const voiceAudioInput = document.getElementById('voiceAudioInput');
+const voiceUploadZone = document.getElementById('voiceUploadZone');
 const voiceFileName = document.getElementById('voiceFileName');
-const voiceNameInput = document.getElementById('voiceNameInput');
-const voiceConsentCheck = document.getElementById('voiceConsentCheck');
-const btnCloneVoice = document.getElementById('btnCloneVoice');
 const btnRecordVoice = document.getElementById('btnRecordVoice');
 const recordIndicator = document.getElementById('recordIndicator');
-
+const voiceConsentCheck = document.getElementById('voiceConsentCheck');
+const voiceNameInput = document.getElementById('voiceNameInput');
+const btnCloneVoice = document.getElementById('btnCloneVoice');
 let voiceAudioFileUploaded = false;
 let isVoiceRecording = false;
 
@@ -958,7 +813,7 @@ if (voiceUploadZone && voiceAudioInput) {
   voiceAudioInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (voiceFileName) voiceFileName.textContent = file.name;
+      voiceFileName.textContent = file.name;
       voiceAudioFileUploaded = true;
       checkCloneVoiceUnlock();
     }
@@ -1001,7 +856,6 @@ if (btnRecordVoice) {
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
         mediaRecorder = null;
       } else {
-        // Fallback simulated recording end
         if (voiceFileName) voiceFileName.textContent = 'Muestra grabada en vivo (Simulada).wav';
         voiceAudioFileUploaded = true;
         checkCloneVoiceUnlock();
@@ -1044,7 +898,6 @@ if (btnCloneVoice) {
     const name = voiceNameInput.value.trim();
     if (!name) return;
 
-    // Determine the audio file
     let fileToClone = null;
     if (voiceAudioInput && voiceAudioInput.files[0]) {
       fileToClone = voiceAudioInput.files[0];
@@ -1082,13 +935,11 @@ if (btnCloneVoice) {
           rate: 1.0
         };
 
-        const currentVoices = getLocal('sdl_voices') || [];
+        const currentVoices = getLocal('sdl_voices') || DEFAULT_VOICES;
         currentVoices.push(newVoice);
         setLocal('sdl_voices', currentVoices);
 
-        // Deduct credits only after successful real voice cloning
         setCredits(credits - 50);
-
         renderClonedVoicesList();
         renderVoicesLibrary();
 
@@ -1097,67 +948,45 @@ if (btnCloneVoice) {
       })
       .catch(err => {
         console.warn('Real voice cloning failed. Falling back to high-fidelity mock clone.', err);
-        showToast('Modo Simulado', 'No se pudo clonar la voz real. Activando voz clonada simulada.', 'info');
-        
-        // Mock fallback inside catch
-        setCredits(credits - 50);
-
-        const mockVoiceId = 'v-' + Date.now();
-        const newVoice = {
-          id: mockVoiceId,
-          name: `${name} (Voz Clonada - Simulada)`,
-          lang: 'Español (ES)',
-          gender: 'Personalizado',
-          tone: 'Clonado',
-          isPremium: true,
-          pitch: 0.75 + Math.random() * 0.5,
-          rate: 0.85 + Math.random() * 0.3
-        };
-
-        const currentVoices = getLocal('sdl_voices') || [];
-        currentVoices.push(newVoice);
-        setLocal('sdl_voices', currentVoices);
-
-        renderClonedVoicesList();
-        renderVoicesLibrary();
-
-        showToast('Voz Clonada con Éxito', `El timbre neuronal de "${name}" está listo (Modo Simulado).`, 'success');
-        resetCloningFields();
+        createMockClone(name, credits);
       });
     } else {
-      // Offline mock cloning fallback
-      setCredits(credits - 50);
-
-      const mockVoiceId = 'v-' + Date.now();
-      const newVoice = {
-        id: mockVoiceId,
-        name: `${name} (Voz Clonada - Simulada)`,
-        lang: 'Español (ES)',
-        gender: 'Personalizado',
-        tone: 'Clonado',
-        isPremium: true,
-        pitch: 0.75 + Math.random() * 0.5,
-        rate: 0.85 + Math.random() * 0.3
-      };
-
-      const currentVoices = getLocal('sdl_voices') || [];
-      currentVoices.push(newVoice);
-      setLocal('sdl_voices', currentVoices);
-
-      renderClonedVoicesList();
-      renderVoicesLibrary();
-
-      showToast('Voz Clonada con Éxito', `El timbre neuronal de "${name}" está listo (Modo Simulado).`, 'success');
-      resetCloningFields();
+      createMockClone(name, credits);
     }
   });
+}
+
+function createMockClone(name, credits) {
+  setCredits(credits - 50);
+
+  const mockVoiceId = 'v-' + Date.now();
+  const newVoice = {
+    id: mockVoiceId,
+    name: `${name} (Voz Clonada - Simulada)`,
+    lang: 'Español (ES)',
+    gender: 'Personalizado',
+    tone: 'Clonado',
+    isPremium: true,
+    pitch: 0.75 + Math.random() * 0.5,
+    rate: 0.85 + Math.random() * 0.3
+  };
+
+  const currentVoices = getLocal('sdl_voices') || DEFAULT_VOICES;
+  currentVoices.push(newVoice);
+  setLocal('sdl_voices', currentVoices);
+
+  renderClonedVoicesList();
+  renderVoicesLibrary();
+
+  showToast('Voz Clonada con Éxito', `El timbre neuronal de "${name}" está listo (Modo Simulado).`, 'success');
+  resetCloningFields();
 }
 
 function renderClonedVoicesList() {
   const container = document.getElementById('clonedVoicesList');
   if (!container) return;
 
-  const voices = getLocal('sdl_voices') || [];
+  const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
   const cloned = voices.filter(v => v.tone === 'Clonado');
   container.innerHTML = '';
 
@@ -1169,16 +998,20 @@ function renderClonedVoicesList() {
   cloned.forEach(v => {
     const badge = document.createElement('span');
     badge.className = 'mini-voice-badge';
+    badge.style.background = 'var(--bg-tertiary)';
+    badge.style.border = '1px solid var(--border-color)';
+    badge.style.padding = '4px 10px';
+    badge.style.borderRadius = '4px';
+    badge.style.fontSize = '0.75rem';
     badge.innerHTML = `<i class="fa-solid fa-microphone"></i> ${v.name}`;
     container.appendChild(badge);
   });
 }
 renderClonedVoicesList();
 
+// --- 5. EDITOR CANVAS WORKSPACE ENGINE (V2 CLONE) ---
 
-// --- PART 3: EDITOR DE VIDEO (CANVAS WORKSPACE) ---
-
-// Toggle horizontal / vertical Canvas
+// Toggle ratio aspect horizontal / vertical
 function setRatio(ratio) {
   selectedRatio = ratio;
   const stage = document.getElementById('videoCanvasStage');
@@ -1203,116 +1036,711 @@ const btnRatio916 = document.getElementById('btnRatio916');
 if (btnRatio169) btnRatio169.addEventListener('click', () => setRatio('16-9'));
 if (btnRatio916) btnRatio916.addEventListener('click', () => setRatio('9-16'));
 
-// Background change triggers
+// Background click presets
 document.querySelectorAll('.bg-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     
-    selectedBg = btn.dataset.bg;
+    const bgVal = btn.dataset.bg;
+    scenes[currentSceneIndex].bg = bgVal;
+    
     const canvasStage = document.getElementById('videoCanvasStage');
-    if (canvasStage) {
-      if (selectedBg === 'dark') canvasStage.style.background = '#050212';
-      else if (selectedBg === 'gradient-blue') canvasStage.style.background = 'linear-gradient(135deg, #020010, #001f3f)';
-      else if (selectedBg === 'gradient-purple') canvasStage.style.background = 'linear-gradient(135deg, #030012, #1f003f)';
-      else if (selectedBg === 'green-screen') canvasStage.style.background = '#00ff00';
+    if (canvasStage) applyBackgroundToCanvas(canvasStage, bgVal);
+  });
+});
+
+function applyBackgroundToCanvas(stage, bg) {
+  if (bg === 'dark') stage.style.background = '#050212';
+  else if (bg === 'gradient-blue') stage.style.background = 'linear-gradient(135deg, #020010, #001f3f)';
+  else if (bg === 'gradient-purple') stage.style.background = 'linear-gradient(135deg, #030012, #1f003f)';
+  else if (bg === 'green-screen') stage.style.background = '#00ff00';
+}
+
+// Far Left Dock Panel toggling
+document.querySelectorAll('.dock-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
+    item.classList.add('active');
+
+    const panel = item.dataset.panel;
+    
+    // Slide out drawer
+    const drawer = document.getElementById('editorDrawerPanel');
+    const sections = document.querySelectorAll('.drawer-section');
+    const drawerTitle = document.getElementById('drawerPanelTitle');
+    
+    drawer.classList.remove('collapsed');
+    sections.forEach(sec => sec.classList.remove('active'));
+
+    const activeSec = document.getElementById(`drawer-section-${panel}`);
+    if (activeSec) activeSec.classList.add('active');
+
+    if (panel === 'templates') {
+      drawerTitle.textContent = 'Plantillas de Video';
+      renderEditorDrawerTemplates();
+    } else if (panel === 'avatars') {
+      drawerTitle.textContent = 'Seleccionar Avatar';
+      renderEditorDrawerAvatars();
+    } else if (panel === 'text') {
+      drawerTitle.textContent = 'Añadir Capa de Texto';
+    } else if (panel === 'assets') {
+      drawerTitle.textContent = 'Mis Archivos Cargados';
+      renderEditorDrawerAssets();
     }
   });
 });
 
-// Sync presets inside editor sidebar
-function syncEditorPresets() {
-  const avatars = getLocal('sdl_avatars') || [];
-  const voices = getLocal('sdl_voices') || [];
-
-  // 1. Render mini avatars
-  const miniAvs = document.getElementById('miniAvatarsGrid');
-  if (miniAvs) {
-    miniAvs.innerHTML = '';
-    avatars.forEach(av => {
-      const p = document.createElement('div');
-      p.className = `mini-av-preset ${av.id === selectedAvatarId ? 'active' : ''}`;
-      p.innerHTML = `<img src="${av.img}" alt="${av.name}" title="${av.name}">`;
-      p.addEventListener('click', () => {
-        selectedAvatarId = av.id;
-        document.querySelectorAll('.mini-av-preset').forEach(box => box.classList.remove('active'));
-        p.classList.add('active');
-        updateCanvasAvatar();
-      });
-      miniAvs.appendChild(p);
-    });
-  }
-
-  // 2. Render mini voices
-  const miniVcs = document.getElementById('miniVoicesGrid');
-  if (miniVcs) {
-    miniVcs.innerHTML = '';
-    voices.forEach(vc => {
-      const p = document.createElement('div');
-      p.className = `mini-voice-preset ${vc.id === selectedVoiceId ? 'active' : ''}`;
-      p.textContent = (vc.name || '').split(' ')[0] + ` (${(vc.lang || '').split(' ')[0]})`;
-      p.addEventListener('click', () => {
-        selectedVoiceId = vc.id;
-        document.querySelectorAll('.mini-voice-preset').forEach(box => box.classList.remove('active'));
-        p.classList.add('active');
-        updateVoiceTagDisplays();
-      });
-      miniVcs.appendChild(p);
-    });
-  }
-
-  updateCanvasAvatar();
-  updateVoiceTagDisplays();
+// Close drawer button
+const btnCloseEditorDrawer = document.getElementById('btnCloseEditorDrawer');
+if (btnCloseEditorDrawer) {
+  btnCloseEditorDrawer.addEventListener('click', () => {
+    const drawer = document.getElementById('editorDrawerPanel');
+    if (drawer) drawer.classList.add('collapsed');
+    document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
+  });
 }
 
-function updateCanvasAvatar() {
-  const avatars = getLocal('sdl_avatars') || [];
-  const activeAv = avatars.find(a => a.id === selectedAvatarId) || DEFAULT_AVATARS[0];
-  const canvasImg = document.getElementById('canvasAvatarImg');
-  if (canvasImg) canvasImg.src = activeAv.img;
-}
-
-function updateVoiceTagDisplays() {
-  const voices = getLocal('sdl_voices') || [];
-  const activeVc = voices.find(v => v.id === selectedVoiceId) || DEFAULT_VOICES[0];
+// Render dynamic lists inside editor drawers
+function renderEditorDrawerTemplates() {
+  const container = document.getElementById('editorDrawerTemplatesGrid');
+  if (!container) return;
+  container.innerHTML = '';
   
-  const vName = document.getElementById('selectedVoiceNameDisplay');
-  const vLang = document.getElementById('selectedVoiceLangDisplay');
-
-  if (vName) vName.textContent = (activeVc.name || '').split(' ')[0];
-  if (vLang) vLang.textContent = activeVc.lang;
+  DEFAULT_TEMPLATES.forEach(temp => {
+    const div = document.createElement('div');
+    div.className = 'drawer-av-card';
+    div.style.aspectRatio = '16/9';
+    div.innerHTML = `
+      <div style="background:var(--bg-tertiary); width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:var(--accent-purple);">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+      </div>
+      <div class="drawer-av-name">${temp.name}</div>
+    `;
+    div.addEventListener('click', () => {
+      scenes[currentSceneIndex].avatarId = temp.avatar;
+      scenes[currentSceneIndex].voiceId = temp.voice;
+      scenes[currentSceneIndex].script = temp.script;
+      scenes[currentSceneIndex].textPos.display = 'block';
+      scenes[currentSceneIndex].textPos.text = temp.name;
+      loadSceneStateIntoCanvas(currentSceneIndex);
+      showToast('Plantilla Aplicada', `Se inyectó en la escena actual.`, 'success');
+    });
+    container.appendChild(div);
+  });
 }
 
-// AI Script Generator within editor panel
-const btnGenScript = document.getElementById('btnGenerateEditorScript');
-if (btnGenScript) {
-  btnGenScript.addEventListener('click', () => {
-    const topic = document.getElementById('editorScriptTopic').value.trim();
-    const type = document.getElementById('editorScriptType').value;
-    const tone = document.getElementById('editorScriptTone').value;
+function renderEditorDrawerAvatars() {
+  const container = document.getElementById('editorDrawerAvatarsGrid');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const list = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+  list.forEach(av => {
+    const div = document.createElement('div');
+    div.className = 'drawer-av-card';
+    div.innerHTML = `
+      <img src="${av.img}" alt="${av.name}">
+      <div class="drawer-av-name">${av.name}</div>
+    `;
+    div.addEventListener('click', () => {
+      scenes[currentSceneIndex].avatarId = av.id;
+      loadSceneStateIntoCanvas(currentSceneIndex);
+      updateInspectorInputs();
+    });
+    container.appendChild(div);
+  });
+}
+
+// User Assets Inside Drawer
+const editorAssetUploadZone = document.getElementById('editorAssetUploadZone');
+const editorAssetFileInput = document.getElementById('editorAssetFileInput');
+const editorAssetFileName = document.getElementById('editorAssetFileName');
+
+if (editorAssetUploadZone && editorAssetFileInput) {
+  editorAssetUploadZone.addEventListener('click', () => editorAssetFileInput.click());
+  editorAssetFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      editorAssetFileName.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target.result;
+        const newAsset = {
+          name: file.name,
+          src: base64,
+          type: file.type.startsWith('image') ? 'image' : 'audio'
+        };
+        const current = getLocal('sdl_user_assets') || [];
+        current.push(newAsset);
+        setLocal('sdl_user_assets', current);
+        renderEditorDrawerAssets();
+        showToast('Recurso Subido', `Se cargó "${file.name}"`, 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+function renderEditorDrawerAssets() {
+  const listEl = document.getElementById('editorUserAssetsList');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  
+  const current = getLocal('sdl_user_assets') || [];
+  if (current.length === 0) {
+    listEl.innerHTML = '<span style="font-size:0.7rem; color:var(--text-muted);">No hay recursos personales.</span>';
+    return;
+  }
+
+  current.forEach((asset, idx) => {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.justifyContent = 'space-between';
+    row.style.alignItems = 'center';
+    row.style.padding = '8px';
+    row.style.background = 'var(--bg-tertiary)';
+    row.style.borderRadius = '4px';
+    row.style.border = '1px solid var(--border-color)';
+    row.innerHTML = `
+      <span style="font-size:0.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:150px;">${asset.name}</span>
+      <div style="display:flex; gap:5px;">
+        <button class="btn-primary-sm btn-use-asset" data-idx="${idx}" style="padding:4px 8px;"><i class="fa-solid fa-check"></i></button>
+        <button class="btn-outline-sm btn-del-asset" data-idx="${idx}" style="padding:4px 8px; border-color:var(--accent-red); color:var(--accent-red);"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    `;
+    listEl.appendChild(row);
+  });
+}
+
+// User Assets Action handler
+document.addEventListener('click', (e) => {
+  const btnUse = e.target.closest('.btn-use-asset');
+  if (btnUse) {
+    const idx = parseInt(btnUse.dataset.idx);
+    const assets = getLocal('sdl_user_assets') || [];
+    const asset = assets[idx];
+    if (asset) {
+      if (asset.type === 'image') {
+        // Apply image base64 as custom Presenter avatar layer
+        const customAvId = 'av-custom-' + Date.now();
+        const newAv = {
+          id: customAvId,
+          name: asset.name.split('.')[0] || 'Carga Personalizada',
+          category: 'Talking Photo',
+          style: 'Talking Photo',
+          lang: 'Español (ES)',
+          img: asset.src,
+          desc: 'Avatar cargado por el usuario.'
+        };
+        const avs = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+        avs.push(newAv);
+        setLocal('sdl_avatars', avs);
+        
+        scenes[currentSceneIndex].avatarId = customAvId;
+        loadSceneStateIntoCanvas(currentSceneIndex);
+        showToast('Avatar Cambiado', 'Se aplicó tu imagen cargada.', 'success');
+      } else {
+        // Audio asset applied
+        showToast('Audio Vinculado', 'Se vinculó el recurso de audio a esta escena.', 'success');
+      }
+    }
+  }
+
+  const btnDel = e.target.closest('.btn-del-asset');
+  if (btnDel) {
+    const idx = parseInt(btnDel.dataset.idx);
+    let assets = getLocal('sdl_user_assets') || [];
+    assets.splice(idx, 1);
+    setLocal('sdl_user_assets', assets);
+    renderEditorDrawerAssets();
+    showToast('Recurso Eliminado', 'Se quitó de tu lista.', 'info');
+  }
+});
+
+// Adding Text Preset trigger from drawer
+document.querySelectorAll('.btn-add-text-preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const size = btn.dataset.size;
+    let sizeVal = 28;
+    let weight = 700;
+    if (size === 'subtitle') { sizeVal = 20; weight = 600; }
+    if (size === 'body') { sizeVal = 14; weight = 400; }
+
+    scenes[currentSceneIndex].textPos.display = 'block';
+    scenes[currentSceneIndex].textPos.fontSize = sizeVal;
+    scenes[currentSceneIndex].textPos.text = 'Haz doble clic para editar';
+    
+    loadSceneStateIntoCanvas(currentSceneIndex);
+    focusLayer('text');
+  });
+});
+
+// --- INTERACTIVE DRAG & RESIZE CANVAS LAYER ENGINE ---
+const layerAvatar = document.getElementById('layerAvatar');
+const layerText = document.getElementById('layerText');
+const canvasTextInput = document.getElementById('canvasTextInput');
+
+function focusLayer(layerType) {
+  activeSelectedLayer = layerType;
+  
+  if (layerType === 'avatar') {
+    layerAvatar.classList.add('selected');
+    layerText.classList.remove('selected');
+    
+    document.getElementById('inspectorBodyAvatar').style.display = 'block';
+    document.getElementById('inspectorBodyText').style.display = 'none';
+    document.getElementById('inspectorBodyScene').style.display = 'none';
+    document.getElementById('inspectorPanelTitle').textContent = 'Ajustes del Avatar';
+  } else if (layerType === 'text') {
+    layerText.classList.add('selected');
+    layerAvatar.classList.remove('selected');
+    
+    document.getElementById('inspectorBodyAvatar').style.display = 'none';
+    document.getElementById('inspectorBodyText').style.display = 'block';
+    document.getElementById('inspectorBodyScene').style.display = 'none';
+    document.getElementById('inspectorPanelTitle').textContent = 'Ajustes de Capa Texto';
+  } else {
+    layerAvatar.classList.remove('selected');
+    layerText.classList.remove('selected');
+    
+    document.getElementById('inspectorBodyAvatar').style.display = 'none';
+    document.getElementById('inspectorBodyText').style.display = 'none';
+    document.getElementById('inspectorBodyScene').style.display = 'block';
+    document.getElementById('inspectorPanelTitle').textContent = 'Ajustes de Escena';
+  }
+}
+
+// Click on Canvas workspace (but outside active items) selects scene background settings
+document.getElementById('videoCanvasStage').addEventListener('click', (e) => {
+  if (e.target.id === 'videoCanvasStage' || e.target.id === 'editorCanvasContainer') {
+    focusLayer(null);
+  }
+});
+
+layerAvatar.addEventListener('click', (e) => {
+  e.stopPropagation();
+  focusLayer('avatar');
+});
+layerText.addEventListener('click', (e) => {
+  e.stopPropagation();
+  focusLayer('text');
+});
+
+// Sync changes to Text input field inside canvas
+if (canvasTextInput) {
+  canvasTextInput.addEventListener('input', () => {
+    scenes[currentSceneIndex].textPos.text = canvasTextInput.value;
+  });
+}
+
+// Make Layers Draggable & Resizable using Mouse Listeners
+function setupDraggable(element, keyString) {
+  let isDragging = false;
+  let startX, startY;
+  let elemStartX, elemStartY;
+
+  element.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('resize-handle')) return; // Handle resizing separately
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    elemStartX = element.offsetLeft;
+    elemStartY = element.offsetTop;
+    
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  });
+
+  function onMouseMove(e) {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    
+    const newLeft = elemStartX + dx;
+    const newTop = elemStartY + dy;
+    
+    // Restrict within videoCanvasStage boundaries
+    const stage = document.getElementById('videoCanvasStage');
+    const limitX = stage.clientWidth - element.clientWidth;
+    const limitY = stage.clientHeight - element.clientHeight;
+    
+    const finalLeft = Math.max(0, Math.min(limitX, newLeft));
+    const finalTop = Math.max(0, Math.min(limitY, newTop));
+
+    element.style.left = finalLeft + 'px';
+    element.style.top = finalTop + 'px';
+
+    // Save percentage coordinates to current scene object
+    const pctLeft = (finalLeft / stage.clientWidth) * 100;
+    const pctTop = (finalTop / stage.clientHeight) * 100;
+
+    if (keyString === 'avatar') {
+      scenes[currentSceneIndex].avatarPos.left = pctLeft;
+      scenes[currentSceneIndex].avatarPos.top = pctTop;
+    } else {
+      scenes[currentSceneIndex].textPos.left = pctLeft;
+      scenes[currentSceneIndex].textPos.top = pctTop;
+    }
+  }
+
+  function onMouseUp() {
+    isDragging = false;
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  }
+}
+
+setupDraggable(layerAvatar, 'avatar');
+setupDraggable(layerText, 'text');
+
+// Setup Resizable logic
+function setupResizable(element, keyString) {
+  const handles = element.querySelectorAll('.resize-handle');
+  
+  handles.forEach(handle => {
+    handle.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startWidth = element.clientWidth;
+      const startHeight = element.clientHeight;
+      const startLeft = element.offsetLeft;
+      const startTop = element.offsetTop;
+
+      const isRight = handle.classList.contains('rh-ne') || handle.classList.contains('rh-se');
+      const isBottom = handle.classList.contains('rh-se') || handle.classList.contains('rh-sw');
+      const isLeft = handle.classList.contains('rh-nw') || handle.classList.contains('rh-sw');
+      const isTop = handle.classList.contains('rh-nw') || handle.classList.contains('rh-ne');
+
+      function onMouseMove(event) {
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+
+        if (isRight) {
+          newWidth = Math.max(40, startWidth + dx);
+        } else if (isLeft) {
+          newWidth = Math.max(40, startWidth - dx);
+          newLeft = startLeft + (startWidth - newWidth);
+        }
+
+        if (isBottom) {
+          newHeight = Math.max(40, startHeight + dy);
+        } else if (isTop) {
+          newHeight = Math.max(40, startHeight - dy);
+          newTop = startTop + (startHeight - newHeight);
+        }
+
+        // Limit proportions
+        element.style.width = newWidth + 'px';
+        element.style.height = newHeight + 'px';
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+
+        const stage = document.getElementById('videoCanvasStage');
+        
+        if (keyString === 'avatar') {
+          scenes[currentSceneIndex].avatarPos.width = newWidth;
+          scenes[currentSceneIndex].avatarPos.height = newHeight;
+          scenes[currentSceneIndex].avatarPos.left = (newLeft / stage.clientWidth) * 100;
+          scenes[currentSceneIndex].avatarPos.top = (newTop / stage.clientHeight) * 100;
+        } else {
+          scenes[currentSceneIndex].textPos.width = newWidth;
+          scenes[currentSceneIndex].textPos.height = newHeight;
+          scenes[currentSceneIndex].textPos.left = (newLeft / stage.clientWidth) * 100;
+          scenes[currentSceneIndex].textPos.top = (newTop / stage.clientHeight) * 100;
+        }
+      }
+
+      function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+  });
+}
+
+setupResizable(layerAvatar, 'avatar');
+setupResizable(layerText, 'text');
+
+// Inspector Inputs Synchronization
+function syncEditorPresets() {
+  renderEditorVoicesList();
+  loadSceneStateIntoCanvas(currentSceneIndex);
+  updateInspectorInputs();
+}
+
+function renderEditorVoicesList() {
+  const select = document.getElementById('editorVoiceSelect');
+  if (!select) return;
+  select.innerHTML = '';
+  
+  const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+  voices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.textContent = `${v.name} (${v.lang})`;
+    select.appendChild(opt);
+  });
+}
+
+function updateInspectorInputs() {
+  const scene = scenes[currentSceneIndex];
+  
+  const selectVoice = document.getElementById('editorVoiceSelect');
+  const rateSlider = document.getElementById('editorVoiceRate');
+  const valRate = document.getElementById('valVoiceRate');
+  const textarea = document.getElementById('editorScriptTextarea');
+  const durationSlider = document.getElementById('sceneDurationSlider');
+  const valDuration = document.getElementById('valSceneDuration');
+  const fontSizeSlider = document.getElementById('textFontSize');
+  const valFontSize = document.getElementById('valFontSize');
+  const fontFamilySelect = document.getElementById('textFontFamily');
+  const textColorPicker = document.getElementById('textColorPicker');
+  const textColorVal = document.getElementById('textColorVal');
+
+  if (selectVoice) selectVoice.value = scene.voiceId;
+  if (rateSlider) {
+    const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+    const v = voices.find(vc => vc.id === scene.voiceId) || DEFAULT_VOICES[0];
+    rateSlider.value = v.rate || 1.0;
+    valRate.textContent = `${rateSlider.value}x`;
+  }
+  if (textarea) textarea.value = scene.script;
+  if (durationSlider) {
+    durationSlider.value = scene.duration;
+    valDuration.textContent = `${scene.duration}.0s`;
+  }
+  if (fontSizeSlider) {
+    fontSizeSlider.value = scene.textPos.fontSize;
+    valFontSize.textContent = `${scene.textPos.fontSize}px`;
+  }
+  if (fontFamilySelect) fontFamilySelect.value = scene.textPos.fontStyle;
+  if (textColorPicker) textColorPicker.value = scene.textPos.color;
+  if (textColorVal) textColorVal.value = scene.textPos.color;
+}
+
+// Bind inspector change events to active scene state
+document.getElementById('editorVoiceSelect').addEventListener('change', (e) => {
+  scenes[currentSceneIndex].voiceId = e.target.value;
+  // Update pitch/rate in UI too
+  const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+  const v = voices.find(vc => vc.id === e.target.value);
+  if (v) {
+    document.getElementById('editorVoiceRate').value = v.rate || 1.0;
+    document.getElementById('valVoiceRate').textContent = `${v.rate || 1.0}x`;
+  }
+});
+
+document.getElementById('editorVoiceRate').addEventListener('input', (e) => {
+  document.getElementById('valVoiceRate').textContent = `${e.target.value}x`;
+  // Update local memory voice rate speed
+  const voiceId = scenes[currentSceneIndex].voiceId;
+  let voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+  let v = voices.find(vc => vc.id === voiceId);
+  if (v) {
+    v.rate = parseFloat(e.target.value);
+    setLocal('sdl_voices', voices);
+  }
+});
+
+document.getElementById('editorScriptTextarea').addEventListener('input', (e) => {
+  scenes[currentSceneIndex].script = e.target.value;
+});
+
+document.getElementById('sceneDurationSlider').addEventListener('input', (e) => {
+  document.getElementById('valSceneDuration').textContent = `${e.target.value}.0s`;
+  scenes[currentSceneIndex].duration = parseInt(e.target.value);
+  renderTimelineScenes();
+});
+
+document.getElementById('textFontSize').addEventListener('input', (e) => {
+  document.getElementById('valFontSize').textContent = `${e.target.value}px`;
+  scenes[currentSceneIndex].textPos.fontSize = parseInt(e.target.value);
+  layerText.style.fontSize = e.target.value + 'px';
+});
+
+document.getElementById('textFontFamily').addEventListener('change', (e) => {
+  scenes[currentSceneIndex].textPos.fontStyle = e.target.value;
+  layerText.style.fontFamily = e.target.value;
+});
+
+document.getElementById('textColorPicker').addEventListener('input', (e) => {
+  document.getElementById('textColorVal').value = e.target.value;
+  scenes[currentSceneIndex].textPos.color = e.target.value;
+  layerText.style.color = e.target.value;
+});
+
+document.getElementById('btnMoveTextFront').addEventListener('click', () => {
+  layerText.style.zIndex = 100;
+  layerAvatar.style.zIndex = 10;
+  showToast('Capa Ajustada', 'Texto traído al frente.', 'info');
+});
+
+document.getElementById('btnDeleteTextLayer').addEventListener('click', () => {
+  scenes[currentSceneIndex].textPos.display = 'none';
+  layerText.style.display = 'none';
+  focusLayer('avatar');
+  showToast('Capa Eliminada', 'Se quitó el cuadro de texto.', 'info');
+});
+
+// Load state into Canvas
+function loadSceneStateIntoCanvas(idx) {
+  const scene = scenes[idx];
+  const stage = document.getElementById('videoCanvasStage');
+  if (!stage) return;
+
+  // Background
+  applyBackgroundToCanvas(stage, scene.bg);
+  document.querySelectorAll('.bg-btn').forEach(btn => {
+    if (btn.dataset.bg === scene.bg) btn.classList.add('active');
+    else btn.classList.remove('active');
+  });
+
+  // Avatar layer
+  const avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+  const chosenAv = avatars.find(av => av.id === scene.avatarId) || DEFAULT_AVATARS[0];
+  document.getElementById('canvasAvatarImg').src = chosenAv.img;
+  
+  // Set dimensions and position percentages
+  layerAvatar.style.left = `calc(${scene.avatarPos.left}% - ${scene.avatarPos.width / 2}px)`;
+  layerAvatar.style.top = `calc(${scene.avatarPos.top}% - ${scene.avatarPos.height / 2}px)`;
+  layerAvatar.style.width = scene.avatarPos.width + 'px';
+  layerAvatar.style.height = scene.avatarPos.height + 'px';
+  
+  // Text layer
+  if (scene.textPos.display === 'block') {
+    layerText.style.display = 'block';
+    canvasTextInput.value = scene.textPos.text;
+    layerText.style.fontSize = scene.textPos.fontSize + 'px';
+    layerText.style.fontFamily = scene.textPos.fontStyle;
+    layerText.style.color = scene.textPos.color;
+    layerText.style.width = scene.textPos.width + 'px';
+    layerText.style.height = scene.textPos.height + 'px';
+    layerText.style.left = `calc(${scene.textPos.left}% - ${scene.textPos.width / 2}px)`;
+    layerText.style.top = `calc(${scene.textPos.top}% - ${scene.textPos.height / 2}px)`;
+  } else {
+    layerText.style.display = 'none';
+  }
+
+  // Load thumbnail preview selection strip
+  renderTimelineScenes();
+}
+
+// --- TIMELINE MULTIESCENA SLIDES BAR ---
+function renderTimelineScenes() {
+  const list = document.getElementById('timelineScenesList');
+  if (!list) return;
+
+  list.innerHTML = '';
+  const listAv = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+
+  scenes.forEach((scene, idx) => {
+    const activeAv = listAv.find(a => a.id === scene.avatarId) || DEFAULT_AVATARS[0];
+    
+    const card = document.createElement('div');
+    card.className = `scene-thumbnail-card ${idx === currentSceneIndex ? 'active' : ''}`;
+    card.innerHTML = `
+      <div class="scene-thumb-preview">
+        <img src="${activeAv.img}" alt="Thumb">
+      </div>
+      <div class="scene-thumb-footer">
+        <span>#${idx + 1} (${scene.duration}s)</span>
+        ${scenes.length > 1 ? `<button class="btn-delete-scene" data-idx="${idx}"><i class="fa-solid fa-trash"></i></button>` : ''}
+      </div>
+    `;
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.btn-delete-scene')) return; // Handle delete
+      currentSceneIndex = idx;
+      focusLayer('avatar');
+      syncEditorPresets();
+    });
+    list.appendChild(card);
+  });
+}
+
+// Add timeline scene button click
+const btnAddTimelineScene = document.getElementById('btnAddTimelineScene');
+if (btnAddTimelineScene) {
+  btnAddTimelineScene.addEventListener('click', () => {
+    // Duplicate current or make new clean scene
+    const active = scenes[currentSceneIndex];
+    const newScene = {
+      id: 's-' + Date.now(),
+      avatarId: active.avatarId,
+      voiceId: active.voiceId,
+      script: 'Nueva diapositiva de guión.',
+      bg: active.bg,
+      duration: 5,
+      avatarPos: { ...active.avatarPos },
+      textPos: { ...active.textPos, display: 'none' }
+    };
+    scenes.push(newScene);
+    currentSceneIndex = scenes.length - 1;
+    focusLayer('avatar');
+    syncEditorPresets();
+    showToast('Escena Añadida', 'Se insertó una nueva diapositiva en el timeline.', 'info');
+  });
+}
+
+// Scene deletion click listener delegation
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-delete-scene');
+  if (btn) {
+    const idx = parseInt(btn.dataset.idx);
+    if (scenes.length > 1) {
+      scenes.splice(idx, 1);
+      // Adjust current index selection bounds
+      if (currentSceneIndex >= scenes.length) currentSceneIndex = scenes.length - 1;
+      focusLayer('avatar');
+      syncEditorPresets();
+      showToast('Escena Eliminada', 'Borrador de escena removido.', 'info');
+    }
+  }
+});
+
+// AI Script generation writer mock
+const btnGenerateEditorScript = document.getElementById('btnGenerateEditorScript');
+if (btnGenerateEditorScript) {
+  btnGenerateEditorScript.addEventListener('click', () => {
+    const topic = document.getElementById('aiTopicInput').value.trim();
+    const tone = document.getElementById('aiToneSelect').value;
 
     if (!topic) {
-      showToast('Ingresa un Tema', 'Por favor escribe el tema del guión.', 'error');
+      showToast('Ingresa un Tema', 'La IA requiere una idea clave para redactar.', 'error');
       return;
     }
 
     let scriptText = '';
-    if (type === 'publicidad') {
-      scriptText = `¡Atención! Si buscas revolucionar tu negocio con ${topic}, esta es tu oportunidad. Diseñado para un enfoque ${tone}, nuestro sistema automatiza tus ventas.`;
-    } else if (type === 'tutorial') {
-      scriptText = `Hola a todos. Hoy veremos los pasos sencillos para dominar ${topic}. De forma práctica y con un tono ${tone}, avanzaremos paso a paso en este video.`;
+    if (tone === 'persuasivo') {
+      scriptText = `¡Atención! ¿Buscas potenciar tu alcance sobre ${topic}? Te presentamos la herramienta definitiva para lograrlo en tiempo récord. ¡Contáctanos hoy!`;
+    } else if (tone === 'informativo') {
+      scriptText = `El día de hoy explicaremos a fondo los fundamentos esenciales de ${topic}. Analizaremos la estructura actual con un enfoque didáctico y directo.`;
+    } else if (tone === 'entusiasta') {
+      scriptText = `¡Estamos sumamente emocionados de anunciar el lanzamiento de ${topic}! Es un hito tecnológico que transformará por completo la industria.`;
     } else {
-      scriptText = `Bienvenidos. Presentamos la guía definitiva sobre ${topic}. Analizaremos la estructura actual con un enfoque ${tone} y detallado para empresas.`;
+      scriptText = `Bienvenidos. Presentamos la guía analítica sobre ${topic}. Evaluaremos el estado del negocio con un criterio ejecutivo y profesional.`;
     }
 
-    const textarea = document.getElementById('editorScriptTextarea');
-    if (textarea) textarea.value = scriptText;
-
-    showToast('Guión Redactado', 'La IA ha escrito tu guión en el cuadro de texto.', 'success');
+    document.getElementById('editorScriptTextarea').value = scriptText;
+    scenes[currentSceneIndex].script = scriptText;
+    showToast('Guión Redactado por IA', 'Se actualizó el cuadro de texto del guión.', 'success');
   });
 }
 
-// TTS Script Audio Preview
+// --- REAL TTS & VIDEOPLAY GENERATION ---
+
+// 1. Text-to-Speech preview
 const btnPlayScriptSpeech = document.getElementById('btnPlayScriptSpeech');
 const btnStopScriptSpeech = document.getElementById('btnStopScriptSpeech');
 const canvasSubtitleOverlay = document.getElementById('canvasSubtitleOverlay');
@@ -1325,25 +1753,18 @@ if (btnPlayScriptSpeech) {
       return;
     }
 
-    // Stop current speech and audio
     stopTTSPreview();
 
-    const voices = getLocal('sdl_voices') || [];
-    const activeVc = voices.find(v => v.id === selectedVoiceId) || DEFAULT_VOICES[0];
+    const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+    const activeVc = voices.find(v => v.id === scenes[currentSceneIndex].voiceId) || DEFAULT_VOICES[0];
 
-    // Try real ElevenLabs TTS if backend is online and configured
     if (isBackendOnline && backendApiConfigured.elevenLabsConfigured) {
-      showToast('Sintetizando voz real...', 'Consultando locución con ElevenLabs.', 'info');
+      showToast('Sintetizando voz real...', 'Consultando ElevenLabs.', 'info');
       
       fetch('http://localhost:3000/api/tts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          text: scriptText,
-          voiceId: activeVc.id
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: scriptText, voiceId: activeVc.id })
       })
       .then(res => {
         if (!res.ok) return res.json().then(err => { throw new Error(err.error || 'TTS failed'); });
@@ -1359,22 +1780,15 @@ if (btnPlayScriptSpeech) {
           if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'none';
           if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'inline-flex';
           
-          const canvasStage = document.getElementById('videoCanvasStage');
-          if (canvasStage) canvasStage.classList.add('speaking');
+          layerAvatar.classList.add('talking');
           
           if (canvasSubtitleOverlay) {
             canvasSubtitleOverlay.innerHTML = `<span>"${scriptText.length > 60 ? scriptText.slice(0, 57) + '...' : scriptText}"</span>`;
           }
         };
 
-        audio.onended = () => {
-          stopTTSPreview();
-        };
-
-        audio.onerror = () => {
-          stopTTSPreview();
-        };
-
+        audio.onended = () => stopTTSPreview();
+        audio.onerror = () => stopTTSPreview();
         audio.play();
       })
       .catch(err => {
@@ -1383,7 +1797,6 @@ if (btnPlayScriptSpeech) {
         runLocalSpeechSynthesis(scriptText, activeVc);
       });
     } else {
-      // Local SpeechSynthesis fallback
       runLocalSpeechSynthesis(scriptText, activeVc);
     }
   });
@@ -1391,17 +1804,15 @@ if (btnPlayScriptSpeech) {
 
 function runLocalSpeechSynthesis(scriptText, activeVc) {
   if (!('speechSynthesis' in window)) {
-    showToast('No soportado', 'La síntesis de voz no es compatible con este navegador.', 'error');
+    showToast('No soportado', 'La síntesis de voz no es compatible.', 'error');
     return;
   }
 
   const utterance = new SpeechSynthesisUtterance(scriptText);
-  
   if (activeVc.pitch !== undefined) utterance.pitch = activeVc.pitch;
   if (activeVc.rate !== undefined) utterance.rate = activeVc.rate;
 
-  const sysVoices = window.speechSynthesis.getVoices();
-  const match = getSystemVoiceForId(activeVc, sysVoices);
+  const match = getSystemVoiceForId(activeVc, window.speechSynthesis.getVoices());
   if (match) utterance.voice = match;
 
   utterance.onstart = () => {
@@ -1409,21 +1820,15 @@ function runLocalSpeechSynthesis(scriptText, activeVc) {
     if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'none';
     if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'inline-flex';
     
-    const canvasStage = document.getElementById('videoCanvasStage');
-    if (canvasStage) canvasStage.classList.add('speaking');
+    layerAvatar.classList.add('talking');
     
     if (canvasSubtitleOverlay) {
       canvasSubtitleOverlay.innerHTML = `<span>"${scriptText.length > 60 ? scriptText.slice(0, 57) + '...' : scriptText}"</span>`;
     }
   };
 
-  utterance.onend = () => {
-    stopTTSPreview();
-  };
-
-  utterance.onerror = () => {
-    stopTTSPreview();
-  };
+  utterance.onend = () => stopTTSPreview();
+  utterance.onerror = () => stopTTSPreview();
 
   activeSpeechUtterance = utterance;
   window.speechSynthesis.speak(utterance);
@@ -1445,57 +1850,105 @@ function stopTTSPreview() {
   if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'inline-flex';
   if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'none';
   
-  const canvasStage = document.getElementById('videoCanvasStage');
-  if (canvasStage) canvasStage.classList.remove('speaking');
+  layerAvatar.classList.remove('talking');
 
   if (canvasSubtitleOverlay) {
     canvasSubtitleOverlay.innerHTML = `<span>Haz clic en reproducir guion para ver el avatar hablar</span>`;
   }
 }
 
-// Script Translator
-const btnTranslate = document.getElementById('btnTranslateEditorScript');
-if (btnTranslate) {
-  btnTranslate.addEventListener('click', () => {
-    const textEl = document.getElementById('editorScriptTextarea');
-    const lang = document.getElementById('editorTranslateLang').value;
-    if (!textEl || !textEl.value.trim()) return;
+// 2. Play full timeline scenes sequential preview
+const btnPlayFullTimelinePreview = document.getElementById('btnPlayFullTimelinePreview');
+const btnPlayAllTimeline = document.getElementById('btnPlayAllTimeline');
 
-    let text = textEl.value;
-    if (lang === 'en') {
-      text = "Hello! Welcome to Synthetic Digital Labs. Today I will show you how to create avatars and clone voices professionally.";
-    } else if (lang === 'pt') {
-      text = "Olá! Bem-vindo ao Synthetic Digital Labs. Hoje vou mostrar como criar avatares e clonar vozes profissionalmente.";
-    } else {
-      text = "¡Hola! Bienvenidos a Synthetic Digital Labs. Hoy les mostraré cómo crear avatares y clonar voces de forma profesional.";
+function startFullTimelinePreview() {
+  stopTTSPreview();
+  
+  let sceneIndex = 0;
+  function playNextScene() {
+    if (sceneIndex >= scenes.length) {
+      showToast('Vista Previa Terminada', 'Línea de tiempo reproducida por completo.', 'success');
+      currentSceneIndex = 0;
+      syncEditorPresets();
+      return;
     }
 
-    textEl.value = text;
-    showToast('Guión Traducido', 'Texto adaptado al idioma elegido.', 'success');
-  });
+    currentSceneIndex = sceneIndex;
+    syncEditorPresets();
+    
+    const scene = scenes[sceneIndex];
+    const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+    const activeVc = voices.find(v => v.id === scene.voiceId) || DEFAULT_VOICES[0];
+    
+    // Speaks the script
+    if (isBackendOnline && backendApiConfigured.elevenLabsConfigured) {
+      fetch('http://localhost:3000/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: scene.script, voiceId: activeVc.id })
+      })
+      .then(res => res.blob())
+      .then(blob => {
+        const audio = new Audio(URL.createObjectURL(blob));
+        activeAudioElement = audio;
+
+        audio.onplay = () => {
+          layerAvatar.classList.add('talking');
+          if (canvasSubtitleOverlay) {
+            canvasSubtitleOverlay.innerHTML = `<span>"${scene.script.length > 60 ? scene.script.slice(0, 57) + '...' : scene.script}"</span>`;
+          }
+        };
+
+        audio.onended = () => {
+          layerAvatar.classList.remove('talking');
+          sceneIndex++;
+          playNextScene();
+        };
+        audio.play();
+      })
+      .catch(() => {
+        runLocalTTSForTimeline();
+      });
+    } else {
+      runLocalTTSForTimeline();
+    }
+
+    function runLocalTTSForTimeline() {
+      const utterance = new SpeechSynthesisUtterance(scene.script);
+      if (activeVc.pitch !== undefined) utterance.pitch = activeVc.pitch;
+      if (activeVc.rate !== undefined) utterance.rate = activeVc.rate;
+      
+      const match = getSystemVoiceForId(activeVc, window.speechSynthesis.getVoices());
+      if (match) utterance.voice = match;
+
+      utterance.onstart = () => {
+        layerAvatar.classList.add('talking');
+        if (canvasSubtitleOverlay) {
+          canvasSubtitleOverlay.innerHTML = `<span>"${scene.script.length > 60 ? scene.script.slice(0, 57) + '...' : scene.script}"</span>`;
+        }
+      };
+
+      utterance.onend = () => {
+        layerAvatar.classList.remove('talking');
+        sceneIndex++;
+        playNextScene();
+      };
+      
+      activeSpeechUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
+  playNextScene();
 }
 
-// Timeline Scene Duration
-const slider = document.getElementById('sceneDurationSlider');
-const durationLbl = document.getElementById('timelineDurationLabel');
-if (slider && durationLbl) {
-  slider.addEventListener('input', () => {
-    durationLbl.textContent = `${parseFloat(slider.value).toFixed(1)}s`;
-  });
-}
+if (btnPlayFullTimelinePreview) btnPlayFullTimelinePreview.addEventListener('click', startFullTimelinePreview);
+if (btnPlayAllTimeline) btnPlayAllTimeline.addEventListener('click', startFullTimelinePreview);
 
-// Add scene button trigger
-const btnAddScene = document.getElementById('btnAddScene');
-if (btnAddScene) {
-  btnAddScene.addEventListener('click', () => {
-    showToast('Escena Añadida', 'Nueva escena insertada en la línea de tiempo.', 'info');
-  });
-}
+// 3. Generate video with D-ID (Real API with Polling Status / Mock Fallback)
+const btnGenerateVideo = document.getElementById('btnGenerateVideo');
 
-// --- GENERAR VIDEO ACTION ---
-const btnGenVideo = document.getElementById('btnGenerateVideo');
-
-function runMockVideoGeneration(script, credits) {
+function runMockVideoGeneration(scriptCombined, credits) {
   const overlay = document.getElementById('globalModalOverlay');
   const icon = document.getElementById('globalModalIcon');
   const titleEl = document.getElementById('globalModalTitle');
@@ -1506,16 +1959,15 @@ function runMockVideoGeneration(script, credits) {
     icon.className = 'modal-icon';
     icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
     titleEl.textContent = 'Renderizando Video (Simulado)';
-    msgEl.textContent = 'Maquetando el lienzo 3D y alineando voz neuronal con labios...';
+    msgEl.textContent = 'Maquetando escenas y unificando audios neuronales...';
     actionBtn.style.display = 'none';
     overlay.classList.add('active');
 
     const steps = [
-      { text: 'Extrayendo guión de escena...', delay: 600 },
-      { text: 'Sintetizando locución de audio...', delay: 1300 },
-      { text: 'Alineando movimiento de labios del avatar...', delay: 2100 },
-      { text: 'Efectuando render de video Canvas...', delay: 2800 },
-      { text: 'Compilando archivo MP4 final...', delay: 3500 }
+      { text: 'Procesando transiciones de escenas...', delay: 700 },
+      { text: 'Sintetizando locución de ElevenLabs...', delay: 1400 },
+      { text: 'Alineando lipsync facial fotorrealista...', delay: 2200 },
+      { text: 'Generando archivo MP4 HD...', delay: 3000 }
     ];
 
     steps.forEach(step => {
@@ -1527,59 +1979,57 @@ function runMockVideoGeneration(script, credits) {
     setTimeout(() => {
       setCredits(credits - 20);
       
-      const avatars = getLocal('sdl_avatars') || [];
-      const chosenAv = avatars.find(a => a.id === selectedAvatarId) || DEFAULT_AVATARS[0];
-      
+      const avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+      const activeAv = avatars.find(a => a.id === scenes[0].avatarId) || DEFAULT_AVATARS[0];
+
       const newProj = {
         id: 'p-' + Date.now(),
-        name: `Video: ${script.slice(0, 25)}...`,
+        name: `Video: ${scriptCombined.slice(0, 25)}...`,
         type: 'video',
         date: new Date().toISOString().split('T')[0],
-        duration: `${slider ? slider.value : '5.0'}s`,
-        details: `${selectedRatio === '16-9' ? 'Horizontal (16:9)' : 'Vertical (9:16)'} • Avatar ${chosenAv.name}`,
-        avatarImg: chosenAv.img
+        duration: `${scenes.reduce((acc, curr) => acc + curr.duration, 0)}s`,
+        details: `${selectedRatio === '16-9' ? 'Horizontal (16:9)' : 'Vertical (9:16)'} • Avatar ${activeAv.name}`,
+        avatarImg: activeAv.img
       };
 
       const projs = getLocal('sdl_projects') || [];
       projs.push(newProj);
       setLocal('sdl_projects', projs);
 
-      icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+      icon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--accent-green)"></i>';
       titleEl.textContent = '¡Video Listo!';
-      msgEl.textContent = 'Tu video de avatar simulado ha finalizado la renderización y ha sido añadido a tu biblioteca.';
-      actionBtn.style.display = 'inline-block';
+      msgEl.textContent = 'El render del video de avatar se completó con éxito.';
+      actionBtn.style.display = 'block';
       actionBtn.textContent = 'Ver en Biblioteca';
 
-      const libraryRedirect = () => {
+      const redirect = () => {
         overlay.classList.remove('active');
         switchView('library');
-        renderLibrary();
-        actionBtn.removeEventListener('click', libraryRedirect);
+        actionBtn.removeEventListener('click', redirect);
       };
-      actionBtn.addEventListener('click', libraryRedirect);
+      actionBtn.addEventListener('click', redirect);
 
-      showToast('Video Generado', 'Tu video de avatar simulado se guardó correctamente.', 'success');
-      renderHomeWidgets();
+      showToast('Video Generado', 'Guardado en tu biblioteca.', 'success');
       updateDashboardStats();
-    }, 4200);
+    }, 3800);
   }
 }
 
-function completeRealVideoGeneration(videoUrl, script, credits) {
+function completeRealVideoGeneration(videoUrl, scriptCombined, credits) {
   setCredits(credits - 20);
 
-  const avatars = getLocal('sdl_avatars') || [];
-  const chosenAv = avatars.find(a => a.id === selectedAvatarId) || DEFAULT_AVATARS[0];
+  const avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+  const activeAv = avatars.find(a => a.id === scenes[0].avatarId) || DEFAULT_AVATARS[0];
 
   const newProj = {
     id: 'p-' + Date.now(),
-    name: `Video: ${script.slice(0, 25)}...`,
+    name: `Video: ${scriptCombined.slice(0, 25)}...`,
     type: 'video',
     date: new Date().toISOString().split('T')[0],
-    duration: `${slider ? slider.value : '5.0'}s`,
-    details: `${selectedRatio === '16-9' ? 'Horizontal (16:9)' : 'Vertical (9:16)'} • Avatar ${chosenAv.name}`,
-    avatarImg: chosenAv.img,
-    videoUrl: videoUrl // Real D-ID video output url!
+    duration: `${scenes.reduce((acc, curr) => acc + curr.duration, 0)}s`,
+    details: `${selectedRatio === '16-9' ? 'Horizontal (16:9)' : 'Vertical (9:16)'} • Avatar ${activeAv.name}`,
+    avatarImg: activeAv.img,
+    videoUrl: videoUrl // D-ID output URL
   };
 
   const projs = getLocal('sdl_projects') || [];
@@ -1593,28 +2043,26 @@ function completeRealVideoGeneration(videoUrl, script, credits) {
   const actionBtn = document.getElementById('globalModalActionBtn');
 
   if (overlay) {
-    icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+    icon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--accent-green)"></i>';
     titleEl.textContent = '¡Video Listo!';
-    msgEl.textContent = 'Tu video de avatar ha finalizado la renderización real en HD y está listo para reproducir.';
-    actionBtn.style.display = 'inline-block';
+    msgEl.textContent = 'El video fotorrealista de D-ID ha finalizado su procesamiento en la nube.';
+    actionBtn.style.display = 'block';
     actionBtn.textContent = 'Ver en Biblioteca';
 
-    const libraryRedirect = () => {
+    const redirect = () => {
       overlay.classList.remove('active');
       switchView('library');
-      renderLibrary();
-      actionBtn.removeEventListener('click', libraryRedirect);
+      actionBtn.removeEventListener('click', redirect);
     };
-    actionBtn.addEventListener('click', libraryRedirect);
+    actionBtn.addEventListener('click', redirect);
   }
 
-  showToast('Video Generado', 'Tu video real se ha renderizado y guardado con éxito.', 'success');
-  renderHomeWidgets();
+  showToast('Video Generado', 'Guardado en tu biblioteca.', 'success');
   updateDashboardStats();
 }
 
 function handleVideoGenError(err) {
-  console.error('Real video generation error:', err);
+  console.error('Real video gen failed:', err);
   
   const overlay = document.getElementById('globalModalOverlay');
   const icon = document.getElementById('globalModalIcon');
@@ -1625,44 +2073,39 @@ function handleVideoGenError(err) {
   if (overlay) {
     icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--accent-red)"></i>';
     titleEl.textContent = 'Error de Renderizado';
-    msgEl.textContent = `Ocurrió un error en la conexión o procesamiento con D-ID: ${err.message || err}. ¿Deseas usar la simulación offline?`;
-    actionBtn.style.display = 'inline-block';
+    msgEl.textContent = `No se pudo conectar con el servidor de renderizado real: ${err.message || err}. ¿Deseas usar el simulador de alta fidelidad?`;
+    actionBtn.style.display = 'block';
     actionBtn.textContent = 'Usar Simulación';
 
     const useSim = () => {
       overlay.classList.remove('active');
       actionBtn.removeEventListener('click', useSim);
       
-      const script = document.getElementById('editorScriptTextarea').value.trim();
+      const scriptCombined = scenes.map(s => s.script).join(' ');
       const credits = getCredits();
-      runMockVideoGeneration(script, credits);
+      runMockVideoGeneration(scriptCombined, credits);
     };
     actionBtn.addEventListener('click', useSim);
   }
-
-  showToast('Error de Conexión', 'No se pudo completar el render real. Revisa la consola o activa la simulación.', 'error');
 }
 
-if (btnGenVideo) {
-  btnGenVideo.addEventListener('click', () => {
-    const script = document.getElementById('editorScriptTextarea').value.trim();
-    if (!script) {
+if (btnGenerateVideo) {
+  btnGenerateVideo.addEventListener('click', () => {
+    const scriptCombined = scenes.map(s => s.script).join(' ').trim();
+    if (!scriptCombined) {
       showToast('Escribe un guión', 'No puedes generar un video vacío.', 'error');
       return;
     }
 
     const credits = getCredits();
     if (credits < 20) {
-      showModal('Créditos Insuficientes', 'Generar un video con avatar consume 20 créditos.', false);
+      showModal('Créditos Insuficientes', 'Generar un video consume 20 créditos.', false);
       return;
     }
 
-    // Stop speaking preview
     stopTTSPreview();
 
     if (isBackendOnline && backendApiConfigured.dIdConfigured) {
-      showToast('Iniciando render real...', 'Conectando con D-ID Talks API.', 'info');
-      
       const overlay = document.getElementById('globalModalOverlay');
       const icon = document.getElementById('globalModalIcon');
       const titleEl = document.getElementById('globalModalTitle');
@@ -1672,57 +2115,52 @@ if (btnGenVideo) {
       if (overlay) {
         icon.className = 'modal-icon';
         icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        titleEl.textContent = 'Renderizando Video Real';
-        msgEl.textContent = 'Enviando petición de generación labial a D-ID...';
+        titleEl.textContent = 'Llamando a D-ID';
+        msgEl.textContent = 'Estableciendo canal seguro e inyectando imagen de presentador...';
         actionBtn.style.display = 'none';
         overlay.classList.add('active');
       }
 
       fetch('http://localhost:3000/api/generate-video', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          avatarId: selectedAvatarId,
-          script: script
+          avatarId: scenes[0].avatarId,
+          script: scriptCombined
         })
       })
       .then(res => {
-        if (!res.ok) return res.json().then(err => { throw new Error(err.error || 'Server error'); });
+        if (!res.ok) return res.json().then(err => { throw new Error(err.error || 'API failed'); });
         return res.json();
       })
       .then(data => {
         const talkId = data.id;
-        msgEl.textContent = 'Video creado en D-ID. Renderizando (ID: ' + talkId + ')...';
+        msgEl.textContent = 'Video inicializado. Procesando sincronización labial...';
         
-        let pollAttempts = 0;
-        const pollInterval = setInterval(() => {
-          pollAttempts++;
-          if (pollAttempts > 60) {
-            clearInterval(pollInterval);
+        let pollCount = 0;
+        const interval = setInterval(() => {
+          pollCount++;
+          if (pollCount > 60) {
+            clearInterval(interval);
             handleVideoGenError(new Error('D-ID render timeout.'));
             return;
           }
 
           fetch(`http://localhost:3000/api/video-status/${talkId}`)
-          .then(res => {
-            if (!res.ok) throw new Error('Failed to fetch video status');
-            return res.json();
-          })
+          .then(res => res.json())
           .then(statusData => {
             if (statusData.status === 'done') {
-              clearInterval(pollInterval);
-              completeRealVideoGeneration(statusData.videoUrl, script, credits);
+              clearInterval(interval);
+              completeRealVideoGeneration(statusData.videoUrl, scriptCombined, credits);
             } else if (statusData.status === 'error' || statusData.error) {
-              clearInterval(pollInterval);
-              throw new Error(statusData.error || 'D-ID rendering failed on server.');
+              clearInterval(interval);
+              throw new Error(statusData.error || 'Rendering error on D-ID server.');
             } else {
-              msgEl.textContent = `Renderizando video en D-ID... Estado: ${statusData.status} (${pollAttempts * 2}s)`;
+              msgEl.textContent = `Procesando gesticulación de presentador... Estado: ${statusData.status} (${pollCount * 2}s)`;
             }
           })
           .catch(err => {
-            clearInterval(pollInterval);
+            clearInterval(interval);
             handleVideoGenError(err);
           });
         }, 2000);
@@ -1731,15 +2169,12 @@ if (btnGenVideo) {
         handleVideoGenError(err);
       });
     } else {
-      // Local simulated mock fallback
-      runMockVideoGeneration(script, credits);
+      runMockVideoGeneration(scriptCombined, credits);
     }
   });
 }
 
-
-// --- PART 4: LIBRARY & PROJECTS ---
-
+// --- BIBLIOTECA VIEW ---
 function renderLibrary() {
   const videosGrid = document.getElementById('libraryVideosGrid');
   const audiosGrid = document.getElementById('libraryAudiosGrid');
@@ -1748,22 +2183,22 @@ function renderLibrary() {
   const scriptsGrid = document.getElementById('libraryScriptsGrid');
 
   const projects = getLocal('sdl_projects') || [];
-  const avatars = getLocal('sdl_avatars') || [];
-  const voices = getLocal('sdl_voices') || [];
+  const avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+  const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
 
-  // 1. Render Videos generated
+  // 1. Videos
   if (videosGrid) {
     const vids = projects.filter(p => p.type === 'video');
     videosGrid.innerHTML = '';
     if (vids.length === 0) {
-      videosGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay videos generados.</p>';
+      videosGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay videos renderizados.</p>';
     } else {
       vids.forEach(v => {
         const card = document.createElement('div');
         card.className = 'project-card';
         card.innerHTML = `
           <div class="proj-thumb-box">
-            <img src="${v.avatarImg || 'assets/avatar_sofia.png'}" alt="Avatar">
+            <img src="${v.avatarImg || 'assets/avatar_sofia.png'}" alt="Thumb">
             <span class="proj-duration">${v.duration}</span>
           </div>
           <div class="proj-info">
@@ -1781,12 +2216,12 @@ function renderLibrary() {
     }
   }
 
-  // 2. Render Audios generated (TTS)
+  // 2. Audios
   if (audiosGrid) {
     const auds = projects.filter(p => p.type === 'audio');
     audiosGrid.innerHTML = '';
     if (auds.length === 0) {
-      audiosGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay audios generados.</p>';
+      audiosGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay audios guardados.</p>';
     } else {
       auds.forEach(a => {
         const card = document.createElement('div');
@@ -1810,7 +2245,7 @@ function renderLibrary() {
     }
   }
 
-  // 3. Render Cloned Voices
+  // 3. Cloned
   if (clonedGrid) {
     const cln = voices.filter(v => v.tone === 'Clonado');
     clonedGrid.innerHTML = '';
@@ -1822,10 +2257,10 @@ function renderLibrary() {
         card.className = 'voice-card';
         card.style.flexDirection = 'column';
         card.style.alignItems = 'flex-start';
-        card.style.gap = '12px';
+        card.style.gap = '10px';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-            <strong style="font-size:0.9rem;">${c.name}</strong>
+            <strong>${c.name}</strong>
             <button class="btn-outline-sm btn-delete-voice-lib" data-id="${c.id}"><i class="fa-solid fa-trash"></i></button>
           </div>
           <span style="font-size:0.75rem; color:var(--text-muted)">Idioma: ${c.lang} • Género: ${c.gender}</span>
@@ -1835,12 +2270,12 @@ function renderLibrary() {
     }
   }
 
-  // 4. Render Created Avatars
+  // 4. Avatars
   if (avatarsLibGrid) {
-    const avs = avatars.filter(a => a.id.startsWith('av-') && a.id !== 'av-sofia' && a.id !== 'av-roberto' && a.id !== 'av-elena' && a.id !== 'av-nova');
+    const avs = avatars.filter(a => a.id.startsWith('av-') && a.id !== 'av-sofia-biz' && a.id !== 'av-roberto-biz' && a.id !== 'av-elena-pod' && a.id !== 'av-nova-fut');
     avatarsLibGrid.innerHTML = '';
     if (avs.length === 0) {
-      avatarsLibGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay avatares personalizados creados.</p>';
+      avatarsLibGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay avatares personalizados.</p>';
     } else {
       avs.forEach(av => {
         const card = document.createElement('div');
@@ -1854,7 +2289,7 @@ function renderLibrary() {
               <h4 style="font-size:0.8rem; margin:0;">${av.name}</h4>
               <button class="btn-outline-sm btn-delete-avatar-lib" data-id="${av.id}" style="padding:2px 6px; font-size:0.65rem;"><i class="fa-solid fa-trash"></i></button>
             </div>
-            <span style="font-size:0.65rem;">${av.style}</span>
+            <span>${av.style}</span>
           </div>
         `;
         avatarsLibGrid.appendChild(card);
@@ -1862,12 +2297,12 @@ function renderLibrary() {
     }
   }
 
-  // 5. Render Scripts
+  // 5. Scripts
   if (scriptsGrid) {
     const scrs = projects.filter(p => p.type === 'guion');
     scriptsGrid.innerHTML = '';
     if (scrs.length === 0) {
-      scriptsGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay guiones guardados.</p>';
+      scriptsGrid.innerHTML = '<p class="w-full text-center" style="grid-column:1/-1;color:var(--text-muted)">No hay borradores guardados.</p>';
     } else {
       scrs.forEach(s => {
         const card = document.createElement('div');
@@ -1888,7 +2323,7 @@ function renderLibrary() {
   }
 }
 
-// Binds library tab changes
+// Binds library sub tab triggers
 document.querySelectorAll('#view-library .hg-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#view-library .hg-tab-btn').forEach(b => b.classList.remove('active'));
@@ -1906,14 +2341,14 @@ document.querySelectorAll('#view-library .hg-tab-btn').forEach(btn => {
     panels.forEach(p => {
       const el = document.getElementById(p);
       if (el) {
-        if (p.startsWith(tab)) el.classList.add('active');
+        if (p === tab) el.classList.add('active');
         else el.classList.remove('active');
       }
     });
   });
 });
 
-// Bind sub-tabs inside Avatars
+// Bind avatars sub tab triggers
 document.querySelectorAll('#view-avatars .hg-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#view-avatars .hg-tab-btn').forEach(b => b.classList.remove('active'));
@@ -1929,14 +2364,36 @@ document.querySelectorAll('#view-avatars .hg-tab-btn').forEach(btn => {
     panels.forEach(p => {
       const el = document.getElementById(p);
       if (el) {
-        if (p.endsWith(tab)) el.classList.add('active');
+        if (p === tab) el.classList.add('active');
         else el.classList.remove('active');
       }
     });
   });
 });
 
-// Bind sub-tabs inside Policies
+// Bind voices sub tab triggers
+document.querySelectorAll('#view-voices .hg-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#view-voices .hg-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const tab = btn.dataset.tab;
+    const panels = [
+      'voices-panel-list',
+      'voices-panel-clone'
+    ];
+
+    panels.forEach(p => {
+      const el = document.getElementById(p);
+      if (el) {
+        if (p === tab) el.classList.add('active');
+        else el.classList.remove('active');
+      }
+    });
+  });
+});
+
+// Bind policies sub tab triggers
 document.querySelectorAll('#view-policies .hg-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#view-policies .hg-tab-btn').forEach(b => b.classList.remove('active'));
@@ -1944,53 +2401,20 @@ document.querySelectorAll('#view-policies .hg-tab-btn').forEach(btn => {
 
     const tab = btn.dataset.tab;
     const panels = [
-      'pol-privacy-panel',
-      'pol-refund-panel',
-      'pol-ethics-panel'
+      'policy-privacy',
+      'policy-refund',
+      'policy-ethics'
     ];
 
     panels.forEach(p => {
       const el = document.getElementById(p);
       if (el) {
-        if (p.endsWith(tab)) el.classList.add('active');
+        if (p === tab) el.classList.add('active');
         else el.classList.remove('active');
       }
     });
   });
 });
-
-// Bind payment settings
-const paymentForm = document.getElementById('paymentForm');
-if (paymentForm) {
-  paymentForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    showToast('Tarjeta Guardada', 'Tus datos de facturación se han actualizado correctamente.', 'success');
-    showModal('Método de Pago Actualizado', 'Tu método de pago principal ha sido actualizado. Las futuras renovaciones automáticas se realizarán a esta tarjeta.', true);
-  });
-}
-
-const btnManageSubscription = document.getElementById('btnManageSubscription');
-if (btnManageSubscription) {
-  btnManageSubscription.addEventListener('click', () => {
-    showToast('Suscripción Activa', 'Estás suscrito al plan Creador Pro por $29/mes.', 'info');
-  });
-}
-
-const btnUpgradeEnterprise = document.getElementById('btnUpgradeEnterprise');
-if (btnUpgradeEnterprise) {
-  btnUpgradeEnterprise.addEventListener('click', () => {
-    showModal('Suscripción Empresarial', 'Para mejorar al plan Empresarial de $99/mes, ponte en contacto con soporte técnico a infoweb@syntheticdigitallab.com o al +1 786-872-6865.', true);
-  });
-}
-
-const studioSupportForm = document.getElementById('studioSupportForm');
-if (studioSupportForm) {
-  studioSupportForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    showToast('Mensaje Enviado', 'Hemos recibido tu consulta técnica. Nos pondremos en contacto contigo en tu correo de perfil.', 'success');
-    document.getElementById('supportMsgText').value = '';
-  });
-}
 
 // Video modal player helper
 function showVideoPlayerModal(url) {
@@ -2018,14 +2442,14 @@ function showVideoPlayerModal(url) {
   });
 }
 
-// Download/Play button action
+// Download/Play button action listeners delegation
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.btn-dl-mock');
   if (btn) {
     const url = btn.dataset.url;
     if (url) {
       window.open(url, '_blank');
-      showToast('Enlace Abierto', 'El video de D-ID se ha abierto en una nueva pestaña.', 'success');
+      showToast('Enlace Abierto', 'El video se abrió en una pestaña externa.', 'success');
     } else {
       showToast('Descarga iniciada', `Descargando archivo HD: "${btn.dataset.name}"`, 'success');
     }
@@ -2055,7 +2479,7 @@ document.addEventListener('click', (e) => {
     }
   }
 
-  // Delete project trigger
+  // Delete project
   const delBtn = e.target.closest('.btn-delete-proj');
   if (delBtn) {
     const id = delBtn.dataset.id;
@@ -2064,35 +2488,35 @@ document.addEventListener('click', (e) => {
     setLocal('sdl_projects', projs);
     renderLibrary();
     updateDashboardStats();
-    showToast('Elemento Eliminado', 'El borrador se eliminó de la biblioteca.', 'info');
+    showToast('Elemento Eliminado', 'Se borró el borrador.', 'info');
   }
 
-  // Delete custom voice trigger
+  // Delete voice
   const delVoiceBtn = e.target.closest('.btn-delete-voice-lib');
   if (delVoiceBtn) {
     const id = delVoiceBtn.dataset.id;
-    let voices = getLocal('sdl_voices') || [];
+    let voices = getLocal('sdl_voices') || DEFAULT_VOICES;
     voices = voices.filter(v => v.id !== id);
     setLocal('sdl_voices', voices);
     renderLibrary();
     renderClonedVoicesList();
     renderVoicesLibrary();
     updateDashboardStats();
-    showToast('Voz Eliminada', 'La voz clonada ha sido removida.', 'info');
+    showToast('Voz Eliminada', 'Se quitó la voz de tu catálogo.', 'info');
   }
 
-  // Delete custom avatar trigger
+  // Delete avatar
   const delAvBtn = e.target.closest('.btn-delete-avatar-lib');
   if (delAvBtn) {
     const id = delAvBtn.dataset.id;
-    let avatars = getLocal('sdl_avatars') || [];
+    let avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
     avatars = avatars.filter(a => a.id !== id);
     setLocal('sdl_avatars', avatars);
     renderLibrary();
     renderAvatarsGrid();
     renderHomeWidgets();
     updateDashboardStats();
-    showToast('Avatar Eliminado', 'El avatar se removió de la lista.', 'info');
+    showToast('Avatar Eliminado', 'Se quitó de tu lista.', 'info');
   }
 
   // Load saved script to editor
@@ -2102,559 +2526,147 @@ document.addEventListener('click', (e) => {
     const projects = getLocal('sdl_projects') || [];
     const found = projects.find(p => p.name === scriptName && p.type === 'guion');
     if (found) {
-      const textarea = document.getElementById('editorScriptTextarea');
-      if (textarea) textarea.value = found.details.split(' • ')[0] || found.name;
+      scenes = [
+        {
+          id: 's-' + Date.now(),
+          avatarId: 'av-sofia-biz',
+          voiceId: 'v-sofia',
+          script: found.details.split(' • ')[0] || found.name,
+          bg: 'dark',
+          duration: 5,
+          avatarPos: { top: 50, left: 50, width: 150, height: 150 },
+          textPos: { top: 15, left: 10, width: 300, height: 50, text: 'Mi Título', fontSize: 28, fontStyle: "'Inter', sans-serif", color: '#ffffff', display: 'none' }
+        }
+      ];
+      currentSceneIndex = 0;
+      focusLayer('avatar');
       switchView('editor');
-      showToast('Guión cargado', 'Borrador cargado en el editor.', 'success');
+      showToast('Borrador Cargado', 'Se cargó el guión en el editor.', 'success');
     }
   }
 });
 
+// --- SUBSCRIPTION & PAYMENT PRICING MOCK ---
+const btnSelectCreatorPlan = document.getElementById('btnSelectCreatorPlan');
+const btnSelectBusinessPlan = document.getElementById('btnSelectBusinessPlan');
+const btnSaveCardDetails = document.getElementById('btnSaveCardDetails');
 
-// --- PART 5: CONFIGURACIONES (SETTINGS) ---
-
-const settingsForm = document.getElementById('settingsForm');
-if (settingsForm) {
-  settingsForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('settingsUsername').value.trim();
-    if (name) {
-      safeSetItem('sdl_username', name);
+if (btnSelectCreatorPlan) {
+  btnSelectCreatorPlan.addEventListener('click', () => {
+    showModal('Checkout Suscripción', '¿Deseas suscribirte al Plan Creador Pro por $29/mes?', true, () => {
+      setCredits(150);
+      showToast('Plan Actualizado', '¡Gracias por tu compra! Tu límite de créditos se incrementó a 150.', 'success');
       
-      const sidebarName = document.getElementById('sidebarUsername');
-      if (sidebarName) sidebarName.textContent = name;
-
-      showToast('Ajustes Guardados', 'Nombre de perfil actualizado.', 'success');
-    }
-  });
-}
-
-// Simulated Credits Reload
-const btnResetCredits = document.getElementById('btnResetCredits');
-if (btnResetCredits) {
-  btnResetCredits.addEventListener('click', () => {
-    setCredits(150);
-    showToast('Créditos Recargados', 'Se han restaurado tus 150 créditos mensuales.', 'success');
-  });
-}
-
-// API Key toggle view
-const btnToggleApiKey = document.getElementById('btnToggleApiKey');
-const apiKeyVal = document.getElementById('apiKeyVal');
-if (btnToggleApiKey && apiKeyVal) {
-  btnToggleApiKey.addEventListener('click', () => {
-    if (apiKeyVal.type === 'password') {
-      apiKeyVal.type = 'text';
-      btnToggleApiKey.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
-    } else {
-      apiKeyVal.type = 'password';
-      btnToggleApiKey.innerHTML = '<i class="fa-solid fa-eye"></i>';
-    }
-  });
-}
-
-// Update stats initially
-function updateDashboardStats() {
-  const avatars = getLocal('sdl_avatars') || [];
-  const voices = getLocal('sdl_voices') || [];
-  const projects = getLocal('sdl_projects') || [];
-  
-  const avatarsCount = avatars.length;
-  const voicesCount = voices.length;
-  const projectsCount = projects.length;
-  const videosCount = projects.filter(p => p.type === 'video').length;
-
-  const elAvatars = document.getElementById('dashValAvatars');
-  const elVoices = document.getElementById('dashValVoices');
-  const elVideos = document.getElementById('dashValVideos');
-  const elProjects = document.getElementById('dashValProjects');
-
-  if (elAvatars) elAvatars.textContent = avatarsCount;
-  if (elVoices) elVoices.textContent = voicesCount;
-  if (elVideos) elVideos.textContent = videosCount;
-  if (elProjects) elProjects.textContent = projectsCount;
-}
-
-// Sidebar Profile load name on start
-const storedUsername = safeGetItem('sdl_username');
-if (storedUsername) {
-  const sidebarName = document.getElementById('sidebarUsername');
-  if (sidebarName) sidebarName.textContent = storedUsername;
-  const settingsUser = document.getElementById('settingsUsername');
-  if (settingsUser) settingsUser.value = storedUsername;
-}
-
-
-// ==========================================
-// VIRTUAL VOICE AGENT "NOVA" (JARVIS/SIRI STYLE)
-// ==========================================
-class NovaAssistant {
-  constructor() {
-    this.agentContainer = document.getElementById('novaAgent');
-    this.bubbleText = document.getElementById('novaBubble');
-    this.bubbleSpan = document.getElementById('novaBubbleText');
-    this.guideBanner = document.getElementById('novaGuideBanner');
-    this.closeBannerBtn = document.getElementById('closeGuideBanner');
-    this.avatarImg = this.agentContainer ? this.agentContainer.querySelector('.nova-robot-char') : null;
-    
-    this.recognition = null;
-    this.voices = [];
-    this.sleepTimer = null;
-    this.state = 'sleep'; // 'sleep', 'listening', 'speaking'
-    this.firstInteractionDone = false;
-    this.micPermissionDenied = false;
-
-    if (!this.agentContainer) return;
-
-    this.initSpeechSynthesis();
-    this.initSpeechRecognition();
-    this.bindEvents();
-  }
-
-  initSpeechSynthesis() {
-    if ('speechSynthesis' in window) {
-      const loadVoices = () => {
-        this.voices = window.speechSynthesis.getVoices();
-      };
-      loadVoices();
-      if (window.speechSynthesis.onvoiceschanged !== undefined) {
-        window.speechSynthesis.onvoiceschanged = loadVoices;
+      // Add invoice
+      const invoiceTableBody = document.getElementById('invoiceTableBody');
+      if (invoiceTableBody) {
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid var(--border-color)';
+        row.innerHTML = `
+          <td style="padding:10px 5px;">${new Date().toISOString().split('T')[0]}</td>
+          <td style="padding:10px 5px;">Suscripción Plan Creador Pro</td>
+          <td style="padding:10px 5px;">$29.00 USD</td>
+          <td style="padding:10px 5px; color:var(--accent-green); font-weight:600;">Pagado</td>
+        `;
+        invoiceTableBody.insertBefore(row, invoiceTableBody.firstChild);
       }
+    });
+  });
+}
+
+if (btnSelectBusinessPlan) {
+  btnSelectBusinessPlan.addEventListener('click', () => {
+    showModal('Checkout Suscripción', '¿Deseas comprar el Plan Business por $89/mes?', true, () => {
+      setCredits(500);
+      showToast('Plan Actualizado', '¡Plan Business Activo! Tu límite de créditos se incrementó a 500.', 'success');
+    });
+  });
+}
+
+if (btnSaveCardDetails) {
+  btnSaveCardDetails.addEventListener('click', () => {
+    const num = document.getElementById('cardNumInput').value;
+    if (num) {
+      showToast('Tarjeta Actualizada', 'Los datos de facturación se guardaron de forma segura.', 'success');
     }
-  }
+  });
+}
 
-  initSpeechRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      this.recognition = new SpeechRecognition();
-      this.recognition.continuous = false;
-      this.recognition.interimResults = false;
-      this.recognition.lang = 'es-ES';
-
-      this.recognition.onresult = (event) => {
-        const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-        console.log('[Nova Speech Input]:', transcript);
-        this.handleSpeechInput(transcript);
-      };
-
-      this.recognition.onerror = (event) => {
-        console.error('[Nova Speech Error]:', event.error);
-        if (event.error === 'not-allowed') {
-          this.micPermissionDenied = true;
-          this.updateBubble('Micrófono bloqueado. Di "Hola Nova" al autorizarlo.');
-          this.setState('sleep');
-        }
-      };
-
-      this.recognition.onend = () => {
-        // Auto-restart passive background listening
-        if (!this.micPermissionDenied && (this.state === 'sleep' || this.state === 'listening')) {
-          this.startListening();
-        }
-      };
-    } else {
-      console.log('[Nova]: Speech Recognition not supported in this browser.');
-      this.updateBubble('Control por voz no soportado.');
-    }
-  }
-
-  startListening() {
-    if (!this.recognition) return;
-    try {
-      this.recognition.start();
-    } catch (e) {
-      // Ignored if already listening
-    }
-  }
-
-  stopListening() {
-    if (!this.recognition) return;
-    try {
-      this.recognition.stop();
-    } catch (e) {
-      // Ignored if already stopped
-    }
-  }
-
-  bindEvents() {
-    if (this.closeBannerBtn && this.guideBanner) {
-      this.closeBannerBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.guideBanner.style.display = 'none';
-      });
-    }
-
-    if (this.guideBanner) {
-      this.guideBanner.addEventListener('click', (e) => {
-        if (e.target !== this.closeBannerBtn && e.target.parentElement !== this.closeBannerBtn) {
-          this.wakeUp();
-        }
-      });
-    }
-
-    // Accept consent button at startup
-    const acceptConsentBtn = document.getElementById('novaConsentAccept');
-    const consentPanel = document.getElementById('novaConsentPanel');
-    if (acceptConsentBtn && consentPanel) {
-      acceptConsentBtn.addEventListener('click', () => {
-        consentPanel.style.display = 'none';
-        this.wakeUp();
-      });
-    }
-
-    // Clicking avatar wrapper wakes up or resets timer
-    const avatarWrapper = this.agentContainer.querySelector('.nova-avatar-wrapper');
-    if (avatarWrapper) {
-      avatarWrapper.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.wakeUp();
-      });
-    }
-
-    // Start passive recognition in background upon any first scroll/click/touch
-    const startPassiveRecognition = () => {
-      if (!this.firstInteractionDone) {
-        this.firstInteractionDone = true;
-        this.startListening();
-        console.log('[Nova]: Background listening started.');
-        
-        // Remove listeners
-        window.removeEventListener('click', startPassiveRecognition);
-        window.removeEventListener('scroll', startPassiveRecognition);
-        window.removeEventListener('touchstart', startPassiveRecognition);
-      }
-    };
-    window.addEventListener('click', startPassiveRecognition);
-    window.addEventListener('scroll', startPassiveRecognition);
-    window.addEventListener('touchstart', startPassiveRecognition);
-  }
-
-  setState(newState) {
-    this.state = newState;
-    if (newState === 'sleep') {
-      this.agentContainer.className = 'nova-siri-container hidden';
-    } else {
-      this.agentContainer.className = `nova-siri-container state-${newState}`;
-    }
-  }
-
-  updateBubble(text) {
-    if (this.bubbleSpan) {
-      this.bubbleSpan.textContent = text;
-    }
-  }
-
-  wakeUp() {
-    this.micPermissionDenied = false;
-    this.agentContainer.classList.remove('hidden');
-    this.setState('listening');
-    this.updateBubble('¿En qué puedo ayudarte?');
-    
-    this.speak('Hola. Bienvenido a Synthetic Digital Labs. ¿En qué te puedo ayudar hoy?', true);
-  }
-
-  goToSleep() {
-    this.setState('sleep');
-    this.updateBubble('Hasta luego.');
-    
-    if ('speechSynthesis' in window) {
-      this.speak('Entendido. Si me necesitas de nuevo, solo dime "Hola Nova". ¡Que tengas un gran día!', false);
-    } else {
-      setTimeout(() => {
-        if (this.state === 'sleep') {
-          this.agentContainer.classList.add('hidden');
-          this.startListening();
-        }
-      }, 1200);
-    }
-  }
-
-  speak(text, keepActive = true) {
-    if (!('speechSynthesis' in window)) {
-      this.updateBubble(text);
-      this.setState(keepActive ? 'listening' : 'sleep');
+// --- SUPPORT TICKETS MOCK ---
+const btnSubmitSupportTicket = document.getElementById('btnSubmitSupportTicket');
+if (btnSubmitSupportTicket) {
+  btnSubmitSupportTicket.addEventListener('click', () => {
+    const sub = document.getElementById('ticketSubject').value.trim();
+    const msg = document.getElementById('ticketMessage').value.trim();
+    if (!sub || !msg) {
+      showToast('Campos vacíos', 'Por favor redacta el asunto y cuerpo del ticket.', 'error');
       return;
     }
-
-    this.stopListening();
-    this.setState('speaking');
-
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
     
-    // Find Spanish voice
-    if (this.voices.length === 0) {
-      this.voices = window.speechSynthesis.getVoices();
-    }
-    const esVoice = this.voices.find(v => (v.lang || '').includes('es') || (v.lang || '').includes('ES'));
-    if (esVoice) {
-      utterance.voice = esVoice;
-      utterance.lang = esVoice.lang;
-    } else {
-      utterance.lang = 'es-ES';
-    }
-
-    utterance.onstart = () => {
-      this.updateBubble(text);
-      if (this.sleepTimer) clearTimeout(this.sleepTimer);
-    };
-
-    utterance.onend = () => {
-      if (keepActive) {
-        this.setState('listening');
-        this.updateBubble('🎙️ Escuchando...');
-        setTimeout(() => {
-          if (this.state === 'listening') {
-            this.startListening();
-            this.resetSleepTimer();
-          }
-        }, 400);
-      } else {
-        this.setState('sleep');
-        setTimeout(() => {
-          if (this.state === 'sleep') {
-            this.agentContainer.classList.add('hidden');
-            this.startListening();
-          }
-        }, 800);
-      }
-    };
-
-    utterance.onerror = () => {
-      this.setState(keepActive ? 'listening' : 'sleep');
-      this.startListening();
-    };
-
-    window.speechSynthesis.speak(utterance);
-  }
-
-  resetSleepTimer() {
-    if (this.sleepTimer) clearTimeout(this.sleepTimer);
-    this.sleepTimer = setTimeout(() => {
-      if (this.state === 'listening') {
-        this.goToSleep();
-      }
-    }, 180000); // 180 seconds (3 minutes) silence timer to keep Nova active
-  }
-
-  handleSpeechInput(transcript) {
-    if (this.state === 'sleep') {
-      const wakeWords = ['nova', 'noba', 'hola nova', 'hey nova', 'oye nova', 'despierta', 'hola', 'el nova', 'la nova', 'el noba', 'la noba'];
-      const heardWakeWord = wakeWords.some(word => transcript.includes(word));
-      if (heardWakeWord) {
-        this.wakeUp();
-      }
-    } else if (this.state === 'listening') {
-      this.resetSleepTimer();
-      let matched = false;
-
-      // Navigations
-      if (transcript.includes('portafolio') || transcript.includes('trabajo') || transcript.includes('páginas') || transcript.includes('proyectos') || transcript.includes('catálogo')) {
-        this.speak("Entendido. Llevándote a nuestro portafolio de referencias.", true);
-        this.scrollToSection('portafolio');
-        matched = true;
-      } else if (transcript.includes('beneficios') || transcript.includes('ventaja') || transcript.includes('por qué')) {
-        this.speak("Aquí tienes las ventajas clave de usar nuestro AI Studio.", true);
-        this.scrollToSection('beneficios');
-        matched = true;
-      } else if (transcript.includes('contacto') || transcript.includes('correo') || transcript.includes('escribir') || transcript.includes('whatsapp')) {
-        this.speak("Abriendo la sección de contacto. Puedes enviarnos un mensaje.", true);
-        this.scrollToSection('contacto');
-        matched = true;
-      } else if (transcript.includes('servicios') || transcript.includes('herramientas') || transcript.includes('hacen')) {
-        this.speak("Aquí tienes las herramientas de creación con inteligencia artificial disponibles.", true);
-        this.scrollToSection('herramientas');
-        matched = true;
-      } else if (transcript.includes('cómo funciona') || transcript.includes('pasos') || transcript.includes('funciona')) {
-        this.speak("Te desplazo a los tres sencillos pasos para generar tu primer video.", true);
-        this.scrollToSection('como-funciona');
-        matched = true;
-      } else if (transcript.includes('pregunta') || transcript.includes('duda') || transcript.includes('faq')) {
-        this.speak("Te desplazo a las preguntas frecuentes resueltas por nuestro equipo.", true);
-        this.scrollToSection('faq');
-        matched = true;
-      } else if (transcript.includes('planes') || transcript.includes('precios') || transcript.includes('costo') || transcript.includes('tarifa')) {
-        this.speak("Te muestro nuestros planes de suscripción y créditos mensuales.", true);
-        this.scrollToSection('planes');
-        matched = true;
-      } else if (transcript.includes('panel') || transcript.includes('studio') || transcript.includes('entrar') || transcript.includes('abrir')) {
-        this.speak("Abriendo tu panel interactivo de AI Studio.", true);
-        enterStudio('dashboard');
-        matched = true;
-      }
-
-      // Direct Q&A
-      if (!matched) {
-        // Precios / costo
-        if (transcript.includes('precio') || transcript.includes('costo') || transcript.includes('cuesta') || transcript.includes('plan') || transcript.includes('tarifa') || transcript.includes('suscripción') || transcript.includes('gratis') || transcript.includes('dólares')) {
-          this.speak("Ofrecemos tres planes en AI Studio. El Demo Gratuito, de cero dólares, que te da diez créditos al mes. El plan Creador Pro, de 29 dólares al mes, que incluye 150 créditos, avatares ilimitados, voces premium y la clonación de hasta 3 voces. Y el plan Empresarial, de 99 dólares al mes, con créditos ilimitados, avatares en 4K y acceso a la API. Puedes revisarlos en la pantalla en la sección de planes.", true);
-          matched = true;
-        }
-        // Reembolso
-        else if (transcript.includes('reembolso') || transcript.includes('devolución') || transcript.includes('cancelar') || transcript.includes('devolver') || transcript.includes('política de reembolso')) {
-          this.speak("Nuestra política de reembolso te permite solicitar la devolución total de tu dinero dentro de los primeros 14 días de tu suscripción Pro, siempre y cuando no hayas consumido más de 30 créditos de tu plan.", true);
-          matched = true;
-        }
-        // Privacidad
-        else if (transcript.includes('privacidad') || transcript.includes('datos') || transcript.includes('guardan') || transcript.includes('gdpr') || transcript.includes('seguro') || transcript.includes('política de privacidad')) {
-          this.speak("Synthetic Digital Labs protege estrictamente tu privacidad de acuerdo con el Reglamento General de Protección de Datos. Tus perfiles, rostros y muestras de voz subidos son totalmente privados, se guardan encriptados y nunca son usados para entrenar modelos públicos sin tu permiso.", true);
-          matched = true;
-        }
-        // Seguridad
-        else if (transcript.includes('seguridad') || transcript.includes('política de seguridad') || transcript.includes('protección') || transcript.includes('encripta')) {
-          this.speak("Nuestra política de seguridad incluye cifrado SSL en toda la plataforma y almacenamiento seguro en servidores en la nube. Además, exigimos una declaración ética firmada y consentimiento por voz antes de clonar cualquier timbre neuronal, evitando suplantaciones de identidad.", true);
-          matched = true;
-        }
-        // Crear página web
-        else if (transcript.includes('crear una página') || transcript.includes('crear página') || transcript.includes('cómo crearla') || transcript.includes('hacer una web') || transcript.includes('desarrollar') || transcript.includes('crear la página') || transcript.includes('crear el sitio')) {
-          this.speak("Para crear una página web con nosotros, puedes rellenar el formulario al final de la página o contactarnos por correo a infoweb@syntheticdigitallab.com o al WhatsApp +1 786-872-6865. Desarrollamos sitios web y aplicaciones a medida con inteligencia artificial integrada.", true);
-          matched = true;
-        }
-        // Interactuar con la página
-        else if (transcript.includes('interactuar') || transcript.includes('cómo funciona') || transcript.includes('cómo se usa') || transcript.includes('qué hacer') || transcript.includes('usar la página') || transcript.includes('botones') || transcript.includes('estudio')) {
-          this.speak("Puedes interactuar con nuestra aplicación navegando por las secciones del menú. Al entrar al AI Studio, verás un panel completo donde puedes cambiar de vista, elegir avatares, redactar guiones con IA, previsualizar audios y renderizar videos en Full HD.", true);
-          matched = true;
-        }
-        // Crear avatar
-        else if (transcript.includes('crear avatar') || transcript.includes('crear un avatar') || transcript.includes('hacer avatar') || transcript.includes('nuevo avatar') || transcript.includes('avatar fotográfico') || transcript.includes('subir foto')) {
-          this.speak("Para crear un avatar, entra al panel lateral en 'Avatares'. En la pestaña 'Photo Avatar' sube una foto de tu rostro de frente, colócale un nombre y presiona 'Crear Presentador'. Para un 'Instant Avatar', puedes grabarte con tu cámara web para clonar tus gestos reales en un avatar digital.", true);
-          matched = true;
-        }
-        // Traducción de texto a voz (TTS)
-        else if (transcript.includes('traducción de texto') || transcript.includes('texto a voz') || transcript.includes('sintetizar') || transcript.includes('locución') || transcript.includes('traducir') || transcript.includes('tts') || transcript.includes('idioma') || transcript.includes('voces')) {
-          this.speak("Para traducir texto a voz, ve a la sección 'Voces' en la barra lateral para elegir un tono de nuestro catálogo. Luego, en la pestaña 'Editor Video', escribe el guion que desees en el panel derecho y haz clic en 'Escuchar Guion'. También puedes traducirlo usando el menú de idiomas del editor.", true);
-          matched = true;
-        }
-        // Hacer un video / colocar la voz
-        else if (transcript.includes('hacer un video') || transcript.includes('cómo se hace un video') || transcript.includes('crear video') || transcript.includes('generar video') || transcript.includes('colocar la voz') || transcript.includes('ponerle la voz') || transcript.includes('colocar voz') || transcript.includes('hacer video')) {
-          this.speak("Para crear un video, entra en 'Editor Video' en el panel de control. Elige tu presentador en el menú izquierdo, selecciona una voz, y escribe tu guion en la parte derecha. Presiona 'Escuchar Guion' para previsualizarlo y luego haz clic en 'Generar Video' arriba a la derecha. Tras renderizarse, se guardará en tu Biblioteca.", true);
-          matched = true;
-        }
-        // Clonar una voz
-        else if (transcript.includes('clonar') || transcript.includes('clonación') || transcript.includes('clonar voz') || transcript.includes('clonar una voz') || transcript.includes('mi propia voz') || transcript.includes('grabar voz')) {
-          this.speak("Para clonar tu voz, dirígete al módulo de 'Voces' en la barra lateral. En la sección 'Clonador de Voz Instantáneo', sube un archivo de audio limpio de diez segundos de duración o grábate en vivo. Acepta los términos de consentimiento legal, asígnale un nombre y presiona 'Clonar Voz'. Estará disponible de inmediato.", true);
-          matched = true;
-        }
-        // Quién eres / Quién es Nova
-        else if (transcript.includes('quién eres') || transcript.includes('quien eres') || transcript.includes('tu nombre') || transcript.includes('quién es nova') || transcript.includes('quien es nova') || transcript.includes('qué eres')) {
-          this.speak("Hola, soy Nova, el agente inteligente holográfico de Synthetic Digital Labs. Tengo conocimiento de toda la plataforma y te puedo ayudar a navegarla o enseñarte cómo clonar tu voz, crear avatares interactivos y renderizar videos profesionales.", true);
-          matched = true;
-        }
-        // Gracias / adiós
-        else if (transcript.includes('gracias') || transcript.includes('adiós') || transcript.includes('chao') || transcript.includes('hasta luego') || transcript.includes('duerme') || transcript.includes('desactívate') || transcript.includes('silencio')) {
-          this.speak("Entendido. Estaré aquí en segundo plano. Si me necesitas de nuevo, solo di 'Hola Nova' o haz clic sobre mi avatar. ¡Que tengas un excelente día!", false);
-          matched = true;
-        }
-      }
-
-      if (!matched) {
-        this.speak("Lo siento, no tengo una respuesta específica para eso. Puedes preguntarme sobre precios, reembolso, privacidad, seguridad, cómo crear un avatar, clonar tu voz o generar un video.", true);
-      }
-    }
-  }
-
-  scrollToSection(id) {
-    if (publicLanding && publicLanding.style.display === 'none') {
-      exitStudio();
-    }
+    showToast('Enviando Ticket', 'Conectando con el panel de soporte...', 'info');
     setTimeout(() => {
-      const section = document.getElementById(id);
-      if (section) section.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  }
+      document.getElementById('ticketSubject').value = '';
+      document.getElementById('ticketMessage').value = '';
+      showToast('Ticket Enviado', 'Nuestro equipo técnico te responderá al correo de tu perfil.', 'success');
+    }, 1500);
+  });
 }
 
-// Theme Toggler Logic
-function initTheme() {
-  const themeToggleBtn = document.getElementById('themeToggleBtn');
-  if (!themeToggleBtn) return;
+// --- USER SETTINGS SAVING ---
+const btnSaveProfileSettings = document.getElementById('btnSaveProfileSettings');
+if (btnSaveProfileSettings) {
+  btnSaveProfileSettings.addEventListener('click', () => {
+    const name = document.getElementById('settingsNameInput').value.trim();
+    const email = document.getElementById('settingsEmailInput').value.trim();
+    
+    if (name && email) {
+      safeSetItem('sdl_username', name);
+      safeSetItem('sdl_email', email);
+      
+      document.getElementById('sidebarUserName').textContent = name;
+      
+      const initial = name.charAt(0).toUpperCase();
+      document.getElementById('sidebarAvatarInitial').textContent = initial;
 
-  const currentTheme = safeGetItem('sdl_theme', 'light');
-  if (currentTheme === 'dark') {
-    document.body.classList.remove('light-theme');
-    themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-  } else {
-    document.body.classList.add('light-theme');
-    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-  }
-
-  themeToggleBtn.addEventListener('click', () => {
-    if (document.body.classList.contains('light-theme')) {
-      document.body.classList.remove('light-theme');
-      safeSetItem('sdl_theme', 'dark');
-      themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-      showToast('Tema Cambiado', 'Modo oscuro activado.', 'info');
-    } else {
-      document.body.classList.add('light-theme');
-      safeSetItem('sdl_theme', 'light');
-      themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-      showToast('Tema Cambiado', 'Modo claro activado.', 'info');
+      showToast('Ajustes Guardados', 'Tu perfil se actualizó correctamente.', 'success');
     }
   });
 }
 
-// System voice selection helper to map to distinct browser speakers
-function getSystemVoiceForId(voice, sysVoices) {
-  const isSpanish = (voice.lang || '').includes('ES') || (voice.lang || '').includes('Español');
-  const langKey = isSpanish ? 'es' : 'en';
-  const langVoices = sysVoices.filter(v => v.lang.toLowerCase().includes(langKey));
+// Load initial user settings profile info
+function loadUserSettings() {
+  const name = safeGetItem('sdl_username', 'Usuario SDL');
+  const email = safeGetItem('sdl_email', 'usuario@syntheticdigitallab.com');
   
-  if (langVoices.length === 0) return null;
+  const settingsNameInput = document.getElementById('settingsNameInput');
+  const settingsEmailInput = document.getElementById('settingsEmailInput');
+  const sidebarUserName = document.getElementById('sidebarUserName');
+  const sidebarAvatarInitial = document.getElementById('sidebarAvatarInitial');
 
-  const isFemale = voice.gender === 'Femenino';
-  const femaleKeywords = ['sabina', 'helena', 'monica', 'juana', 'lucia', 'tessa', 'samantha', 'victoria', 'hazel', 'google', 'zira', 'susan', 'elsy', 'yolanda', 'melina', 'female', 'woman', 'girl'];
-  const maleKeywords = ['jorge', 'raul', 'julio', 'david', 'pablo', 'raul', 'mark', 'george', 'stefano', 'paul', 'danny', 'ravi', 'richard', 'male', 'man', 'boy'];
+  if (settingsNameInput) settingsNameInput.value = name;
+  if (settingsEmailInput) settingsEmailInput.value = email;
+  if (sidebarUserName) sidebarUserName.textContent = name;
+  if (sidebarAvatarInitial) sidebarAvatarInitial.textContent = name.charAt(0).toUpperCase();
 
-  let candidateVoices = langVoices;
-  if (isFemale) {
-    candidateVoices = langVoices.filter(v => {
-      const name = v.name.toLowerCase();
-      return femaleKeywords.some(kw => name.includes(kw)) && !maleKeywords.some(kw => name.includes(kw));
-    });
-  } else {
-    candidateVoices = langVoices.filter(v => {
-      const name = v.name.toLowerCase();
-      return maleKeywords.some(kw => name.includes(kw)) || !femaleKeywords.some(kw => name.includes(kw));
-    });
-  }
-
-  if (candidateVoices.length === 0) {
-    candidateVoices = langVoices;
-  }
-
-  // We map index uniquely based on voice id
-  let index = 0;
-  if (voice.id === 'v-sofia') index = 0;
-  else if (voice.id === 'v-roberto') index = 1 % candidateVoices.length;
-  else if (voice.id === 'v-elena') index = 2 % candidateVoices.length;
-  else if (voice.id === 'v-lucas') index = 3 % candidateVoices.length;
-  else if (voice.id === 'v-john') index = 4 % candidateVoices.length;
-  else if (voice.id === 'v-sarah') index = 5 % candidateVoices.length;
-  else {
-    let hash = 0;
-    const testId = voice.id || '';
-    for (let i = 0; i < testId.length; i++) {
-      hash += testId.charCodeAt(i);
-    }
-    index = hash % candidateVoices.length;
-  }
-
-  return candidateVoices[index] || langVoices[0];
+  updateCreditsDisplay();
 }
 
-// Bind avatar sub-tabs (Lite, Pro, Photo)
-document.querySelectorAll('#avatar-panel-studio .sub-tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#avatar-panel-studio .sub-tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    activeAvatarSubTab = btn.dataset.sub;
-    renderAvatarsGrid();
-  });
-});
+function updateDashboardStats() {
+  const dashValVideos = document.getElementById('dashValVideos');
+  const dashValProjects = document.getElementById('dashValProjects');
+  
+  if (dashValVideos || dashValProjects) {
+    const projs = getLocal('sdl_projects') || [];
+    const vids = projs.filter(p => p.type === 'video');
+    if (dashValVideos) dashValVideos.textContent = vids.length;
+    
+    const creditsUsed = 150 - getCredits();
+    if (dashValProjects) dashValProjects.textContent = `${creditsUsed} Cr.`;
+  }
+}
 
-// Window load trigger
-window.addEventListener('load', () => {
-  window.novaInstance = new NovaAssistant();
-  initTheme();
-});
+// --- INITIALIZE SYSTEM BOOTSTRAP ---
+initTheme();
+loadUserSettings();
+renderHomeWidgets();
+updateDashboardStats();
