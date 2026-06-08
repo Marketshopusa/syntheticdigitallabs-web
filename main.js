@@ -593,7 +593,7 @@ document.addEventListener('click', (e) => {
           avatarId: temp.avatar,
           voiceId: temp.voice,
           script: temp.script,
-          bg: 'dark',
+          bg: temp.thumb,
           duration: 6,
           layers: temp.layers.map((l, i) => {
             return {
@@ -1374,10 +1374,16 @@ document.querySelectorAll('.bg-btn').forEach(btn => {
 });
 
 function applyBackgroundToCanvas(stage, bg) {
+  if (!bg) bg = 'dark';
   if (bg === 'dark') stage.style.background = '#050212';
   else if (bg === 'gradient-blue') stage.style.background = 'linear-gradient(135deg, #020010, #001f3f)';
   else if (bg === 'gradient-purple') stage.style.background = 'linear-gradient(135deg, #030012, #1f003f)';
   else if (bg === 'green-screen') stage.style.background = '#00ff00';
+  else {
+    // Check if relative path needs adjustment for the app target folder
+    // Note: deploy.py replaces 'thumbs/' with relative path if needed, so keep it standard
+    stage.style.background = `url(${bg}) center center / cover no-repeat`;
+  }
 }
 
 // Far Left Dock Panel toggling
@@ -1442,6 +1448,7 @@ function renderEditorDrawerTemplates() {
       scenes[currentSceneIndex].avatarId = temp.avatar;
       scenes[currentSceneIndex].voiceId = temp.voice;
       scenes[currentSceneIndex].script = temp.script;
+      scenes[currentSceneIndex].bg = temp.thumb;
       
       // Update scene layers to match the template!
       scenes[currentSceneIndex].layers = temp.layers.map((l, i) => {
