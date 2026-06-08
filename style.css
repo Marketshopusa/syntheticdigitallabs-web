@@ -1550,6 +1550,11 @@ button, input, textarea, select {
 .global-modal-overlay.active .global-modal-card {
   transform: translateY(0);
 }
+.create-avatar-option-card:hover {
+  border-color: var(--accent-purple) !important;
+  background-color: var(--bg-tertiary) !important;
+  transform: scale(1.02);
+}
 .modal-icon {
   font-size: 3rem;
   color: var(--accent-purple);

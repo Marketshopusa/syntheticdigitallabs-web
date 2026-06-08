@@ -391,7 +391,7 @@ function renderHomeWidgets() {
       card.className = 'template-card';
       card.innerHTML = `
         <div class="proj-thumb-box">
-          <i class="fa-solid fa-wand-magic-sparkles proj-media-icon"></i>
+          <img src="thumbs/${temp.id.replace('-', '_')}.png" alt="${temp.name}">
           <span class="proj-duration">${temp.aspect}</span>
         </div>
         <div class="proj-info">
@@ -440,7 +440,7 @@ function renderTemplatesLibrary() {
     card.className = 'template-card';
     card.innerHTML = `
       <div class="proj-thumb-box">
-        <i class="fa-solid fa-wand-magic-sparkles proj-media-icon"></i>
+        <img src="thumbs/${temp.id.replace('-', '_')}.png" alt="${temp.name}">
         <span class="proj-duration">${temp.aspect}</span>
       </div>
       <div class="proj-info">
@@ -1181,17 +1181,40 @@ function renderEditorDrawerTemplates() {
     div.className = 'drawer-av-card';
     div.style.aspectRatio = '16/9';
     div.innerHTML = `
-      <div style="background:var(--bg-tertiary); width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:var(--accent-purple);">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-      </div>
+      <img src="thumbs/${temp.id.replace('-', '_')}.png" style="width:100%; height:100%; object-fit:cover; border-radius:4px;">
       <div class="drawer-av-name">${temp.name}</div>
     `;
     div.addEventListener('click', () => {
       scenes[currentSceneIndex].avatarId = temp.avatar;
       scenes[currentSceneIndex].voiceId = temp.voice;
       scenes[currentSceneIndex].script = temp.script;
-      scenes[currentSceneIndex].textPos.display = 'block';
-      scenes[currentSceneIndex].textPos.text = temp.name;
+      
+      // Update scene layers to match the template!
+      scenes[currentSceneIndex].layers = [
+        {
+          id: 'layer-avatar-' + Date.now(),
+          type: 'avatar',
+          avatarId: temp.avatar,
+          top: 50,
+          left: 50,
+          width: 260,
+          height: 260,
+          zIndex: 10
+        },
+        {
+          id: 'layer-text-' + (Date.now() + 1),
+          type: 'text',
+          text: temp.name,
+          fontSize: 28,
+          fontStyle: "'Inter', sans-serif",
+          color: '#ffffff',
+          top: 25,
+          left: 50,
+          width: 320,
+          height: 60,
+          zIndex: 20
+        }
+      ];
       loadSceneStateIntoCanvas(currentSceneIndex);
       showToast('Plantilla Aplicada', `Se inyectó en la escena actual.`, 'success');
     });
@@ -3613,3 +3636,114 @@ renderTranslations();
 renderBrandLogos();
 loadBrandColors();
 renderInspectorBrandPalettes();
+
+// --- CREAR AVATAR NUEVO MODAL & SELECTION LOGIC ---
+const btnOpenCreateAvatarModal = document.getElementById('btnOpenCreateAvatarModal');
+const btnCloseCreateAvatarModal = document.getElementById('btnCloseCreateAvatarModal');
+const createAvatarModalOverlay = document.getElementById('createAvatarModalOverlay');
+
+const btnChooseInstantAvatar = document.getElementById('btnChooseInstantAvatar');
+const btnChoosePhotoAvatar = document.getElementById('btnChoosePhotoAvatar');
+const btnChooseVideoAvatar = document.getElementById('btnChooseVideoAvatar');
+
+if (btnOpenCreateAvatarModal && createAvatarModalOverlay) {
+  btnOpenCreateAvatarModal.addEventListener('click', () => {
+    createAvatarModalOverlay.classList.add('active');
+  });
+}
+
+if (btnCloseCreateAvatarModal && createAvatarModalOverlay) {
+  btnCloseCreateAvatarModal.addEventListener('click', () => {
+    createAvatarModalOverlay.classList.remove('active');
+  });
+}
+
+// Helper to switch main tab and sub tab programmatically
+function switchAvatarTab(tabId) {
+  switchView('avatars');
+  const btn = document.querySelector(`#view-avatars .hg-tab-btn[data-tab="${tabId}"]`);
+  if (btn) btn.click();
+}
+
+if (btnChooseInstantAvatar && createAvatarModalOverlay) {
+  btnChooseInstantAvatar.addEventListener('click', () => {
+    createAvatarModalOverlay.classList.remove('active');
+    switchAvatarTab('avatar-panel-instant');
+  });
+}
+
+if (btnChoosePhotoAvatar && createAvatarModalOverlay) {
+  btnChoosePhotoAvatar.addEventListener('click', () => {
+    createAvatarModalOverlay.classList.remove('active');
+    switchAvatarTab('avatar-panel-photo');
+  });
+}
+
+if (btnChooseVideoAvatar && createAvatarModalOverlay) {
+  btnChooseVideoAvatar.addEventListener('click', () => {
+    createAvatarModalOverlay.classList.remove('active');
+    
+    // Create hidden file input dynamically for sample video cloning
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'video/*';
+    fileInput.style.display = 'none';
+    
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        showToast('Carga Iniciada', `Subiendo video de muestra: "${file.name}"`, 'info');
+        let step = 0;
+        const steps = [
+          "Subiendo video consentido...",
+          "Extrayendo fotogramas de rostro...",
+          "Modelando geometría facial 3D...",
+          "Entrenando modelo neuronal (NeRF)...",
+          "Listo! Clon de Estudio Generado."
+        ];
+        
+        showModal("Generando Avatar de Estudio", "Subiendo video...", false);
+        const progressInterval = setInterval(() => {
+          if (step < steps.length) {
+            const title = "Generando Avatar de Estudio";
+            const msg = steps[step];
+            const overlay = document.getElementById('globalModalOverlay');
+            const titleEl = document.getElementById('globalModalTitle');
+            const msgEl = document.getElementById('globalModalMessage');
+            if (titleEl) titleEl.textContent = title;
+            if (msgEl) msgEl.textContent = msg;
+            step++;
+          } else {
+            clearInterval(progressInterval);
+            const overlay = document.getElementById('globalModalOverlay');
+            if (overlay) overlay.classList.remove('active');
+            
+            // Add the newly created avatar to local storage!
+            const newAv = {
+              id: 'av-custom-studio-' + Date.now(),
+              name: 'Clon de Estudio - ' + file.name.split('.')[0],
+              category: 'Avatar Lite',
+              style: 'Studio Avatar',
+              lang: 'Español (ES)',
+              img: 'assets/avatar_nova.png', // Fallback visual avatar image
+              desc: 'Avatar fotorrealista generado por IA.'
+            };
+            
+            let avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+            avatars.push(newAv);
+            setLocal('sdl_avatars', avatars);
+            
+            renderAvatarsGrid();
+            renderHomeWidgets();
+            showToast('Clon de Estudio Creado', 'Tu avatar personalizado está listo en tu biblioteca.', 'success');
+          }
+        }, 1500);
+      }
+    });
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    // remove it from body after a moment
+    setTimeout(() => fileInput.remove(), 1000);
+  });
+}

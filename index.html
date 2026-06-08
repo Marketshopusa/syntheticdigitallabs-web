@@ -184,8 +184,9 @@
 
       <!-- --- 3. AVATARES VIEW --- -->
       <section class="studio-view" id="view-avatars">
-        <div class="section-title-row" style="margin-bottom: 20px;">
+        <div class="section-title-row" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
           <h2>Biblioteca de Avatares</h2>
+          <button class="btn-primary" id="btnOpenCreateAvatarModal"><i class="fa-solid fa-plus"></i> Crear Avatar Nuevo</button>
         </div>
 
         <!-- Sub pestañas de Avatares -->
@@ -1133,6 +1134,41 @@
       <h3 id="globalModalTitle">Procesando</h3>
       <p id="globalModalMessage">Espere por favor, maquetando escena...</p>
       <button class="btn-primary" id="globalModalActionBtn" style="display:none; width:100%;">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL DE CREACIÓN DE AVATAR NUEVO
+       ========================================== -->
+  <div class="global-modal-overlay" id="createAvatarModalOverlay">
+    <div class="global-modal-card" style="max-width: 520px; width: 90%;">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0; font-size:1.2rem; color:var(--text-color);">Crear Avatar Personalizado</h3>
+        <button id="btnCloseCreateAvatarModal" class="btn-outline-sm" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer; color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="create-avatar-option-card" id="btnChooseInstantAvatar" style="display:flex; align-items:center; gap:16px; padding:16px; border:1px solid var(--border-color); border-radius:var(--border-radius-md); background:var(--bg-secondary); cursor:pointer; transition:var(--transition-smooth);">
+          <div style="font-size:1.8rem; color:var(--accent-purple); width:40px; text-align:center;"><i class="fa-solid fa-camera"></i></div>
+          <div style="text-align:left;">
+            <h4 style="margin:0 0 4px 0; font-size:0.9rem; color:#fff;">Avatar Grabado (Instant Avatar)</h4>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Graba una muestra de 5 segundos con tu cámara web.</span>
+          </div>
+        </div>
+        <div class="create-avatar-option-card" id="btnChoosePhotoAvatar" style="display:flex; align-items:center; gap:16px; padding:16px; border:1px solid var(--border-color); border-radius:var(--border-radius-md); background:var(--bg-secondary); cursor:pointer; transition:var(--transition-smooth);">
+          <div style="font-size:1.8rem; color:var(--accent-purple); width:40px; text-align:center;"><i class="fa-solid fa-image"></i></div>
+          <div style="text-align:left;">
+            <h4 style="margin:0 0 4px 0; font-size:0.9rem; color:#fff;">Talking Photo (Foto Parlante)</h4>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Sube una foto retrato y anímala con IA.</span>
+          </div>
+        </div>
+        <div class="create-avatar-option-card" id="btnChooseVideoAvatar" style="display:flex; align-items:center; gap:16px; padding:16px; border:1px solid var(--border-color); border-radius:var(--border-radius-md); background:var(--bg-secondary); cursor:pointer; transition:var(--transition-smooth);">
+          <div style="font-size:1.8rem; color:var(--accent-purple); width:40px; text-align:center;"><i class="fa-solid fa-file-video"></i></div>
+          <div style="text-align:left;">
+            <h4 style="margin:0 0 4px 0; font-size:0.9rem; color:#fff;">Cargar Video de Muestra (Clon Completo)</h4>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Sube un video de 1-2 minutos para un clon de estudio completo.</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
