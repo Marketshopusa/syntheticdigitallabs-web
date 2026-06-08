@@ -1004,6 +1004,31 @@ button, input, textarea, select {
   text-align: inherit;
 }
 
+/* Capas de figuras geométricas y recursos */
+.layer-shape {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.layer-shape-rectangle {
+  border-radius: 4px;
+}
+.layer-shape-circle {
+  border-radius: 50% !important;
+}
+.layer-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.layer-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 /* Tiradores para redimensionar (Resize handles) */
 .resize-handle {
   position: absolute;

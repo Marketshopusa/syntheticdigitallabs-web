@@ -7,7 +7,7 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.4">
+  <link rel="stylesheet" href="style.css?v=2.5">
 </head>
 <body class="light-theme"> <!-- Default to Light Mode -->
 
@@ -50,6 +50,15 @@
         </a>
         <a class="nav-item" data-view="voices">
           <i class="fa-solid fa-volume-high"></i> Voces
+        </a>
+        <a class="nav-item" data-view="translate">
+          <i class="fa-solid fa-language"></i> Traducir Video
+        </a>
+        <a class="nav-item" data-view="chat">
+          <i class="fa-solid fa-comments"></i> Avatar Chat
+        </a>
+        <a class="nav-item" data-view="brandkit">
+          <i class="fa-solid fa-palette"></i> Kit de Marca
         </a>
         <a class="nav-item" data-view="library">
           <i class="fa-solid fa-folder-open"></i> Biblioteca
@@ -356,9 +365,148 @@
         </div>
       </section>
 
-      <!-- ==========================================
-           5. EDITOR DE VIDEO TRIPLE COLUMNA (ESTUDIO)
-           ========================================== -->
+      <!-- --- 5. TRADUCIR VIDEO VIEW PANEL --- -->
+      <section class="studio-view" id="view-translate">
+        <div class="section-title-row" style="margin-bottom: 25px;">
+          <h2>Traductor de Video por IA</h2>
+        </div>
+        <div class="voice-cloning-workspace">
+          <div class="cloning-left-card">
+            <h3>Subir Video Original</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted)">Sube un archivo de video en cualquier idioma para traducirlo de forma fluida mediante clonación de voz.</p>
+            
+            <div class="voice-upload-zone" id="translateVideoUploadZone">
+              <i class="fa-solid fa-file-video"></i>
+              <strong>Arrastra tu video aquí o haz clic para subir</strong>
+              <span style="font-size:0.7rem">Soporta MP4, MOV de hasta 20MB</span>
+              <input type="file" id="translateVideoFileInput" accept="video/*" style="display:none">
+            </div>
+            <div id="translateVideoFileName" style="font-size:0.8rem; text-align:center; font-weight:600; color:var(--accent-purple);"></div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+              <div class="inspector-form-group">
+                <label for="translateSourceLang">Idioma de Origen</label>
+                <select id="translateSourceLang" class="inspector-select">
+                  <option value="auto">Detectar automáticamente</option>
+                  <option value="es">Español</option>
+                  <option value="en">Inglés</option>
+                  <option value="pt">Portugués</option>
+                </select>
+              </div>
+              <div class="inspector-form-group">
+                <label for="translateTargetLang">Idioma de Destino</label>
+                <select id="translateTargetLang" class="inspector-select">
+                  <option value="en">Inglés (US)</option>
+                  <option value="es">Español (ES)</option>
+                  <option value="pt">Portugués (BR)</option>
+                  <option value="de">Alemán (DE)</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn-primary w-full" id="btnTranslateVideoSubmit" disabled>
+              <i class="fa-solid fa-globe"></i> Traducir Video (Consume 30 Créditos)
+            </button>
+          </div>
+
+          <div class="cloning-right-card">
+            <h3>Historial de Traducciones</h3>
+            <div id="translatedVideosList" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; max-height:300px;">
+              <span style="font-size:0.8rem; color:var(--text-muted)">No has traducido ningún video aún.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- 6. AVATAR CHAT INTERACTIVO VIEW PANEL --- -->
+      <section class="studio-view" id="view-chat">
+        <div class="section-title-row" style="margin-bottom: 25px;">
+          <h2>Conversación en Vivo con Avatar IA</h2>
+        </div>
+
+        <div class="voice-cloning-workspace" style="grid-template-columns: 1.2fr 0.8fr;">
+          <!-- Left side chat window -->
+          <div class="cloning-left-card" style="height:480px; display:flex; flex-direction:column;">
+            <div class="chat-character-selector" style="display:flex; gap:10px; margin-bottom:12px; overflow-x:auto; padding-bottom:5px;">
+              <button class="chat-avatar-btn active" data-id="Nova" data-img="assets/avatar_nova.png" style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:var(--bg-secondary); border:1px solid var(--accent-purple); border-radius:20px; color:#fff; cursor:pointer; font-size:0.8rem; font-weight:600;">
+                <img src="assets/avatar_nova.png" style="width:20px; height:20px; border-radius:50%; object-fit:cover;"> Nova
+              </button>
+              <button class="chat-avatar-btn" data-id="Sofia" data-img="assets/avatar_sofia.png" style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:20px; color:#fff; cursor:pointer; font-size:0.8rem;">
+                <img src="assets/avatar_sofia.png" style="width:20px; height:20px; border-radius:50%; object-fit:cover;"> Sofia
+              </button>
+              <button class="chat-avatar-btn" data-id="Roberto" data-img="assets/avatar_roberto.png" style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:20px; color:#fff; cursor:pointer; font-size:0.8rem;">
+                <img src="assets/avatar_roberto.png" style="width:20px; height:20px; border-radius:50%; object-fit:cover;"> Roberto
+              </button>
+              <button class="chat-avatar-btn" data-id="Elena" data-img="assets/avatar_elena.png" style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:20px; color:#fff; cursor:pointer; font-size:0.8rem;">
+                <img src="assets/avatar_elena.png" style="width:20px; height:20px; border-radius:50%; object-fit:cover;"> Elena
+              </button>
+            </div>
+            <div id="chatHistoryBox" style="flex-grow:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:12px; background:var(--bg-tertiary); border-radius:var(--border-radius-md); border:1px solid var(--border-color);">
+              <div class="chat-bubble agent" style="align-self:flex-start; background:var(--bg-secondary); border:1px solid var(--border-color); padding:10px 14px; border-radius:var(--border-radius-md); max-width:80%; font-size:0.85rem; line-height:1.4;">
+                <strong>Nova (Asistente):</strong> Hola, soy tu avatar conversacional de IA. Pregúntame sobre Studio SDL, nuestros servicios o cómo automatizar tus videos.
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+              <input type="text" id="chatInputText" class="inspector-input" placeholder="Pregúntale algo a tu avatar..." style="flex-grow:1;">
+              <button class="btn-primary" id="btnSendChatMessage" style="padding:10px 18px;"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+          </div>
+
+          <!-- Right side video presenter box -->
+          <div class="cloning-right-card" style="justify-content:center; align-items:center; position:relative; background:#000; overflow:hidden;">
+            <img src="assets/avatar_nova.png" id="chatAvatarImg" style="width:100%; height:100%; object-fit:cover; border-radius:var(--border-radius-lg);">
+            <div id="chatAvatarSpeakingBadge" style="position:absolute; top:20px; right:20px; background:rgba(124, 58, 237, 0.9); color:#fff; padding:4px 10px; border-radius:4px; font-size:0.7rem; font-weight:700; display:none; align-items:center; gap:6px;">
+              <i class="fa-solid fa-volume-high fa-beat"></i> HABLANDO
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- 7. KIT DE MARCA VIEW PANEL --- -->
+      <section class="studio-view" id="view-brandkit">
+        <div class="section-title-row" style="margin-bottom: 25px;">
+          <h2>Mi Kit de Marca</h2>
+        </div>
+
+        <div class="voice-cloning-workspace">
+          <div class="cloning-left-card">
+            <h3>Logos de Marca</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted)">Carga el isotipo o logotipo de tu empresa para tenerlo disponible directamente en el editor.</p>
+            <div class="voice-upload-zone" id="brandLogoUploadZone">
+              <i class="fa-solid fa-image"></i>
+              <strong>Subir Logotipo PNG (Transparente)</strong>
+              <input type="file" id="brandLogoFileInput" accept="image/png" style="display:none">
+            </div>
+            <div id="brandLogosList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
+              <img src="assets/logo.png" style="height:40px; border:1px solid var(--border-color); padding:4px; border-radius:4px; background:var(--bg-tertiary)">
+            </div>
+          </div>
+
+          <div class="cloning-right-card">
+            <h3>Colores y Tipografía</h3>
+            <div class="inspector-form-group">
+              <label>Paleta de Colores de Marca</label>
+              <div style="display:flex; gap:10px;">
+                <input type="color" id="brandColorPrimary" value="#7c3aed" style="width:40px; height:40px; border:1px solid var(--border-color); border-radius:4px; padding:0; background:transparent;">
+                <input type="color" id="brandColorSecondary" value="#f59e0b" style="width:40px; height:40px; border:1px solid var(--border-color); border-radius:4px; padding:0; background:transparent;">
+                <input type="color" id="brandColorDark" value="#0c091f" style="width:40px; height:40px; border:1px solid var(--border-color); border-radius:4px; padding:0; background:transparent;">
+              </div>
+            </div>
+
+            <div class="inspector-form-group" style="margin-top:15px;">
+              <label>Cargar Fuentes Propias</label>
+              <div class="voice-upload-zone" style="padding:15px;">
+                <strong style="font-size:0.75rem">Subir Archivo TTF / OTF</strong>
+                <input type="file" accept=".ttf,.otf" style="display:none">
+              </div>
+            </div>
+
+            <button class="btn-primary w-full" id="btnSaveBrandKit" style="margin-top:auto;"><i class="fa-solid fa-floppy-disk"></i> Guardar Kit de Marca</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- 8. EDITOR DE VIDEO TRIPLE COLUMNA (ESTUDIO) --- -->
       <section class="studio-view" id="view-editor">
         <!-- Header del Editor -->
         <header class="editor-header">
@@ -401,6 +549,10 @@
               <i class="fa-solid fa-font"></i>
               <span>Texto</span>
             </button>
+            <button class="dock-item" data-panel="elements">
+              <i class="fa-solid fa-shapes"></i>
+              <span>Figuras</span>
+            </button>
             <button class="dock-item" data-panel="assets">
               <i class="fa-solid fa-cloud-arrow-up"></i>
               <span>Recursos</span>
@@ -439,6 +591,14 @@
                 </div>
               </div>
 
+              <!-- Panel de Elementos (Shapes) -->
+              <div class="drawer-section" id="drawer-section-elements">
+                <div class="text-drawer-list">
+                  <button class="btn-add-text-preset" id="btnAddShapeRectangle" data-shape="rectangle"><i class="fa-solid fa-square" style="margin-right:10px;"></i> Insertar Rectángulo</button>
+                  <button class="btn-add-text-preset" id="btnAddShapeCircle" data-shape="circle"><i class="fa-solid fa-circle" style="margin-right:10px;"></i> Insertar Círculo</button>
+                </div>
+              </div>
+
               <!-- Panel de Recursos (Assets) -->
               <div class="drawer-section" id="drawer-section-assets">
                 <div class="voice-cloning-workspace" style="grid-template-columns:1fr; gap:15px;">
@@ -462,26 +622,10 @@
           <div class="editor-canvas-workspace">
             <div class="canvas-container" id="editorCanvasContainer">
               
-              <!-- El lienzo del video (Capas drag & resize) -->
+              <!-- El lienzo del video (Capas dinámicas drag & resize) -->
               <div class="video-canvas-stage ratio-16-9" id="videoCanvasStage">
                 
-                <!-- Capa del Avatar -->
-                <div class="canvas-layer layer-avatar selected" id="layerAvatar">
-                  <img src="assets/avatar_sofia.png" id="canvasAvatarImg" alt="Avatar Layer">
-                  <div class="resize-handle rh-nw"></div>
-                  <div class="resize-handle rh-ne"></div>
-                  <div class="resize-handle rh-se"></div>
-                  <div class="resize-handle rh-sw"></div>
-                </div>
-
-                <!-- Capa de Texto (Opcional, inyectada dinámicamente) -->
-                <div class="canvas-layer layer-text" id="layerText" style="display:none;">
-                  <input type="text" id="canvasTextInput" value="Escribe tu título aquí">
-                  <div class="resize-handle rh-nw"></div>
-                  <div class="resize-handle rh-ne"></div>
-                  <div class="resize-handle rh-se"></div>
-                  <div class="resize-handle rh-sw"></div>
-                </div>
+                <!-- Dynamic Layers are rendered here by JavaScript -->
 
                 <!-- Capa de Subtítulos dinámicos de audio -->
                 <div class="canvas-subtitle-overlay" id="canvasSubtitleOverlay">
@@ -514,31 +658,51 @@
           <!-- Columna 4: Panel Derecho Inspector de Propiedades -->
           <div class="editor-inspector-panel">
             <div class="inspector-header">
-              <h3 id="inspectorPanelTitle">Ajustes del Avatar</h3>
+              <!-- Context Tabs inside Inspector -->
+              <div style="display:flex; border-bottom:1px solid var(--border-color); width:100%; margin-bottom:5px;">
+                <button class="hg-tab-btn active" id="insTabTitleBtn" style="padding:10px; font-size:0.8rem; flex-grow:1; text-align:center;">Ajustes de Capa</button>
+              </div>
             </div>
             
+            <!-- Inspector 1: Avatar Presenter options -->
             <div class="inspector-body" id="inspectorBodyAvatar">
-              <!-- Selector de Voz -->
-              <div class="inspector-form-group">
-                <label for="editorVoiceSelect">Voz del Actor</label>
-                <select id="editorVoiceSelect" class="inspector-select">
-                  <!-- Dynamic voices -->
-                </select>
+              <!-- Script / Audio tab headers -->
+              <div style="display:flex; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); overflow:hidden; margin-bottom:15px; font-size:0.75rem;">
+                <button class="btn-outline-sm active" id="btnScriptModeText" style="border:none; flex-grow:1; border-radius:0;">Texto a Voz</button>
+                <button class="btn-outline-sm" id="btnScriptModeAudio" style="border:none; flex-grow:1; border-radius:0;">Locución Audio</button>
               </div>
 
-              <!-- Velocidad y Tono -->
-              <div class="inspector-form-group">
-                <label>Velocidad de Lectura</label>
-                <div class="slider-group">
-                  <input type="range" id="editorVoiceRate" min="0.5" max="1.5" step="0.05" value="1.0">
-                  <span id="valVoiceRate">1.0x</span>
+              <!-- Content for Text script -->
+              <div id="scriptContentText">
+                <div class="inspector-form-group">
+                  <label for="editorVoiceSelect">Voz del Actor</label>
+                  <select id="editorVoiceSelect" class="inspector-select">
+                    <!-- Dynamic voices -->
+                  </select>
+                </div>
+
+                <div class="inspector-form-group">
+                  <label>Velocidad de Lectura</label>
+                  <div class="slider-group">
+                    <input type="range" id="editorVoiceRate" min="0.5" max="1.5" step="0.05" value="1.0">
+                    <span id="valVoiceRate">1.0x</span>
+                  </div>
+                </div>
+
+                <div class="inspector-form-group">
+                  <label for="editorScriptTextarea">Guión de la Escena</label>
+                  <textarea id="editorScriptTextarea" class="inspector-textarea" placeholder="Escribe lo que el avatar presentador debe decir..."></textarea>
                 </div>
               </div>
 
-              <!-- Editor de Guión -->
-              <div class="inspector-form-group">
-                <label for="editorScriptTextarea">Guión de la Escena</label>
-                <textarea id="editorScriptTextarea" class="inspector-textarea" placeholder="Escribe lo que el avatar presentador debe decir en esta escena..."></textarea>
+              <!-- Content for Audio script voiceover -->
+              <div id="scriptContentAudio" style="display:none;">
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Vincula un archivo de audio grabado para que sirva de locución a la escena actual.</p>
+                <div class="voice-upload-zone" id="sceneAudioUploadZone" style="padding:20px;">
+                  <i class="fa-solid fa-microphone"></i>
+                  <strong>Subir archivo de audio o grabar</strong>
+                </div>
+                <div id="sceneAudioFileName" style="font-size:0.75rem; font-weight:600; text-align:center; color:var(--accent-purple); margin-top:8px;"></div>
               </div>
 
               <!-- Escucha de Audio -->
@@ -552,10 +716,10 @@
               </div>
 
               <!-- Generador de Guión con IA -->
-              <div style="border-top:1px solid var(--border-color); padding-top:15px; margin-top:5px;">
+              <div style="border-top:1px solid var(--border-color); padding-top:15px; margin-top:5px;" id="aiScriptWriterBox">
                 <h4 style="font-size:0.75rem; font-weight:600; margin-bottom:12px; color:var(--text-muted);">Redactor de Guiones por IA</h4>
                 <div class="inspector-form-group" style="margin-bottom:8px;">
-                  <input type="text" id="aiTopicInput" class="inspector-input" placeholder="Tema del video (Ej. Ventas de Software)">
+                  <input type="text" id="aiTopicInput" class="inspector-input" placeholder="Tema del video (Ej. Software de Ventas)">
                 </div>
                 <div class="inspector-form-group" style="margin-bottom:12px;">
                   <select id="aiToneSelect" class="inspector-select">
@@ -616,6 +780,7 @@
                   <input type="color" id="textColorPicker" value="#ffffff" style="width:40px; height:34px; border:1px solid var(--border-color); border-radius:4px; padding:0; background:transparent;">
                   <input type="text" id="textColorVal" class="inspector-input" value="#ffffff" readonly style="flex-grow:1;">
                 </div>
+                <div id="textBrandPalette" style="display:flex; gap:6px; margin-top:8px;"></div>
               </div>
 
               <div style="display:flex; gap:8px; margin-top:10px;">
@@ -624,12 +789,29 @@
               </div>
             </div>
 
+            <!-- Inspector alternativo: Propiedades de la Figura (Shape) -->
+            <div class="inspector-body" id="inspectorBodyShape" style="display:none;">
+              <div class="inspector-form-group">
+                <label for="shapeColorPicker">Color de Relleno</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="color" id="shapeColorPicker" value="#7c3aed" style="width:40px; height:34px; border:1px solid var(--border-color); border-radius:4px; padding:0; background:transparent;">
+                  <input type="text" id="shapeColorVal" class="inspector-input" value="#7c3aed" readonly style="flex-grow:1;">
+                </div>
+                <div id="shapeBrandPalette" style="display:flex; gap:6px; margin-top:8px;"></div>
+              </div>
+
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn-outline-sm w-full" id="btnMoveShapeFront"><i class="fa-solid fa-layer-group"></i> Traer al frente</button>
+                <button class="btn-outline-sm w-full" id="btnDeleteShapeLayer" style="border-color:var(--accent-red); color:var(--accent-red);"><i class="fa-solid fa-trash"></i> Eliminar</button>
+              </div>
+            </div>
+
           </div>
 
         </div>
       </section>
 
-      <!-- --- 6. BIBLIOTECA VIEW --- -->
+      <!-- --- 9. MI BIBLIOTECA VIEW --- -->
       <section class="studio-view" id="view-library">
         <div class="section-title-row" style="margin-bottom: 20px;">
           <h2>Mi Biblioteca</h2>
@@ -674,7 +856,7 @@
         </div>
       </section>
 
-      <!-- --- 7. SUSCRIPCIÓN VIEW --- -->
+      <!-- --- 10. SUSCRIPCIÓN VIEW --- -->
       <section class="studio-view" id="view-pricing">
         <div class="welcome-banner-hg" style="margin-bottom:30px;">
           <div class="welcome-bg-glow" style="background: radial-gradient(circle, var(--accent-gold-glow) 0%, transparent 70%);"></div>
@@ -787,7 +969,7 @@
         </div>
       </section>
 
-      <!-- --- 8. POLÍTICAS DE PRIVACIDAD / REEMBOLSO VIEW --- -->
+      <!-- --- 11. POLÍTICAS DE PRIVACIDAD / REEMBOLSO VIEW --- -->
       <section class="studio-view" id="view-policies">
         <div class="section-title-row" style="margin-bottom: 20px;">
           <h2>Políticas Legales y Ética</h2>
@@ -795,7 +977,9 @@
 
         <div class="hg-tabs-header">
           <button class="hg-tab-btn active" data-tab="policy-privacy">Privacidad de Datos</button>
+          <button class="hg-tab-btn" data-tab="policy-terms">Términos de Servicio</button>
           <button class="hg-tab-btn" data-tab="policy-refund">Políticas de Reembolso</button>
+          <button class="hg-tab-btn" data-tab="policy-compliance">Seguridad y Cumplimiento (SOC 2)</button>
           <button class="hg-tab-btn" data-tab="policy-ethics">Seguridad y Ética de IA</button>
         </div>
 
@@ -812,6 +996,19 @@
           </div>
         </div>
 
+        <!-- Términos -->
+        <div class="hg-tab-panel" id="policy-terms">
+          <div class="cloning-left-card" style="width:100%;">
+            <h3>Términos del Servicio</h3>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted);">
+              Al registrarte en Studio SDL, aceptas utilizar el servicio únicamente con propósitos lícitos. Está prohibido revender el acceso a la API o utilizar cuentas compartidas para eludir las tarifas de suscripción Pro o Business.
+            </p>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted); margin-top:10px;">
+              Nos reservamos el derecho de rescindir el servicio inmediatamente a cuentas que violen nuestras políticas éticas de generación de videos sintéticos.
+            </p>
+          </div>
+        </div>
+
         <!-- Reembolso -->
         <div class="hg-tab-panel" id="policy-refund">
           <div class="cloning-left-card" style="width:100%;">
@@ -821,6 +1018,19 @@
             </p>
             <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted); margin-top:10px;">
               Los créditos consumidos de forma real en APIs de renderizado externo (ElevenLabs/D-ID) son deducidos del saldo de reembolso proporcionalmente.
+            </p>
+          </div>
+        </div>
+
+        <!-- Cumplimiento -->
+        <div class="hg-tab-panel" id="policy-compliance">
+          <div class="cloning-left-card" style="width:100%;">
+            <h3>Seguridad y Cumplimiento Normativo (SOC 2 & GDPR)</h3>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted);">
+              La seguridad es el pilar central de Studio SDL. Todos nuestros procesos de infraestructura local y en la nube cumplen con los estándares internacionales SOC 2 Tipo II, garantizando la protección de tu información contra intrusiones no autorizadas.
+            </p>
+            <p style="font-size:0.85rem; line-height:1.6; color:var(--text-muted); margin-top:10px;">
+              Asimismo, la plataforma está 100% adaptada a las directrices de la regulación GDPR para el borrado y derecho al olvido de tus datos biométricos y grabaciones personales.
             </p>
           </div>
         </div>
@@ -839,7 +1049,7 @@
         </div>
       </section>
 
-      <!-- --- 9. AYUDA Y SOPORTE VIEW --- -->
+      <!-- --- 12. AYUDA Y SOPORTE VIEW --- -->
       <section class="studio-view" id="view-resources">
         <div class="section-title-row" style="margin-bottom: 25px;">
           <h2>Ayuda y Soporte Técnico</h2>
@@ -881,7 +1091,7 @@
         </div>
       </section>
 
-      <!-- --- 10. AJUSTES (SETTINGS) VIEW --- -->
+      <!-- --- 13. AJUSTES (SETTINGS) VIEW --- -->
       <section class="studio-view" id="view-settings">
         <div class="section-title-row" style="margin-bottom: 25px;">
           <h2>Configuración de la Cuenta</h2>
@@ -930,6 +1140,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- JavaScript Modules -->
-  <script src="main.js?v=2.4" type="module"></script>
+  <script src="main.js?v=2.5" type="module"></script>
 </body>
 </html>

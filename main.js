@@ -127,12 +127,35 @@ let scenes = [
     script: 'Escribe tu guión aquí para esta escena.',
     bg: 'dark',
     duration: 5,
-    avatarPos: { top: 50, left: 50, width: 150, height: 150 },
-    textPos: { top: 15, left: 10, width: 300, height: 50, text: 'Mi Título de Escena', fontSize: 28, fontStyle: "'Inter', sans-serif", color: '#ffffff', display: 'none' }
+    layers: [
+      {
+        id: 'layer-avatar-' + Date.now(),
+        type: 'avatar',
+        avatarId: 'av-sofia-biz',
+        top: 50,
+        left: 50,
+        width: 260,
+        height: 260,
+        zIndex: 10
+      },
+      {
+        id: 'layer-text-' + Date.now(),
+        type: 'text',
+        text: 'Mi Título de Escena',
+        fontSize: 28,
+        fontStyle: "'Inter', sans-serif",
+        color: '#ffffff',
+        top: 25,
+        left: 50,
+        width: 320,
+        height: 60,
+        zIndex: 20
+      }
+    ]
   }
 ];
 let currentSceneIndex = 0;
-let activeSelectedLayer = 'avatar'; // 'avatar' or 'text' or null
+let activeSelectedLayer = null; // Stores reference of the selected layer object inside scenes[currentSceneIndex].layers
 
 // --- TOAST NOTIFICATIONS ---
 function showToast(title, desc, type = 'success') {
@@ -308,12 +331,35 @@ document.addEventListener('click', (e) => {
           script: 'Hola, bienvenidos a este nuevo video generado con Inteligencia Artificial.',
           bg: 'dark',
           duration: 5,
-          avatarPos: { top: 50, left: 50, width: 150, height: 150 },
-          textPos: { top: 15, left: 10, width: 300, height: 50, text: 'Mi Título de Escena', fontSize: 28, fontStyle: "'Inter', sans-serif", color: '#ffffff', display: 'none' }
+          layers: [
+            {
+              id: 'layer-avatar-' + Date.now(),
+              type: 'avatar',
+              avatarId: 'av-sofia-biz',
+              top: 50,
+              left: 50,
+              width: 260,
+              height: 260,
+              zIndex: 10
+            },
+            {
+              id: 'layer-text-' + (Date.now() + 1),
+              type: 'text',
+              text: 'Mi Título de Escena',
+              fontSize: 28,
+              fontStyle: "'Inter', sans-serif",
+              color: '#ffffff',
+              top: 25,
+              left: 50,
+              width: 320,
+              height: 60,
+              zIndex: 20
+            }
+          ]
         }
       ];
       currentSceneIndex = 0;
-      activeSelectedLayer = 'avatar';
+      activeSelectedLayerId = null;
     }
     switchView(target);
   }
@@ -423,12 +469,35 @@ document.addEventListener('click', (e) => {
           script: temp.script,
           bg: 'dark',
           duration: 6,
-          avatarPos: { top: 50, left: 50, width: 150, height: 150 },
-          textPos: { top: 15, left: 10, width: 300, height: 50, text: temp.name, fontSize: 26, fontStyle: "'Inter', sans-serif", color: '#ffffff', display: 'block' }
+          layers: [
+            {
+              id: 'layer-avatar-' + Date.now(),
+              type: 'avatar',
+              avatarId: temp.avatar,
+              top: 50,
+              left: 50,
+              width: 260,
+              height: 260,
+              zIndex: 10
+            },
+            {
+              id: 'layer-text-' + (Date.now() + 1),
+              type: 'text',
+              text: temp.name,
+              fontSize: 26,
+              fontStyle: "'Inter', sans-serif",
+              color: '#ffffff',
+              top: 25,
+              left: 50,
+              width: 320,
+              height: 60,
+              zIndex: 20
+            }
+          ]
         }
       ];
       currentSceneIndex = 0;
-      activeSelectedLayer = 'avatar';
+      activeSelectedLayerId = null;
       switchView('editor');
       showToast('Plantilla Cargada', `Se cargó "${temp.name}" en el lienzo.`, 'success');
     }
@@ -1130,28 +1199,6 @@ function renderEditorDrawerTemplates() {
   });
 }
 
-function renderEditorDrawerAvatars() {
-  const container = document.getElementById('editorDrawerAvatarsGrid');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const list = getLocal('sdl_avatars') || DEFAULT_AVATARS;
-  list.forEach(av => {
-    const div = document.createElement('div');
-    div.className = 'drawer-av-card';
-    div.innerHTML = `
-      <img src="${av.img}" alt="${av.name}">
-      <div class="drawer-av-name">${av.name}</div>
-    `;
-    div.addEventListener('click', () => {
-      scenes[currentSceneIndex].avatarId = av.id;
-      loadSceneStateIntoCanvas(currentSceneIndex);
-      updateInspectorInputs();
-    });
-    container.appendChild(div);
-  });
-}
-
 // User Assets Inside Drawer
 const editorAssetUploadZone = document.getElementById('editorAssetUploadZone');
 const editorAssetFileInput = document.getElementById('editorAssetFileInput');
@@ -1260,88 +1307,194 @@ document.addEventListener('click', (e) => {
 
 // Adding Text Preset trigger from drawer
 document.querySelectorAll('.btn-add-text-preset').forEach(btn => {
+  // Cloning to remove any previous listeners
+  const newBtn = btn.cloneNode(true);
+  btn.replaceWith(newBtn);
+});
+
+document.querySelectorAll('.btn-add-text-preset').forEach(btn => {
   btn.addEventListener('click', () => {
     const size = btn.dataset.size;
-    let sizeVal = 28;
-    let weight = 700;
-    if (size === 'subtitle') { sizeVal = 20; weight = 600; }
-    if (size === 'body') { sizeVal = 14; weight = 400; }
-
-    scenes[currentSceneIndex].textPos.display = 'block';
-    scenes[currentSceneIndex].textPos.fontSize = sizeVal;
-    scenes[currentSceneIndex].textPos.text = 'Haz doble clic para editar';
+    const shape = btn.dataset.shape;
     
-    loadSceneStateIntoCanvas(currentSceneIndex);
-    focusLayer('text');
+    if (shape) {
+      const shapeLayer = {
+        id: 'layer-shape-' + Date.now(),
+        type: 'shape',
+        shapeType: shape,
+        fillColor: '#7c3aed',
+        left: 35 + Math.random() * 15,
+        top: 35 + Math.random() * 15,
+        width: 100,
+        height: 100,
+        zIndex: 15 + scenes[currentSceneIndex].layers.length
+      };
+      scenes[currentSceneIndex].layers.push(shapeLayer);
+      renderSceneLayers(currentSceneIndex);
+      focusLayer(shapeLayer.id);
+      showToast('Figura Insertada', 'Se añadió al lienzo.', 'success');
+    } else if (size) {
+      const textLayer = {
+        id: 'layer-text-' + Date.now(),
+        type: 'text',
+        text: size === 'title' ? 'Agregar Título' : (size === 'subtitle' ? 'Agregar Subtítulo' : 'Agregar Cuerpo de Texto'),
+        fontSize: size === 'title' ? 32 : (size === 'subtitle' ? 22 : 14),
+        fontStyle: "'Inter', sans-serif",
+        color: '#ffffff',
+        left: 30 + Math.random() * 20,
+        top: 30 + Math.random() * 20,
+        width: 250,
+        height: size === 'title' ? 60 : (size === 'subtitle' ? 45 : 35),
+        zIndex: 20 + scenes[currentSceneIndex].layers.length
+      };
+      scenes[currentSceneIndex].layers.push(textLayer);
+      renderSceneLayers(currentSceneIndex);
+      focusLayer(textLayer.id);
+      showToast('Texto Añadido', 'Se insertó el cuadro de texto.', 'success');
+    }
   });
 });
 
 // --- INTERACTIVE DRAG & RESIZE CANVAS LAYER ENGINE ---
-const layerAvatar = document.getElementById('layerAvatar');
-const layerText = document.getElementById('layerText');
-const canvasTextInput = document.getElementById('canvasTextInput');
+let activeSelectedLayerId = null;
 
-function focusLayer(layerType) {
-  activeSelectedLayer = layerType;
+// Normalize scene structure to dynamic layers array if missing
+function normalizeScene(scene) {
+  if (!scene.layers) {
+    scene.layers = [];
+    if (scene.avatarId) {
+      scene.layers.push({
+        id: 'layer-avatar-' + Date.now(),
+        type: 'avatar',
+        avatarId: scene.avatarId,
+        left: 50,
+        top: 50,
+        width: 200,
+        height: 200,
+        zIndex: 10
+      });
+    }
+    if (scene.textPos && scene.textPos.display === 'block') {
+      scene.layers.push({
+        id: 'layer-text-' + (Date.now() + 1),
+        type: 'text',
+        text: scene.textPos.text || 'Mi Título de Escena',
+        fontSize: scene.textPos.fontSize || 28,
+        fontStyle: scene.textPos.fontStyle || "'Inter', sans-serif",
+        color: scene.textPos.color || '#ffffff',
+        left: 50,
+        top: 25,
+        width: 300,
+        height: 60,
+        zIndex: 20
+      });
+    }
+  }
+  return scene;
+}
+
+function focusLayer(layerId) {
+  activeSelectedLayerId = layerId;
   
-  if (layerType === 'avatar') {
-    layerAvatar.classList.add('selected');
-    layerText.classList.remove('selected');
+  // Toggle class selected on elements
+  document.querySelectorAll('.canvas-layer').forEach(el => {
+    if (el.id === layerId) el.classList.add('selected');
+    else el.classList.remove('selected');
+  });
+
+  const activeLayer = layerId ? scenes[currentSceneIndex].layers.find(l => l.id === layerId) : null;
+  
+  const bodyAvatar = document.getElementById('inspectorBodyAvatar');
+  const bodyText = document.getElementById('inspectorBodyText');
+  const bodyShape = document.getElementById('inspectorBodyShape');
+  const bodyScene = document.getElementById('inspectorBodyScene');
+  const insTitle = document.getElementById('insTabTitleBtn');
+  
+  // Hide all first
+  if (bodyAvatar) bodyAvatar.style.display = 'none';
+  if (bodyText) bodyText.style.display = 'none';
+  if (bodyShape) bodyShape.style.display = 'none';
+  if (bodyScene) bodyScene.style.display = 'none';
+
+  if (!activeLayer) {
+    if (bodyScene) bodyScene.style.display = 'block';
+    if (insTitle) insTitle.textContent = 'Ajustes de Escena';
     
-    document.getElementById('inspectorBodyAvatar').style.display = 'block';
-    document.getElementById('inspectorBodyText').style.display = 'none';
-    document.getElementById('inspectorBodyScene').style.display = 'none';
-    document.getElementById('inspectorPanelTitle').textContent = 'Ajustes del Avatar';
-  } else if (layerType === 'text') {
-    layerText.classList.add('selected');
-    layerAvatar.classList.remove('selected');
+    // Update scene background selected buttons
+    const scene = scenes[currentSceneIndex];
+    document.querySelectorAll('.bg-btn').forEach(btn => {
+      if (btn.dataset.bg === scene.bg) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    // Update scene duration slider
+    const durationSlider = document.getElementById('sceneDurationSlider');
+    const valDuration = document.getElementById('valSceneDuration');
+    if (durationSlider) durationSlider.value = scene.duration;
+    if (valDuration) valDuration.textContent = `${scene.duration}.0s`;
+  } 
+  else if (activeLayer.type === 'avatar') {
+    if (bodyAvatar) bodyAvatar.style.display = 'block';
+    if (insTitle) insTitle.textContent = 'Ajustes de Avatar';
+    updateInspectorInputs();
+  } 
+  else if (activeLayer.type === 'text') {
+    if (bodyText) bodyText.style.display = 'block';
+    if (insTitle) insTitle.textContent = 'Ajustes de Capa Texto';
     
-    document.getElementById('inspectorBodyAvatar').style.display = 'none';
-    document.getElementById('inspectorBodyText').style.display = 'block';
-    document.getElementById('inspectorBodyScene').style.display = 'none';
-    document.getElementById('inspectorPanelTitle').textContent = 'Ajustes de Capa Texto';
-  } else {
-    layerAvatar.classList.remove('selected');
-    layerText.classList.remove('selected');
+    // Sync text properties to inspector inputs
+    const fontSizeSlider = document.getElementById('textFontSize');
+    const valFontSize = document.getElementById('valFontSize');
+    const fontFamilySelect = document.getElementById('textFontFamily');
+    const textColorPicker = document.getElementById('textColorPicker');
+    const textColorVal = document.getElementById('textColorVal');
     
-    document.getElementById('inspectorBodyAvatar').style.display = 'none';
-    document.getElementById('inspectorBodyText').style.display = 'none';
-    document.getElementById('inspectorBodyScene').style.display = 'block';
-    document.getElementById('inspectorPanelTitle').textContent = 'Ajustes de Escena';
+    if (fontSizeSlider) fontSizeSlider.value = activeLayer.fontSize;
+    if (valFontSize) valFontSize.textContent = `${activeLayer.fontSize}px`;
+    if (fontFamilySelect) fontFamilySelect.value = activeLayer.fontStyle;
+    if (textColorPicker) textColorPicker.value = activeLayer.color;
+    if (textColorVal) textColorVal.value = activeLayer.color;
+  } 
+  else if (activeLayer.type === 'shape') {
+    if (bodyShape) bodyShape.style.display = 'block';
+    if (insTitle) insTitle.textContent = 'Ajustes de Figura';
+    
+    const shapeColorPicker = document.getElementById('shapeColorPicker');
+    const shapeColorVal = document.getElementById('shapeColorVal');
+    
+    if (shapeColorPicker) shapeColorPicker.parentElement.style.display = 'block';
+    if (shapeColorPicker) shapeColorPicker.value = activeLayer.fillColor;
+    if (shapeColorVal) shapeColorVal.value = activeLayer.fillColor;
+  }
+  else if (activeLayer.type === 'image') {
+    if (insTitle) insTitle.textContent = 'Recurso de Imagen';
+    if (bodyShape) bodyShape.style.display = 'block';
+    const shapeColorPicker = document.getElementById('shapeColorPicker');
+    if (shapeColorPicker) shapeColorPicker.parentElement.style.display = 'none'; // Hide color picker
+  }
+  
+  if (typeof renderInspectorBrandPalettes === 'function') {
+    renderInspectorBrandPalettes();
   }
 }
 
 // Click on Canvas workspace (but outside active items) selects scene background settings
-document.getElementById('videoCanvasStage').addEventListener('click', (e) => {
-  if (e.target.id === 'videoCanvasStage' || e.target.id === 'editorCanvasContainer') {
-    focusLayer(null);
-  }
-});
-
-layerAvatar.addEventListener('click', (e) => {
-  e.stopPropagation();
-  focusLayer('avatar');
-});
-layerText.addEventListener('click', (e) => {
-  e.stopPropagation();
-  focusLayer('text');
-});
-
-// Sync changes to Text input field inside canvas
-if (canvasTextInput) {
-  canvasTextInput.addEventListener('input', () => {
-    scenes[currentSceneIndex].textPos.text = canvasTextInput.value;
+const canvasStage = document.getElementById('videoCanvasStage');
+if (canvasStage) {
+  canvasStage.addEventListener('click', (e) => {
+    if (e.target.id === 'videoCanvasStage' || e.target.id === 'editorCanvasContainer') {
+      focusLayer(null);
+    }
   });
 }
 
-// Make Layers Draggable & Resizable using Mouse Listeners
-function setupDraggable(element, keyString) {
+// Make Layers Draggable using Mouse Listeners
+function setupDynamicDraggable(element, layer) {
   let isDragging = false;
   let startX, startY;
   let elemStartX, elemStartY;
 
   element.addEventListener('mousedown', (e) => {
-    if (e.target.classList.contains('resize-handle')) return; // Handle resizing separately
+    if (e.target.classList.contains('resize-handle') || e.target.tagName === 'INPUT') return; 
     isDragging = true;
     startX = e.clientX;
     startY = e.clientY;
@@ -1360,8 +1513,9 @@ function setupDraggable(element, keyString) {
     const newLeft = elemStartX + dx;
     const newTop = elemStartY + dy;
     
-    // Restrict within videoCanvasStage boundaries
     const stage = document.getElementById('videoCanvasStage');
+    if (!stage) return;
+    
     const limitX = stage.clientWidth - element.clientWidth;
     const limitY = stage.clientHeight - element.clientHeight;
     
@@ -1371,17 +1525,9 @@ function setupDraggable(element, keyString) {
     element.style.left = finalLeft + 'px';
     element.style.top = finalTop + 'px';
 
-    // Save percentage coordinates to current scene object
-    const pctLeft = (finalLeft / stage.clientWidth) * 100;
-    const pctTop = (finalTop / stage.clientHeight) * 100;
-
-    if (keyString === 'avatar') {
-      scenes[currentSceneIndex].avatarPos.left = pctLeft;
-      scenes[currentSceneIndex].avatarPos.top = pctTop;
-    } else {
-      scenes[currentSceneIndex].textPos.left = pctLeft;
-      scenes[currentSceneIndex].textPos.top = pctTop;
-    }
+    // Save center-anchored percentage coordinates
+    layer.left = ((finalLeft + element.clientWidth / 2) / stage.clientWidth) * 100;
+    layer.top = ((finalTop + element.clientHeight / 2) / stage.clientHeight) * 100;
   }
 
   function onMouseUp() {
@@ -1391,13 +1537,9 @@ function setupDraggable(element, keyString) {
   }
 }
 
-setupDraggable(layerAvatar, 'avatar');
-setupDraggable(layerText, 'text');
-
 // Setup Resizable logic
-function setupResizable(element, keyString) {
+function setupDynamicResizable(element, layer) {
   const handles = element.querySelectorAll('.resize-handle');
-  
   handles.forEach(handle => {
     handle.addEventListener('mousedown', (e) => {
       e.stopPropagation();
@@ -1425,38 +1567,31 @@ function setupResizable(element, keyString) {
         const dy = event.clientY - startY;
 
         if (isRight) {
-          newWidth = Math.max(40, startWidth + dx);
+          newWidth = Math.max(30, startWidth + dx);
         } else if (isLeft) {
-          newWidth = Math.max(40, startWidth - dx);
+          newWidth = Math.max(30, startWidth - dx);
           newLeft = startLeft + (startWidth - newWidth);
         }
 
         if (isBottom) {
-          newHeight = Math.max(40, startHeight + dy);
+          newHeight = Math.max(30, startHeight + dy);
         } else if (isTop) {
-          newHeight = Math.max(40, startHeight - dy);
+          newHeight = Math.max(30, startHeight - dy);
           newTop = startTop + (startHeight - newHeight);
         }
 
-        // Limit proportions
         element.style.width = newWidth + 'px';
         element.style.height = newHeight + 'px';
         element.style.left = newLeft + 'px';
         element.style.top = newTop + 'px';
 
         const stage = document.getElementById('videoCanvasStage');
+        if (!stage) return;
         
-        if (keyString === 'avatar') {
-          scenes[currentSceneIndex].avatarPos.width = newWidth;
-          scenes[currentSceneIndex].avatarPos.height = newHeight;
-          scenes[currentSceneIndex].avatarPos.left = (newLeft / stage.clientWidth) * 100;
-          scenes[currentSceneIndex].avatarPos.top = (newTop / stage.clientHeight) * 100;
-        } else {
-          scenes[currentSceneIndex].textPos.width = newWidth;
-          scenes[currentSceneIndex].textPos.height = newHeight;
-          scenes[currentSceneIndex].textPos.left = (newLeft / stage.clientWidth) * 100;
-          scenes[currentSceneIndex].textPos.top = (newTop / stage.clientHeight) * 100;
-        }
+        layer.width = newWidth;
+        layer.height = newHeight;
+        layer.left = ((newLeft + newWidth / 2) / stage.clientWidth) * 100;
+        layer.top = ((newTop + newHeight / 2) / stage.clientHeight) * 100;
       }
 
       function onMouseUp() {
@@ -1469,9 +1604,6 @@ function setupResizable(element, keyString) {
     });
   });
 }
-
-setupResizable(layerAvatar, 'avatar');
-setupResizable(layerText, 'text');
 
 // Inspector Inputs Synchronization
 function syncEditorPresets() {
@@ -1503,11 +1635,6 @@ function updateInspectorInputs() {
   const textarea = document.getElementById('editorScriptTextarea');
   const durationSlider = document.getElementById('sceneDurationSlider');
   const valDuration = document.getElementById('valSceneDuration');
-  const fontSizeSlider = document.getElementById('textFontSize');
-  const valFontSize = document.getElementById('valFontSize');
-  const fontFamilySelect = document.getElementById('textFontFamily');
-  const textColorPicker = document.getElementById('textColorPicker');
-  const textColorVal = document.getElementById('textColorVal');
 
   if (selectVoice) selectVoice.value = scene.voiceId;
   if (rateSlider) {
@@ -1521,78 +1648,178 @@ function updateInspectorInputs() {
     durationSlider.value = scene.duration;
     valDuration.textContent = `${scene.duration}.0s`;
   }
-  if (fontSizeSlider) {
-    fontSizeSlider.value = scene.textPos.fontSize;
-    valFontSize.textContent = `${scene.textPos.fontSize}px`;
-  }
-  if (fontFamilySelect) fontFamilySelect.value = scene.textPos.fontStyle;
-  if (textColorPicker) textColorPicker.value = scene.textPos.color;
-  if (textColorVal) textColorVal.value = scene.textPos.color;
 }
 
 // Bind inspector change events to active scene state
-document.getElementById('editorVoiceSelect').addEventListener('change', (e) => {
-  scenes[currentSceneIndex].voiceId = e.target.value;
-  // Update pitch/rate in UI too
-  const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
-  const v = voices.find(vc => vc.id === e.target.value);
-  if (v) {
-    document.getElementById('editorVoiceRate').value = v.rate || 1.0;
-    document.getElementById('valVoiceRate').textContent = `${v.rate || 1.0}x`;
-  }
-});
+const editorVoiceSelect = document.getElementById('editorVoiceSelect');
+if (editorVoiceSelect) {
+  editorVoiceSelect.addEventListener('change', (e) => {
+    scenes[currentSceneIndex].voiceId = e.target.value;
+    const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+    const v = voices.find(vc => vc.id === e.target.value);
+    if (v) {
+      const rateSlider = document.getElementById('editorVoiceRate');
+      const valRate = document.getElementById('valVoiceRate');
+      if (rateSlider) rateSlider.value = v.rate || 1.0;
+      if (valRate) valRate.textContent = `${v.rate || 1.0}x`;
+    }
+  });
+}
 
-document.getElementById('editorVoiceRate').addEventListener('input', (e) => {
-  document.getElementById('valVoiceRate').textContent = `${e.target.value}x`;
-  // Update local memory voice rate speed
-  const voiceId = scenes[currentSceneIndex].voiceId;
-  let voices = getLocal('sdl_voices') || DEFAULT_VOICES;
-  let v = voices.find(vc => vc.id === voiceId);
-  if (v) {
-    v.rate = parseFloat(e.target.value);
-    setLocal('sdl_voices', voices);
-  }
-});
+const editorVoiceRate = document.getElementById('editorVoiceRate');
+if (editorVoiceRate) {
+  editorVoiceRate.addEventListener('input', (e) => {
+    const valRate = document.getElementById('valVoiceRate');
+    if (valRate) valRate.textContent = `${e.target.value}x`;
+    
+    const voiceId = scenes[currentSceneIndex].voiceId;
+    let voices = getLocal('sdl_voices') || DEFAULT_VOICES;
+    let v = voices.find(vc => vc.id === voiceId);
+    if (v) {
+      v.rate = parseFloat(e.target.value);
+      setLocal('sdl_voices', voices);
+    }
+  });
+}
 
-document.getElementById('editorScriptTextarea').addEventListener('input', (e) => {
-  scenes[currentSceneIndex].script = e.target.value;
-});
+const editorScriptTextarea = document.getElementById('editorScriptTextarea');
+if (editorScriptTextarea) {
+  editorScriptTextarea.addEventListener('input', (e) => {
+    scenes[currentSceneIndex].script = e.target.value;
+  });
+}
 
-document.getElementById('sceneDurationSlider').addEventListener('input', (e) => {
-  document.getElementById('valSceneDuration').textContent = `${e.target.value}.0s`;
-  scenes[currentSceneIndex].duration = parseInt(e.target.value);
-  renderTimelineScenes();
-});
+const sceneDurationSlider = document.getElementById('sceneDurationSlider');
+if (sceneDurationSlider) {
+  sceneDurationSlider.addEventListener('input', (e) => {
+    const valDuration = document.getElementById('valSceneDuration');
+    if (valDuration) valDuration.textContent = `${e.target.value}.0s`;
+    scenes[currentSceneIndex].duration = parseInt(e.target.value);
+    renderTimelineScenes();
+  });
+}
 
-document.getElementById('textFontSize').addEventListener('input', (e) => {
-  document.getElementById('valFontSize').textContent = `${e.target.value}px`;
-  scenes[currentSceneIndex].textPos.fontSize = parseInt(e.target.value);
-  layerText.style.fontSize = e.target.value + 'px';
-});
+// Bind inspector text layer updates
+const textFontSize = document.getElementById('textFontSize');
+if (textFontSize) {
+  textFontSize.addEventListener('input', (e) => {
+    const valFontSize = document.getElementById('valFontSize');
+    if (valFontSize) valFontSize.textContent = `${e.target.value}px`;
+    
+    const activeLayer = scenes[currentSceneIndex].layers.find(l => l.id === activeSelectedLayerId);
+    if (activeLayer && activeLayer.type === 'text') {
+      activeLayer.fontSize = parseInt(e.target.value);
+      const el = document.getElementById(activeLayer.id);
+      if (el) {
+        const span = el.querySelector('span') || el.querySelector('input');
+        if (span) span.style.fontSize = activeLayer.fontSize + 'px';
+      }
+    }
+  });
+}
 
-document.getElementById('textFontFamily').addEventListener('change', (e) => {
-  scenes[currentSceneIndex].textPos.fontStyle = e.target.value;
-  layerText.style.fontFamily = e.target.value;
-});
+const textFontFamily = document.getElementById('textFontFamily');
+if (textFontFamily) {
+  textFontFamily.addEventListener('change', (e) => {
+    const activeLayer = scenes[currentSceneIndex].layers.find(l => l.id === activeSelectedLayerId);
+    if (activeLayer && activeLayer.type === 'text') {
+      activeLayer.fontStyle = e.target.value;
+      const el = document.getElementById(activeLayer.id);
+      if (el) {
+        const span = el.querySelector('span') || el.querySelector('input');
+        if (span) span.style.fontFamily = activeLayer.fontStyle;
+      }
+    }
+  });
+}
 
-document.getElementById('textColorPicker').addEventListener('input', (e) => {
-  document.getElementById('textColorVal').value = e.target.value;
-  scenes[currentSceneIndex].textPos.color = e.target.value;
-  layerText.style.color = e.target.value;
-});
+const textColorPicker = document.getElementById('textColorPicker');
+if (textColorPicker) {
+  textColorPicker.addEventListener('input', (e) => {
+    const textColorVal = document.getElementById('textColorVal');
+    if (textColorVal) textColorVal.value = e.target.value;
+    
+    const activeLayer = scenes[currentSceneIndex].layers.find(l => l.id === activeSelectedLayerId);
+    if (activeLayer && activeLayer.type === 'text') {
+      activeLayer.color = e.target.value;
+      const el = document.getElementById(activeLayer.id);
+      if (el) {
+        const span = el.querySelector('span') || el.querySelector('input');
+        if (span) span.style.color = activeLayer.color;
+      }
+    }
+  });
+}
 
-document.getElementById('btnMoveTextFront').addEventListener('click', () => {
-  layerText.style.zIndex = 100;
-  layerAvatar.style.zIndex = 10;
-  showToast('Capa Ajustada', 'Texto traído al frente.', 'info');
-});
+const btnMoveTextFront = document.getElementById('btnMoveTextFront');
+if (btnMoveTextFront) {
+  btnMoveTextFront.addEventListener('click', () => {
+    const activeLayer = scenes[currentSceneIndex].layers.find(l => l.id === activeSelectedLayerId);
+    if (activeLayer) {
+      const maxZ = Math.max(...scenes[currentSceneIndex].layers.map(l => l.zIndex || 0), 10);
+      activeLayer.zIndex = maxZ + 1;
+      const el = document.getElementById(activeLayer.id);
+      if (el) el.style.zIndex = activeLayer.zIndex;
+      showToast('Capa Ajustada', 'Texto traído al frente.', 'info');
+    }
+  });
+}
 
-document.getElementById('btnDeleteTextLayer').addEventListener('click', () => {
-  scenes[currentSceneIndex].textPos.display = 'none';
-  layerText.style.display = 'none';
-  focusLayer('avatar');
-  showToast('Capa Eliminada', 'Se quitó el cuadro de texto.', 'info');
-});
+const btnDeleteTextLayer = document.getElementById('btnDeleteTextLayer');
+if (btnDeleteTextLayer) {
+  btnDeleteTextLayer.addEventListener('click', () => {
+    const idx = scenes[currentSceneIndex].layers.findIndex(l => l.id === activeSelectedLayerId);
+    if (idx !== -1) {
+      scenes[currentSceneIndex].layers.splice(idx, 1);
+      renderSceneLayers(currentSceneIndex);
+      focusLayer(null);
+      showToast('Capa Eliminada', 'Se quitó el cuadro de texto.', 'info');
+    }
+  });
+}
+
+// Bind inspector shape layer updates
+const shapeColorPicker = document.getElementById('shapeColorPicker');
+if (shapeColorPicker) {
+  shapeColorPicker.addEventListener('input', (e) => {
+    const shapeColorVal = document.getElementById('shapeColorVal');
+    if (shapeColorVal) shapeColorVal.value = e.target.value;
+    
+    const activeLayer = scenes[currentSceneIndex].layers.find(l => l.id === activeSelectedLayerId);
+    if (activeLayer && activeLayer.type === 'shape') {
+      activeLayer.fillColor = e.target.value;
+      const el = document.getElementById(activeLayer.id);
+      if (el) el.style.backgroundColor = activeLayer.fillColor;
+    }
+  });
+}
+
+const btnMoveShapeFront = document.getElementById('btnMoveShapeFront');
+if (btnMoveShapeFront) {
+  btnMoveShapeFront.addEventListener('click', () => {
+    const activeLayer = scenes[currentSceneIndex].layers.find(l => l.id === activeSelectedLayerId);
+    if (activeLayer) {
+      const maxZ = Math.max(...scenes[currentSceneIndex].layers.map(l => l.zIndex || 0), 10);
+      activeLayer.zIndex = maxZ + 1;
+      const el = document.getElementById(activeLayer.id);
+      if (el) el.style.zIndex = activeLayer.zIndex;
+      showToast('Capa Ajustada', 'Figura traída al frente.', 'info');
+    }
+  });
+}
+
+const btnDeleteShapeLayer = document.getElementById('btnDeleteShapeLayer');
+if (btnDeleteShapeLayer) {
+  btnDeleteShapeLayer.addEventListener('click', () => {
+    const idx = scenes[currentSceneIndex].layers.findIndex(l => l.id === activeSelectedLayerId);
+    if (idx !== -1) {
+      scenes[currentSceneIndex].layers.splice(idx, 1);
+      renderSceneLayers(currentSceneIndex);
+      focusLayer(null);
+      showToast('Capa Eliminada', 'Se quitó la figura/recurso.', 'info');
+    }
+  });
+}
 
 // Load state into Canvas
 function loadSceneStateIntoCanvas(idx) {
@@ -1600,42 +1827,207 @@ function loadSceneStateIntoCanvas(idx) {
   const stage = document.getElementById('videoCanvasStage');
   if (!stage) return;
 
-  // Background
+  normalizeScene(scene);
+  renderSceneLayers(idx);
+}
+
+// Render dynamic layers on Canvas stage
+function renderSceneLayers(idx) {
+  const scene = scenes[idx];
+  const stage = document.getElementById('videoCanvasStage');
+  if (!stage) return;
+
   applyBackgroundToCanvas(stage, scene.bg);
+  
+  // Update scene background buttons active class
   document.querySelectorAll('.bg-btn').forEach(btn => {
     if (btn.dataset.bg === scene.bg) btn.classList.add('active');
     else btn.classList.remove('active');
   });
 
-  // Avatar layer
-  const avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
-  const chosenAv = avatars.find(av => av.id === scene.avatarId) || DEFAULT_AVATARS[0];
-  document.getElementById('canvasAvatarImg').src = chosenAv.img;
-  
-  // Set dimensions and position percentages
-  layerAvatar.style.left = `calc(${scene.avatarPos.left}% - ${scene.avatarPos.width / 2}px)`;
-  layerAvatar.style.top = `calc(${scene.avatarPos.top}% - ${scene.avatarPos.height / 2}px)`;
-  layerAvatar.style.width = scene.avatarPos.width + 'px';
-  layerAvatar.style.height = scene.avatarPos.height + 'px';
-  
-  // Text layer
-  if (scene.textPos.display === 'block') {
-    layerText.style.display = 'block';
-    canvasTextInput.value = scene.textPos.text;
-    layerText.style.fontSize = scene.textPos.fontSize + 'px';
-    layerText.style.fontFamily = scene.textPos.fontStyle;
-    layerText.style.color = scene.textPos.color;
-    layerText.style.width = scene.textPos.width + 'px';
-    layerText.style.height = scene.textPos.height + 'px';
-    layerText.style.left = `calc(${scene.textPos.left}% - ${scene.textPos.width / 2}px)`;
-    layerText.style.top = `calc(${scene.textPos.top}% - ${scene.textPos.height / 2}px)`;
-  } else {
-    layerText.style.display = 'none';
-  }
+  // Keep the subtitle container intact
+  const overlay = document.getElementById('canvasSubtitleOverlay');
+  stage.innerHTML = '';
+  if (overlay) stage.appendChild(overlay);
 
-  // Load thumbnail preview selection strip
-  renderTimelineScenes();
+  scene.layers.forEach(layer => {
+    const layerEl = document.createElement('div');
+    layerEl.className = 'canvas-layer';
+    layerEl.id = layer.id;
+
+    if (layer.type === 'avatar') {
+      layerEl.classList.add('layer-avatar');
+      const avatars = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+      const chosenAv = avatars.find(av => av.id === layer.avatarId) || DEFAULT_AVATARS[0];
+      
+      const img = document.createElement('img');
+      img.src = chosenAv.img;
+      img.alt = chosenAv.name;
+      img.id = 'canvasAvatarImg';
+      layerEl.appendChild(img);
+      
+      if (isSpeakingPreview && idx === currentSceneIndex) {
+        layerEl.classList.add('talking');
+      }
+    } 
+    else if (layer.type === 'text') {
+      layerEl.classList.add('layer-text');
+      const textSpan = document.createElement('span');
+      textSpan.textContent = layer.text;
+      textSpan.style.fontFamily = layer.fontStyle;
+      textSpan.style.fontSize = layer.fontSize + 'px';
+      textSpan.style.color = layer.color;
+      textSpan.style.width = '100%';
+      textSpan.style.display = 'block';
+      
+      textSpan.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = layer.text;
+        input.style.fontFamily = layer.fontStyle;
+        input.style.fontSize = layer.fontSize + 'px';
+        input.style.color = layer.color;
+        input.style.width = '100%';
+        input.style.background = 'transparent';
+        input.style.border = 'none';
+        input.style.outline = 'none';
+        
+        textSpan.replaceWith(input);
+        input.focus();
+        
+        const saveText = () => {
+          layer.text = input.value;
+          textSpan.textContent = input.value;
+          input.replaceWith(textSpan);
+        };
+        input.addEventListener('blur', saveText);
+        input.addEventListener('keydown', (evt) => {
+          if (evt.key === 'Enter') saveText();
+        });
+      });
+      layerEl.appendChild(textSpan);
+    } 
+    else if (layer.type === 'shape') {
+      layerEl.classList.add('layer-shape');
+      if (layer.shapeType === 'circle') {
+        layerEl.classList.add('layer-shape-circle');
+      } else {
+        layerEl.classList.add('layer-shape-rectangle');
+      }
+      layerEl.style.backgroundColor = layer.fillColor;
+    }
+    else if (layer.type === 'image') {
+      layerEl.classList.add('layer-image');
+      const img = document.createElement('img');
+      img.src = layer.src;
+      img.alt = layer.name;
+      layerEl.appendChild(img);
+    }
+
+    layerEl.style.left = `calc(${layer.left}% - ${layer.width / 2}px)`;
+    layerEl.style.top = `calc(${layer.top}% - ${layer.height / 2}px)`;
+    layerEl.style.width = layer.width + 'px';
+    layerEl.style.height = layer.height + 'px';
+    layerEl.style.zIndex = layer.zIndex;
+
+    if (layer.id === activeSelectedLayerId) {
+      layerEl.classList.add('selected');
+    }
+
+    const handles = ['nw', 'ne', 'se', 'sw'];
+    handles.forEach(h => {
+      const handle = document.createElement('div');
+      handle.className = `resize-handle rh-${h}`;
+      layerEl.appendChild(handle);
+    });
+
+    layerEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      focusLayer(layer.id);
+    });
+
+    setupDynamicDraggable(layerEl, layer);
+    setupDynamicResizable(layerEl, layer);
+
+    stage.appendChild(layerEl);
+  });
 }
+
+function selectAvatarForScene(avId) {
+  let avatarLayer = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+  if (!avatarLayer) {
+    avatarLayer = {
+      id: 'layer-avatar-' + Date.now(),
+      type: 'avatar',
+      avatarId: avId,
+      left: 50,
+      top: 50,
+      width: 200,
+      height: 200,
+      zIndex: 10
+    };
+    scenes[currentSceneIndex].layers.push(avatarLayer);
+  } else {
+    avatarLayer.avatarId = avId;
+  }
+  scenes[currentSceneIndex].avatarId = avId;
+  renderSceneLayers(currentSceneIndex);
+  focusLayer(avatarLayer.id);
+}
+
+// Override drawer avatar clicks
+function renderEditorDrawerAvatars() {
+  const container = document.getElementById('editorDrawerAvatarsGrid');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const list = getLocal('sdl_avatars') || DEFAULT_AVATARS;
+  list.forEach(av => {
+    const div = document.createElement('div');
+    div.className = 'drawer-av-card';
+    div.innerHTML = `
+      <img src="${av.img}" alt="${av.name}">
+      <div class="drawer-av-name">${av.name}</div>
+    `;
+    div.addEventListener('click', () => {
+      selectAvatarForScene(av.id);
+      updateInspectorInputs();
+    });
+    container.appendChild(div);
+  });
+}
+
+// Override user asset usage click to load Base64 images as custom layers
+document.addEventListener('click', (e) => {
+  const btnUse = e.target.closest('.btn-use-asset');
+  if (btnUse) {
+    const idx = parseInt(btnUse.dataset.idx);
+    const assets = getLocal('sdl_user_assets') || [];
+    const asset = assets[idx];
+    if (asset) {
+      if (asset.type === 'image') {
+        const imageLayer = {
+          id: 'layer-image-' + Date.now(),
+          type: 'image',
+          src: asset.src,
+          name: asset.name,
+          left: 40 + Math.random() * 10,
+          top: 40 + Math.random() * 10,
+          width: 120,
+          height: 120,
+          zIndex: 18 + scenes[currentSceneIndex].layers.length
+        };
+        scenes[currentSceneIndex].layers.push(imageLayer);
+        renderSceneLayers(currentSceneIndex);
+        focusLayer(imageLayer.id);
+        showToast('Recurso Añadido', 'Se cargó la imagen en el lienzo.', 'success');
+      } else {
+        showToast('Audio Vinculado', 'Se vinculó el recurso de audio a esta escena.', 'success');
+      }
+    }
+  }
+});
 
 // --- TIMELINE MULTIESCENA SLIDES BAR ---
 function renderTimelineScenes() {
@@ -1662,7 +2054,8 @@ function renderTimelineScenes() {
     card.addEventListener('click', (e) => {
       if (e.target.closest('.btn-delete-scene')) return; // Handle delete
       currentSceneIndex = idx;
-      focusLayer('avatar');
+      const avLayer = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+      focusLayer(avLayer ? avLayer.id : null);
       syncEditorPresets();
     });
     list.appendChild(card);
@@ -1682,12 +2075,17 @@ if (btnAddTimelineScene) {
       script: 'Nueva diapositiva de guión.',
       bg: active.bg,
       duration: 5,
-      avatarPos: { ...active.avatarPos },
-      textPos: { ...active.textPos, display: 'none' }
+      layers: active.layers ? JSON.parse(JSON.stringify(active.layers)) : []
     };
+    if (newScene.layers.length > 0) {
+      newScene.layers.forEach(l => {
+        l.id = 'layer-' + l.type + '-' + Math.random().toString(36).substr(2, 9);
+      });
+    }
     scenes.push(newScene);
     currentSceneIndex = scenes.length - 1;
-    focusLayer('avatar');
+    const avLayer = newScene.layers.find(l => l.type === 'avatar');
+    focusLayer(avLayer ? avLayer.id : null);
     syncEditorPresets();
     showToast('Escena Añadida', 'Se insertó una nueva diapositiva en el timeline.', 'info');
   });
@@ -1702,7 +2100,8 @@ document.addEventListener('click', (e) => {
       scenes.splice(idx, 1);
       // Adjust current index selection bounds
       if (currentSceneIndex >= scenes.length) currentSceneIndex = scenes.length - 1;
-      focusLayer('avatar');
+      const avLayer = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+      focusLayer(avLayer ? avLayer.id : null);
       syncEditorPresets();
       showToast('Escena Eliminada', 'Borrador de escena removido.', 'info');
     }
@@ -1780,7 +2179,11 @@ if (btnPlayScriptSpeech) {
           if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'none';
           if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'inline-flex';
           
-          layerAvatar.classList.add('talking');
+          const avL = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+          if (avL) {
+            const el = document.getElementById(avL.id);
+            if (el) el.classList.add('talking');
+          }
           
           if (canvasSubtitleOverlay) {
             canvasSubtitleOverlay.innerHTML = `<span>"${scriptText.length > 60 ? scriptText.slice(0, 57) + '...' : scriptText}"</span>`;
@@ -1820,7 +2223,11 @@ function runLocalSpeechSynthesis(scriptText, activeVc) {
     if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'none';
     if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'inline-flex';
     
-    layerAvatar.classList.add('talking');
+    const avL = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+    if (avL) {
+      const el = document.getElementById(avL.id);
+      if (el) el.classList.add('talking');
+    }
     
     if (canvasSubtitleOverlay) {
       canvasSubtitleOverlay.innerHTML = `<span>"${scriptText.length > 60 ? scriptText.slice(0, 57) + '...' : scriptText}"</span>`;
@@ -1850,7 +2257,11 @@ function stopTTSPreview() {
   if (btnPlayScriptSpeech) btnPlayScriptSpeech.style.display = 'inline-flex';
   if (btnStopScriptSpeech) btnStopScriptSpeech.style.display = 'none';
   
-  layerAvatar.classList.remove('talking');
+  const avL = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+  if (avL) {
+    const el = document.getElementById(avL.id);
+    if (el) el.classList.remove('talking');
+  }
 
   if (canvasSubtitleOverlay) {
     canvasSubtitleOverlay.innerHTML = `<span>Haz clic en reproducir guion para ver el avatar hablar</span>`;
@@ -1880,7 +2291,6 @@ function startFullTimelinePreview() {
     const voices = getLocal('sdl_voices') || DEFAULT_VOICES;
     const activeVc = voices.find(v => v.id === scene.voiceId) || DEFAULT_VOICES[0];
     
-    // Speaks the script
     if (isBackendOnline && backendApiConfigured.elevenLabsConfigured) {
       fetch('http://localhost:3000/api/tts', {
         method: 'POST',
@@ -1893,14 +2303,22 @@ function startFullTimelinePreview() {
         activeAudioElement = audio;
 
         audio.onplay = () => {
-          layerAvatar.classList.add('talking');
+          const avL = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+          if (avL) {
+            const el = document.getElementById(avL.id);
+            if (el) el.classList.add('talking');
+          }
           if (canvasSubtitleOverlay) {
             canvasSubtitleOverlay.innerHTML = `<span>"${scene.script.length > 60 ? scene.script.slice(0, 57) + '...' : scene.script}"</span>`;
           }
         };
 
         audio.onended = () => {
-          layerAvatar.classList.remove('talking');
+          const avL = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+          if (avL) {
+            const el = document.getElementById(avL.id);
+            if (el) el.classList.remove('talking');
+          }
           sceneIndex++;
           playNextScene();
         };
@@ -1922,14 +2340,22 @@ function startFullTimelinePreview() {
       if (match) utterance.voice = match;
 
       utterance.onstart = () => {
-        layerAvatar.classList.add('talking');
+        const avL = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+        if (avL) {
+          const el = document.getElementById(avL.id);
+          if (el) el.classList.add('talking');
+        }
         if (canvasSubtitleOverlay) {
           canvasSubtitleOverlay.innerHTML = `<span>"${scene.script.length > 60 ? scene.script.slice(0, 57) + '...' : scene.script}"</span>`;
         }
       };
 
       utterance.onend = () => {
-        layerAvatar.classList.remove('talking');
+        const avL = scenes[currentSceneIndex].layers.find(l => l.type === 'avatar');
+        if (avL) {
+          const el = document.getElementById(avL.id);
+          if (el) el.classList.remove('talking');
+        }
         sceneIndex++;
         playNextScene();
       };
@@ -2402,7 +2828,9 @@ document.querySelectorAll('#view-policies .hg-tab-btn').forEach(btn => {
     const tab = btn.dataset.tab;
     const panels = [
       'policy-privacy',
+      'policy-terms',
       'policy-refund',
+      'policy-compliance',
       'policy-ethics'
     ];
 
@@ -2526,20 +2954,44 @@ document.addEventListener('click', (e) => {
     const projects = getLocal('sdl_projects') || [];
     const found = projects.find(p => p.name === scriptName && p.type === 'guion');
     if (found) {
+      const scriptText = found.details.split(' • ')[0] || found.name;
       scenes = [
         {
           id: 's-' + Date.now(),
           avatarId: 'av-sofia-biz',
           voiceId: 'v-sofia',
-          script: found.details.split(' • ')[0] || found.name,
+          script: scriptText,
           bg: 'dark',
           duration: 5,
-          avatarPos: { top: 50, left: 50, width: 150, height: 150 },
-          textPos: { top: 15, left: 10, width: 300, height: 50, text: 'Mi Título', fontSize: 28, fontStyle: "'Inter', sans-serif", color: '#ffffff', display: 'none' }
+          layers: [
+            {
+              id: 'layer-avatar-' + Date.now(),
+              type: 'avatar',
+              avatarId: 'av-sofia-biz',
+              top: 50,
+              left: 50,
+              width: 260,
+              height: 260,
+              zIndex: 10
+            },
+            {
+              id: 'layer-text-' + (Date.now() + 1),
+              type: 'text',
+              text: scriptText,
+              fontSize: 28,
+              fontStyle: "'Inter', sans-serif",
+              color: '#ffffff',
+              top: 25,
+              left: 50,
+              width: 320,
+              height: 60,
+              zIndex: 20
+            }
+          ]
         }
       ];
       currentSceneIndex = 0;
-      focusLayer('avatar');
+      activeSelectedLayerId = null;
       switchView('editor');
       showToast('Borrador Cargado', 'Se cargó el guión en el editor.', 'success');
     }
@@ -2670,3 +3122,494 @@ initTheme();
 loadUserSettings();
 renderHomeWidgets();
 updateDashboardStats();
+
+// --- VIDEO TRANSLATE LOGIC ---
+const translateVideoUploadZone = document.getElementById('translateVideoUploadZone');
+const translateVideoFileInput = document.getElementById('translateVideoFileInput');
+const translateVideoFileName = document.getElementById('translateVideoFileName');
+const btnTranslateVideoSubmit = document.getElementById('btnTranslateVideoSubmit');
+const translatedVideosList = document.getElementById('translatedVideosList');
+
+let uploadedVideoFile = null;
+
+if (translateVideoUploadZone && translateVideoFileInput) {
+  translateVideoUploadZone.addEventListener('click', () => translateVideoFileInput.click());
+  translateVideoFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      uploadedVideoFile = file;
+      if (translateVideoFileName) {
+        translateVideoFileName.textContent = `Archivo cargado: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+      }
+      if (btnTranslateVideoSubmit) {
+        btnTranslateVideoSubmit.removeAttribute('disabled');
+      }
+    }
+  });
+
+  // drag and drop events
+  ['dragenter', 'dragover'].forEach(eventName => {
+    translateVideoUploadZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      translateVideoUploadZone.style.borderColor = 'var(--accent-purple)';
+      translateVideoUploadZone.style.background = 'rgba(124, 58, 237, 0.05)';
+    }, false);
+  });
+  ['dragleave', 'drop'].forEach(eventName => {
+    translateVideoUploadZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      translateVideoUploadZone.style.borderColor = 'var(--border-color)';
+      translateVideoUploadZone.style.background = 'transparent';
+    }, false);
+  });
+  translateVideoUploadZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const file = dt.files[0];
+    if (file && file.type.startsWith('video/')) {
+      uploadedVideoFile = file;
+      if (translateVideoFileName) {
+        translateVideoFileName.textContent = `Archivo arrastrado: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+      }
+      if (btnTranslateVideoSubmit) {
+        btnTranslateVideoSubmit.removeAttribute('disabled');
+      }
+    } else {
+      showToast('Archivo inválido', 'Por favor arrastra un archivo de video.', 'error');
+    }
+  });
+}
+
+function renderTranslations() {
+  if (!translatedVideosList) return;
+  translatedVideosList.innerHTML = '';
+  
+  const translations = getLocal('sdl_translations') || [];
+  if (translations.length === 0) {
+    translatedVideosList.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted)">No has traducido ningún video aún.</span>';
+    return;
+  }
+  
+  translations.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.style.display = 'flex';
+    card.style.alignItems = 'center';
+    card.style.justifyContent = 'space-between';
+    card.style.padding = '12px';
+    card.style.borderRadius = 'var(--border-radius-md)';
+    card.style.border = '1px solid var(--border-color)';
+    card.style.background = 'var(--bg-secondary)';
+    
+    card.innerHTML = `
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="font-size:24px; color:var(--accent-purple);"><i class="fa-solid fa-file-video"></i></div>
+        <div>
+          <h4 style="margin:0; font-size:0.85rem; color:var(--text-color);">${t.name}</h4>
+          <span style="font-size:0.75rem; color:var(--text-muted);">${t.source.toUpperCase()} → ${t.target.toUpperCase()} • ${t.date}</span>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-primary-sm btn-play-video" data-url="${t.url}" style="padding:6px 10px;"><i class="fa-solid fa-play"></i> Ver</button>
+        <button class="btn-outline-sm btn-delete-translation" data-id="${t.id}" style="padding:6px 8px; border-color:var(--accent-red); color:var(--accent-red);"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    `;
+    translatedVideosList.appendChild(card);
+  });
+}
+
+// Delete translation listener
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-delete-translation');
+  if (btn) {
+    const id = btn.dataset.id;
+    let translations = getLocal('sdl_translations') || [];
+    translations = translations.filter(t => t.id !== id);
+    setLocal('sdl_translations', translations);
+    renderTranslations();
+    showToast('Traducción Eliminada', 'Se quitó el video traducido del historial.', 'info');
+  }
+});
+
+if (btnTranslateVideoSubmit) {
+  btnTranslateVideoSubmit.addEventListener('click', () => {
+    if (!uploadedVideoFile) return;
+    
+    const credits = getCredits();
+    if (credits < 30) {
+      showModal('Créditos Insuficientes', 'Traducir un video requiere 30 créditos. Por favor actualiza tu plan en la pestaña de Suscripción.');
+      return;
+    }
+    
+    const srcLang = document.getElementById('translateSourceLang').value;
+    const tgtLang = document.getElementById('translateTargetLang').value;
+    
+    setCredits(credits - 30);
+    showToast('Procesando traducción', 'Iniciando traducción de video...', 'info');
+    
+    // Simulate steps in the button
+    let step = 0;
+    const steps = [
+      "Subiendo video...",
+      "Analizando audio original...",
+      "Clonando voz original...",
+      "Traduciendo y sincronizando labios...",
+      "Finalizando renderizado..."
+    ];
+    
+    btnTranslateVideoSubmit.setAttribute('disabled', 'true');
+    
+    const interval = setInterval(() => {
+      if (step < steps.length) {
+        btnTranslateVideoSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${steps[step]}`;
+        step++;
+      } else {
+        clearInterval(interval);
+        btnTranslateVideoSubmit.innerHTML = `<i class="fa-solid fa-globe"></i> Traducir Video (Consume 30 Créditos)`;
+        btnTranslateVideoSubmit.removeAttribute('disabled');
+        
+        // Save to translation list
+        const translations = getLocal('sdl_translations') || [];
+        const newTrans = {
+          id: 'trans-' + Date.now(),
+          name: uploadedVideoFile.name,
+          source: srcLang === 'auto' ? 'Es' : srcLang,
+          target: tgtLang,
+          date: new Date().toISOString().split('T')[0],
+          url: 'https://www.w3schools.com/html/mov_bbb.mp4' // playable sample video
+        };
+        translations.push(newTrans);
+        setLocal('sdl_translations', translations);
+        
+        // Reset uploaded file
+        uploadedVideoFile = null;
+        if (translateVideoFileName) translateVideoFileName.textContent = '';
+        btnTranslateVideoSubmit.setAttribute('disabled', 'true');
+        if (translateVideoFileInput) translateVideoFileInput.value = '';
+        
+        renderTranslations();
+        updateDashboardStats();
+        showToast('Traducción Completada', 'El video traducido se ha añadido al historial.', 'success');
+      }
+    }, 2000);
+  });
+}
+
+// --- BRAND KIT LOGIC ---
+const brandLogoUploadZone = document.getElementById('brandLogoUploadZone');
+const brandLogoFileInput = document.getElementById('brandLogoFileInput');
+const brandLogosList = document.getElementById('brandLogosList');
+const btnSaveBrandKit = document.getElementById('btnSaveBrandKit');
+
+if (brandLogoUploadZone && brandLogoFileInput) {
+  brandLogoUploadZone.addEventListener('click', () => brandLogoFileInput.click());
+  brandLogoFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target.result;
+        let logos = getLocal('sdl_brand_logos') || [];
+        logos.push(base64);
+        setLocal('sdl_brand_logos', logos);
+        
+        // Also inject into user assets so it's directly usable in editor!
+        const userAssets = getLocal('sdl_user_assets') || [];
+        userAssets.push({
+          name: file.name,
+          src: base64,
+          type: 'image'
+        });
+        setLocal('sdl_user_assets', userAssets);
+        renderEditorDrawerAssets();
+        
+        renderBrandLogos();
+        showToast('Logo Agregado', 'El logo se ha añadido a tu kit de marca y recursos del editor.', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+function renderBrandLogos() {
+  if (!brandLogosList) return;
+  brandLogosList.innerHTML = '';
+  
+  // default logo
+  const defaultDiv = document.createElement('div');
+  defaultDiv.style.position = 'relative';
+  defaultDiv.innerHTML = `<img src="assets/logo.png" style="height:50px; border:1px solid var(--border-color); padding:4px; border-radius:4px; background:var(--bg-tertiary)">`;
+  brandLogosList.appendChild(defaultDiv);
+  
+  const logos = getLocal('sdl_brand_logos') || [];
+  logos.forEach((logo, index) => {
+    const div = document.createElement('div');
+    div.style.position = 'relative';
+    div.style.display = 'inline-block';
+    div.innerHTML = `
+      <img src="${logo}" style="height:50px; border:1px solid var(--border-color); padding:4px; border-radius:4px; background:var(--bg-tertiary)">
+      <button class="btn-delete-brand-logo" data-index="${index}" style="position:absolute; top:-5px; right:-5px; width:18px; height:18px; border-radius:50%; background:var(--accent-red); color:#fff; border:none; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
+    `;
+    brandLogosList.appendChild(div);
+  });
+}
+
+// Delete logo event listener
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-delete-brand-logo');
+  if (btn) {
+    const index = parseInt(btn.dataset.index);
+    let logos = getLocal('sdl_brand_logos') || [];
+    logos.splice(index, 1);
+    setLocal('sdl_brand_logos', logos);
+    renderBrandLogos();
+    showToast('Logo Eliminado', 'Se quitó el logo del kit de marca.', 'info');
+  }
+});
+
+// Load saved brand colors
+function loadBrandColors() {
+  const colors = getLocal('sdl_brand_colors') || {
+    primary: '#7c3aed',
+    secondary: '#f59e0b',
+    dark: '#0c091f'
+  };
+  
+  const cp = document.getElementById('brandColorPrimary');
+  const cs = document.getElementById('brandColorSecondary');
+  const cd = document.getElementById('brandColorDark');
+  
+  if (cp) cp.value = colors.primary;
+  if (cs) cs.value = colors.secondary;
+  if (cd) cd.value = colors.dark;
+}
+
+if (btnSaveBrandKit) {
+  btnSaveBrandKit.addEventListener('click', () => {
+    const primary = document.getElementById('brandColorPrimary').value;
+    const secondary = document.getElementById('brandColorSecondary').value;
+    const dark = document.getElementById('brandColorDark').value;
+    
+    setLocal('sdl_brand_colors', { primary, secondary, dark });
+    renderInspectorBrandPalettes();
+    showToast('Kit de Marca Guardado', 'Los colores de marca y logos se han guardado con éxito.', 'success');
+  });
+}
+
+// --- BRAND KIT INSPECTOR INTEGRATION ---
+function renderInspectorBrandPalettes() {
+  const textPal = document.getElementById('textBrandPalette');
+  const shapePal = document.getElementById('shapeBrandPalette');
+  
+  const colors = getLocal('sdl_brand_colors') || {
+    primary: '#7c3aed',
+    secondary: '#f59e0b',
+    dark: '#0c091f'
+  };
+  
+  const paletteHTML = `
+    <span style="font-size:0.7rem; color:var(--text-muted); align-self:center; margin-right:4px;">Marca:</span>
+    <button class="brand-palette-circle" data-color="${colors.primary}" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--border-color); background:${colors.primary}; cursor:pointer; padding:0;"></button>
+    <button class="brand-palette-circle" data-color="${colors.secondary}" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--border-color); background:${colors.secondary}; cursor:pointer; padding:0;"></button>
+    <button class="brand-palette-circle" data-color="${colors.dark}" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--border-color); background:${colors.dark}; cursor:pointer; padding:0;"></button>
+  `;
+  
+  if (textPal) textPal.innerHTML = paletteHTML;
+  if (shapePal) shapePal.innerHTML = paletteHTML;
+}
+
+// Delegate click listener for brand palette circles
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.brand-palette-circle');
+  if (btn) {
+    const color = btn.dataset.color;
+    const activeLayer = activeSelectedLayerId ? scenes[currentSceneIndex].layers.find(l => l.id === activeSelectedLayerId) : null;
+    if (activeLayer) {
+      if (activeLayer.type === 'text') {
+        activeLayer.color = color;
+        const picker = document.getElementById('textColorPicker');
+        const val = document.getElementById('textColorVal');
+        if (picker) picker.value = color;
+        if (val) val.value = color;
+        const span = document.querySelector(`#${activeLayer.id} .layer-text-span`);
+        const input = document.querySelector(`#${activeLayer.id} .layer-text-input`);
+        if (span) span.style.color = color;
+        if (input) input.style.color = color;
+      } else if (activeLayer.type === 'shape') {
+        activeLayer.fillColor = color;
+        const picker = document.getElementById('shapeColorPicker');
+        const val = document.getElementById('shapeColorVal');
+        if (picker) picker.value = color;
+        if (val) val.value = color;
+        const el = document.getElementById(activeLayer.id);
+        if (el) el.style.backgroundColor = color;
+      }
+    }
+  }
+});
+
+// --- AVATAR CHAT INTERACTIVO LOGIC ---
+const chatHistoryBox = document.getElementById('chatHistoryBox');
+const chatInputText = document.getElementById('chatInputText');
+const btnSendChatMessage = document.getElementById('btnSendChatMessage');
+const chatAvatarImg = document.getElementById('chatAvatarImg');
+const chatAvatarSpeakingBadge = document.getElementById('chatAvatarSpeakingBadge');
+
+let activeChatCharacter = "Nova";
+
+document.querySelectorAll('.chat-avatar-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.chat-avatar-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.borderColor = 'var(--border-color)';
+      b.style.fontWeight = 'normal';
+    });
+    btn.classList.add('active');
+    btn.style.borderColor = 'var(--accent-purple)';
+    btn.style.fontWeight = '600';
+    
+    activeChatCharacter = btn.dataset.id;
+    if (chatAvatarImg) {
+      chatAvatarImg.src = btn.dataset.img;
+    }
+    
+    // Welcome message
+    if (chatHistoryBox) {
+      chatHistoryBox.innerHTML = '';
+      let welcome = "";
+      if (activeChatCharacter === 'Nova') {
+        welcome = "Hola, soy Nova, tu asistente interactiva. Pregúntame sobre Studio SDL, nuestros servicios o cómo automatizar tus videos.";
+      } else if (activeChatCharacter === 'Sofia') {
+        welcome = "Hola, soy Sofia. Estoy lista para ayudarte con tus proyectos de negocio, presentaciones corporativas y marketing.";
+      } else if (activeChatCharacter === 'Roberto') {
+        welcome = "Hola, soy Roberto. ¿En qué puedo colaborar hoy con respecto a tus videos de ventas o campañas de publicidad?";
+      } else if (activeChatCharacter === 'Elena') {
+        welcome = "Hola, soy Elena. ¿Quieres conversar sobre educación, tutorías o cómo generar contenido dinámico con IA?";
+      }
+      
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble agent';
+      bubble.style.alignSelf = 'flex-start';
+      bubble.style.background = 'var(--bg-secondary)';
+      bubble.style.border = '1px solid var(--border-color)';
+      bubble.style.padding = '10px 14px';
+      bubble.style.borderRadius = 'var(--border-radius-md)';
+      bubble.style.maxWidth = '80%';
+      bubble.style.fontSize = '0.85rem';
+      bubble.style.lineHeight = '1.4';
+      bubble.innerHTML = `<strong>${activeChatCharacter} (Asistente):</strong> ${welcome}`;
+      chatHistoryBox.appendChild(bubble);
+      
+      speakChatText(welcome);
+    }
+  });
+});
+
+let chatSpeechUtterance = null;
+function speakChatText(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    
+    chatSpeechUtterance = new SpeechSynthesisUtterance(text);
+    chatSpeechUtterance.lang = 'es-ES';
+    
+    const voices = window.speechSynthesis.getVoices();
+    const esVoice = voices.find(v => v.lang.startsWith('es'));
+    if (esVoice) chatSpeechUtterance.voice = esVoice;
+    
+    chatSpeechUtterance.onstart = () => {
+      if (chatAvatarSpeakingBadge) chatAvatarSpeakingBadge.style.display = 'flex';
+      if (chatAvatarImg) chatAvatarImg.style.filter = 'brightness(1.1) contrast(1.05)';
+    };
+    
+    chatSpeechUtterance.onend = () => {
+      if (chatAvatarSpeakingBadge) chatAvatarSpeakingBadge.style.display = 'none';
+      if (chatAvatarImg) chatAvatarImg.style.filter = 'none';
+    };
+    
+    chatSpeechUtterance.onerror = () => {
+      if (chatAvatarSpeakingBadge) chatAvatarSpeakingBadge.style.display = 'none';
+      if (chatAvatarImg) chatAvatarImg.style.filter = 'none';
+    };
+    
+    window.speechSynthesis.speak(chatSpeechUtterance);
+  }
+}
+
+// Ensure voices are loaded for SpeechSynthesis
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {};
+}
+
+function handleSendChatMessage() {
+  if (!chatInputText || !chatHistoryBox) return;
+  const msg = chatInputText.value.trim();
+  if (!msg) return;
+  
+  chatInputText.value = '';
+  
+  // User bubble
+  const userBubble = document.createElement('div');
+  userBubble.className = 'chat-bubble user';
+  userBubble.style.alignSelf = 'flex-end';
+  userBubble.style.background = 'var(--accent-purple)';
+  userBubble.style.color = '#fff';
+  userBubble.style.padding = '10px 14px';
+  userBubble.style.borderRadius = 'var(--border-radius-md)';
+  userBubble.style.maxWidth = '80%';
+  userBubble.style.fontSize = '0.85rem';
+  userBubble.style.lineHeight = '1.4';
+  userBubble.innerHTML = `<strong>Tú:</strong> ${msg}`;
+  chatHistoryBox.appendChild(userBubble);
+  chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
+  
+  // Generate response
+  setTimeout(() => {
+    let responseText = "";
+    const lower = msg.toLowerCase();
+    
+    if (lower.includes('precio') || lower.includes('plan') || lower.includes('pago') || lower.includes('cost')) {
+      responseText = `Nuestros planes en Studio SDL son muy accesibles. El Plan Creador Pro cuesta $29 USD al mes e incluye 150 créditos. El Plan Business cuesta $89 USD al mes e incluye 500 créditos. Puedes administrarlos en la pestaña de Suscripción.`;
+    } else if (lower.includes('avatar') || lower.includes('avatares') || lower.includes('cara')) {
+      responseText = `Contamos con una amplia variedad de avatares reales e instantáneos de alta definición. Además, puedes ir al Kit de Marca o Recursos para subir tu propia foto y usarla como presentador interactivo (Talking Photo) en tus videos.`;
+    } else if (lower.includes('voz') || lower.includes('clon') || lower.includes('habla') || lower.includes('audio')) {
+      responseText = `¡Es increíble! Con Studio SDL puedes clonar tu voz original. Solo tienes que ir a la pestaña 'Voces', subir o grabar un audio corto de muestra de 10 segundos, y nuestra IA clonará tu acento y tono usando ElevenLabs.`;
+    } else if (lower.includes('tradu') || lower.includes('video') || lower.includes('ingles') || lower.includes('idioma')) {
+      responseText = `Nuestro Traductor de Video por IA analiza el archivo original, extrae el audio de voz, lo traduce y clona el tono original de la persona, sincronizando los labios con el nuevo idioma. Puedes probarlo en la sección 'Traductor'.`;
+    } else if (lower.includes('hola') || lower.includes('saludos') || lower.includes('buenos dias') || lower.includes('buenas tardes')) {
+      responseText = `¡Hola! Un placer saludarte. ¿Cómo va todo? Estoy listo para responder cualquier pregunta que tengas sobre nuestra plataforma Studio SDL.`;
+    } else {
+      responseText = `¡Interesante pregunta! Como avatar conversacional de Studio SDL, estoy programada para guiarte en la creación de videos con IA, el uso de avatares y la automatización de tus contenidos multilingües de alta calidad.`;
+    }
+    
+    const botBubble = document.createElement('div');
+    botBubble.className = 'chat-bubble agent';
+    botBubble.style.alignSelf = 'flex-start';
+    botBubble.style.background = 'var(--bg-secondary)';
+    botBubble.style.border = '1px solid var(--border-color)';
+    botBubble.style.padding = '10px 14px';
+    botBubble.style.borderRadius = 'var(--border-radius-md)';
+    botBubble.style.maxWidth = '80%';
+    botBubble.style.fontSize = '0.85rem';
+    botBubble.style.lineHeight = '1.4';
+    botBubble.innerHTML = `<strong>${activeChatCharacter} (Asistente):</strong> ${responseText}`;
+    chatHistoryBox.appendChild(botBubble);
+    chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
+    
+    speakChatText(responseText);
+  }, 1000);
+}
+
+if (btnSendChatMessage) {
+  btnSendChatMessage.addEventListener('click', handleSendChatMessage);
+}
+if (chatInputText) {
+  chatInputText.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleSendChatMessage();
+  });
+}
+
+// Bootstrapped new views
+renderTranslations();
+renderBrandLogos();
+loadBrandColors();
+renderInspectorBrandPalettes();
